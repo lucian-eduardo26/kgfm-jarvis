@@ -4,6 +4,7 @@ import { lerConfig, CAMPOS } from '@/lib/configuracao'
 import { CONFIG_PADRAO } from '@/lib/mostrador'
 import { Moldura } from '@/components/Moldura'
 import { salvarConfig, restaurarPadrao } from '../acoes'
+import { EscolherVoz } from '@/components/EscolherVoz'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,6 +85,8 @@ export default async function Configuracao() {
           Editar limiar por area entra junto com a tela de areas. Hoje muda no banco.
         </p>
       </section>
+
+      <EscolherVoz />
 
       <section className="cartao p-4 mt-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide mb-2">Conta da API</h2>

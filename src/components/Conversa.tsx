@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { Fala } from '@/lib/conversa'
+import { falar as falarVoz } from '@/lib/vozNavegador'
 
 type Reconhecimento = {
   lang: string
@@ -52,12 +53,7 @@ export function Conversa({ responderAcao }: { responderAcao: (h: Fala[]) => Prom
   }, [falas, pensando])
 
   function falar(t: string) {
-    if (!lerEmVoz || typeof window === 'undefined' || !window.speechSynthesis) return
-    window.speechSynthesis.cancel()
-    const f = new SpeechSynthesisUtterance(t)
-    f.lang = 'pt-BR'
-    f.rate = 1.05
-    window.speechSynthesis.speak(f)
+    if (lerEmVoz) falarVoz(t)
   }
 
   async function mandar() {

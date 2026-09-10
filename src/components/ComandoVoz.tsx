@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ResultadoComando } from '@/lib/comando'
+import { falar } from '@/lib/vozNavegador'
 
 type Reconhecimento = {
   lang: string
@@ -63,11 +64,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
       const resultado = await acao(t)
       setR(resultado)
       setTexto('')
-      if (typeof window !== 'undefined' && window.speechSynthesis && resultado.resposta) {
-        const f = new SpeechSynthesisUtterance(resultado.resposta)
-        f.lang = 'pt-BR'
-        window.speechSynthesis.speak(f)
-      }
+      falar(resultado.resposta)
       router.refresh()
     } catch {
       setR({
@@ -77,6 +74,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
         frente: null,
         area: null,
         resposta: 'Deu erro na chamada. Confira a chave da API em Configuracao.',
+        usouIa: false,
         alinhamento: 'sem prioridade definida',
         recomendado: null,
       })
@@ -97,7 +95,8 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
     <section className="cartao p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="rotulo">o que voce esta fazendo</p>
-        {processando && <span className="text-xs fraco font-mono">PENSANDO...</span>}
+        {processando && <span className="text-xs fraco font-mono">...</span>}
+        {r?.usouIa && <span className="text-[10px] dado" title="esta resposta gastou credito da API">via IA</span>}
       </div>
 
       <div className="flex gap-2 items-center mt-2">
