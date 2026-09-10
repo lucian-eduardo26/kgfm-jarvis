@@ -8,6 +8,9 @@ import { useEffect, useRef, useState } from 'react'
 
 const PAGINAS = [
   { href: '/painel', nome: 'Painel' },
+  { href: '/conversa', nome: 'Conversa' },
+  { href: '/semana', nome: 'A semana' },
+  { href: '/projetos', nome: 'Projetos' },
   { href: '/frentes', nome: 'Frentes' },
   { href: '/estrategia', nome: 'Estrategia' },
   { href: '/capturas', nome: 'Capturas' },

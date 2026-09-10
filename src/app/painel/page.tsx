@@ -9,7 +9,8 @@ import { Mostrador } from '@/components/Mostrador'
 import { Captura } from '@/components/Captura'
 import { Cronometro } from '@/components/Cronometro'
 import { COR_DA_ZONA } from '@/lib/mostrador'
-import { limparExemplo } from '../acoes'
+import { limparExemplo, comandoDeVoz } from '../acoes'
+import { ComandoVoz } from '@/components/ComandoVoz'
 import { confrontar } from '@/lib/expediente'
 import { vozDoDia } from '@/lib/resistencia'
 
@@ -65,6 +66,10 @@ export default async function Painel() {
           )}
         </section>
       )}
+
+      <div className="mb-3">
+        <ComandoVoz acao={comandoDeVoz} />
+      </div>
 
       {d.cronometro && (
         <div className="mb-3">

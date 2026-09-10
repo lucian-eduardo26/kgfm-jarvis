@@ -10,6 +10,10 @@ import { classificar } from '@/lib/classificador'
 import { gravarConfig, voltarAoPadrao } from '@/lib/configuracao'
 import { senhaConfere, abrirSessao, fecharSessao } from '@/lib/sessao'
 import type { ConfigMostrador } from '@/lib/mostrador'
+import { responder, type Fala } from '@/lib/conversa'
+import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
+import { executarComando, type ResultadoComando } from '@/lib/comando'
+import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
 
 export async function entrar(form: FormData) {
   const senha = String(form.get('senha') ?? '')
@@ -270,4 +274,114 @@ export async function limparExemplo() {
   revalidatePath('/painel')
   revalidatePath('/frentes')
   revalidatePath('/estrategia')
+}
+
+/** A conversa. O modelo le o estado do painel antes de responder. */
+export async function falarComJarvis(historico: Fala[]): Promise<string> {
+  return responder(historico)
+}
+
+/**
+ * Cria o projeto e desdobra a WBS padrao nos quatro setores.
+ * Os pacotes nascem PLANEJADOS: a WBS e o plano, o quadro e o agora.
+ */
+export async function criarProjetoComWbs(form: FormData) {
+  const nome = String(form.get('nome') ?? '').trim()
+  if (!nome) return
+  const fase = String(form.get('fase') ?? 'desenvolvimento') as FaseWbs
+  const cliente = String(form.get('cliente') ?? '').trim() || null
+  const valor = form.get('valorEstimado') ? Number(form.get('valorEstimado')) : null
+
+  const areas = await prisma.area.findMany()
+  const porChave = new Map(areas.map((a) => [a.chave, a]))
+  const areaPadrao = areas[0]
+  if (!areaPadrao) return
+
+  const projeto = await prisma.projeto.create({
+    data: {
+      nome,
+      cliente,
+      valorEstimado: valor,
+      fase,
+      areaId: (porChave.get('comercial') ?? areaPadrao).id,
+    },
+  })
+
+  let ordem = 0
+  for (const p of pacotesDaFase(fase)) {
+    const area = porChave.get(p.area) ?? areaPadrao
+    const frente = await prisma.frente.create({
+      data: {
+        titulo: p.pacote,
+        pacote: p.pacote,
+        areaId: area.id,
+        projetoId: projeto.id,
+        status: 'planejada',
+        ordem: ordem++,
+      },
+    })
+    for (const t of p.tarefas) await prisma.tarefa.create({ data: { frenteId: frente.id, titulo: t } })
+  }
+
+  revalidatePath('/projetos')
+  revalidatePath('/frentes')
+}
+
+/** Ativar um pacote da WBS. Passa pelo limite de WIP como qualquer frente. */
+export async function ativarPacote(form: FormData) {
+  const frenteId = Number(form.get('frenteId'))
+  const forcar = form.get('forcar') === '1'
+  const f = await prisma.frente.findUnique({ where: { id: frenteId }, include: { area: true } })
+  if (!f) return
+  const abertas = await prisma.frente.count({ where: { areaId: f.areaId, status: 'aberta' } })
+  if (abertas >= f.area.limiteWip && !forcar) {
+    redirect(`/projetos?wip=${f.id}`)
+  }
+  await prisma.frente.update({
+    where: { id: frenteId },
+    data: { status: 'aberta', abertaEm: new Date(), ultimoMovimentoEm: new Date() },
+  })
+  await prisma.movimento.create({ data: { frenteId, tipo: 'ativacao' } })
+  revalidatePath('/projetos')
+  revalidatePath('/frentes')
+  revalidatePath('/painel')
+}
+
+export async function mudarFaseProjeto(form: FormData) {
+  const id = Number(form.get('projetoId'))
+  const fase = String(form.get('fase')) as FaseWbs
+  const projeto = await prisma.projeto.update({ where: { id }, data: { fase } })
+
+  // Ao mudar de fase, os pacotes da fase nova que ainda nao existem sao criados.
+  const existentes = new Set((await prisma.frente.findMany({ where: { projetoId: id } })).map((f) => f.pacote))
+  const areas = new Map((await prisma.area.findMany()).map((a) => [a.chave, a]))
+  let ordem = 100
+  for (const p of pacotesDaFase(fase)) {
+    if (existentes.has(p.pacote)) continue
+    const area = areas.get(p.area)
+    if (!area) continue
+    const frente = await prisma.frente.create({
+      data: { titulo: p.pacote, pacote: p.pacote, areaId: area.id, projetoId: projeto.id, status: 'planejada', ordem: ordem++ },
+    })
+    for (const t of p.tarefas) await prisma.tarefa.create({ data: { frenteId: frente.id, titulo: t } })
+  }
+  revalidatePath('/projetos')
+}
+
+/** "Jarvis, estou fazendo X" - fala vira cronometro rodando. */
+export async function comandoDeVoz(texto: string): Promise<ResultadoComando> {
+  const r = await executarComando(texto)
+  revalidatePath('/painel')
+  revalidatePath('/frentes')
+  return r
+}
+
+export async function rodarCheckin() {
+  await fazerCheckin()
+  revalidatePath('/semana')
+}
+
+export async function rodarCheckout() {
+  await fazerCheckout()
+  revalidatePath('/semana')
 }

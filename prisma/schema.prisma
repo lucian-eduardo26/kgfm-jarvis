@@ -111,6 +111,7 @@ model Projeto {
 // ---------- frentes ----------
 
 enum StatusFrente {
+  planejada
   aberta
   fechada
   arquivada
@@ -137,6 +138,8 @@ model Frente {
   fechadaEm         DateTime?      @map("fechada_em")
   descartadaEm      DateTime?      @map("descartada_em")
   motivoDescarte    String?        @map("motivo_descarte")
+  ordem             Int            @default(0)
+  pacote            String?
 
   area              Area           @relation(fields: [areaId], references: [id])
   projeto           Projeto?       @relation(fields: [projetoId], references: [id])

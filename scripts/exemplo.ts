@@ -93,8 +93,8 @@ async function carregar() {
   })
   const convites = await prisma.frente.create({
     data: {
-      titulo: `${MARCA} Cadencia de convites`,
-      areaId: areas.prospeccao.id,
+      titulo: `${MARCA} Cadencia de prospeccao`,
+      areaId: areas.comercial.id,
       ultimoMovimentoEm: diasUteisAtras(1),
     },
   })

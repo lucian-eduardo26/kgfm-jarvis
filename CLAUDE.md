@@ -71,6 +71,18 @@ Cada tese abaixo já foi filtrada para o caso do Lucian. **Não são sugestões:
 - **Descartado:** estudos de caso corporativos, aparato analítico.
 - **Regra:** a estratégia é armazenada **estruturada** nesses três campos, não como texto solto. Toda oportunidade nova é confrontada com a política norteadora antes de virar frente.
 
+### A Guerra da Arte (Pressfield) - a Resistencia como numero
+- **Aplica:** a forca que se opoe ao trabalho que importa nao chega como
+  preguica, chega como tarefa urgente que nao e a sua. Explica a armadilha
+  operador/arquiteto e a proposta parada por inercia.
+- **Descartado:** musa, vocabulario de artista, Resistencia como entidade.
+- **Regra:** o tempo do expediente que nao virou apontamento CONTA COMO NADA
+  FEITO e aparece listrado na barra do dia (`src/lib/expediente.ts`). A voz do
+  painel (`src/lib/resistencia.ts`) e escolhida pelo estado, nunca sorteada, e
+  as frases sao escritas por nos - aplicar Pressfield, nao cita-lo, porque
+  reproduzir trecho de obra protegida dentro do produto seria copia.
+- **Regra:** zero gamificacao. Sem medalha, sem sequencia de dias, sem elogio.
+
 ---
 
 ## 5. Camada de estratégia — horizontes
@@ -278,6 +290,18 @@ descarte é estado com motivo, mora em `item` e em `frente`.
 - Ritual trimestral automatizado (na v1 é conduzido em conversa)
 
 **Por que esse corte:** escrita em agenda e integração com CRM são o tipo de item que transforma 4 dias em um mês. Nenhum dos dois responde "o que faço agora".
+
+## 9.1 As areas sao tipos de atencao, nao departamentos
+
+Pergunta do Lucian em 10/09/2026: "prospeccao e do comercial, entregas e
+produtivo - reuniao com fornecedor e o que?". A resposta inteira, com o corte
+recomendado (Prospeccao / Proposta / Execucao / Empresa), a regra do fornecedor
+e a ordem do que medir primeiro, esta em **docs/areas-e-medicao.md**.
+
+Resumo do que nao pode se perder: cortar por organograma apagaria o sintoma que
+originou o projeto - prospeccao morrendo em silencio enquanto a engenharia anda.
+Centro de custo nao e area: e `projeto`, com `projeto.fase`, e as horas sobem
+por apontamento -> tarefa -> frente -> projeto.
 
 ## 10. Riscos a vigiar durante a construção
 

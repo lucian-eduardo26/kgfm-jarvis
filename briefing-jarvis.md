@@ -104,6 +104,38 @@ Também explica o vazamento de dinheiro: cada dia que a cotação Shopee fica pa
 - A estratégia é armazenada estruturada (diagnóstico, política, ações), não como texto solto.
 - Filtro de oportunidade: toda oportunidade nova é confrontada com a política norteadora antes de virar frente.
 
+### 3.6 A Guerra da Arte / Turning Pro - Steven Pressfield
+*(acrescentado em 10/09/2026, a pedido do Lucian)*
+
+**A tese.** Existe uma forca previsivel que se opoe a todo trabalho que importa.
+Pressfield chama de Resistencia. Ela nao chega como preguica - chega disfarcada
+de tarefa urgente, de pesquisa necessaria, de ferramenta que precisa ser
+construida antes. Quanto mais importante o trabalho, mais forte ela puxa. A
+saida nao e inspiracao: e virar profissional, aparecer no horario e trabalhar
+mesmo sem vontade.
+
+**O que se aplica a voce.** E a descricao literal de tres itens da sua propria
+lista: procrastinar ate o prazo apertar, abandonar rotina sob estresse, e
+construir infraestrutura quando deveria estar vendendo. A "armadilha
+operador/arquiteto" que voce nomeou e a Resistencia em estado puro - construir
+sistema e mais agradavel do que ligar para o comprador, e parece trabalho.
+
+E ele da o teste que faltava: **o profissional aparece todo dia e conta as
+horas**. Nao "se sentiu produtivo" - contou. Por isso tempo sem registro conta
+como nada feito.
+
+**O que descartar.** A mistica de musa, o vocabulario de artista e a leitura de
+que Resistencia e uma entidade. Aqui ela e um numero: as horas do expediente
+que nao viraram apontamento.
+
+**Vira no sistema:**
+- O buraco do dia: expediente decorrido menos horas apontadas, listrado na barra.
+  Sem desconto de almoco nem de reuniao - se foi trabalho, aponta.
+- A voz do painel (`src/lib/resistencia.ts`) confronta pelo estado, nunca por
+  sorteio, e as frases sao escritas por nos: aplicar Pressfield, nao cita-lo.
+- Nada de elogio, medalha ou sequencia de dias. Gamificacao e o oposto de virar
+  profissional: transforma o trabalho em recompensa externa.
+
 ---
 
 ## 4. Camada de estratégia — horizontes

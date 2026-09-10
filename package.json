@@ -10,7 +10,8 @@
     "teste": "tsx scripts/teste-mostrador.ts",
     "semear": "tsx scripts/semear.ts",
     "exemplo": "tsx scripts/exemplo.ts",
-    "limpar": "tsx scripts/exemplo.ts limpar"
+    "limpar": "tsx scripts/exemplo.ts limpar",
+    "rascunho": "tsx scripts/estrategia-rascunho.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
