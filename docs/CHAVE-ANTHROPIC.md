@@ -1,50 +1,111 @@
-# A chave da API - passo a passo (5 minutos)
+# A chave da API - passo a passo
 
 ## O que é essa chave, em português
 
-O Jarvis precisa que uma inteligência leia o que você captura ("ligar pro
-comprador da Shopee") e decida sozinha: isso é tarefa, é da área comercial, é
-do projeto Shopee. Quem faz isso é a API da Anthropic.
+O Jarvis precisa que uma inteligência leia o que você fala ("Jarvis, estou
+fazendo o levantamento da cotação") e decida sozinha: isso é tarefa, é da área
+comercial, é do projeto Shopee, e o cronômetro começa agora. Quem faz isso é a
+API da Anthropic.
 
 **Ela é cobrada por uso e NÃO está incluída na sua assinatura do Claude.** São
-duas contas separadas na mesma empresa: a assinatura paga o Claude que está
-falando com você agora; a API paga o Jarvis funcionando sozinho, quando você
-não está olhando. Não tem como fugir disso - sem chave, o Jarvis vira formulário
-manual.
+duas contas separadas na mesma empresa: a assinatura paga o Claude que conversa
+com você; a API paga o Jarvis funcionando sozinho, quando você não está olhando.
 
-**Quanto custa, de verdade:** classificar uma captura curta custa fração de
-centavo. Se você capturar 20 coisas por dia e receber uma recomendação diária,
-fica na casa de poucos dólares por mês. O crédito mínimo (US$ 5) deve durar
-semanas. Eu vou gravar cada chamada numa tabela do banco, então você vê a conta
-subindo antes de a fatura chegar.
+Sem a chave o sistema **não quebra**: captura, cronômetro, mostradores, runway,
+WBS e as travas continuam funcionando. O que para é o que precisa pensar -
+comando de voz, conversa, classificação automática e os rituais de semana.
 
-## Os passos
+---
 
-1. Abra **console.anthropic.com** (é diferente de claude.ai) e entre com o mesmo
-   e-mail de sempre.
-2. No menu da esquerda, **Billing** (ou "Plans & Billing"). Se o saldo estiver
-   zerado, clique em **Add credits** e coloque o mínimo, US$ 5. Precisa de cartão.
-   *Esse passo é seu - eu não coloco cartão nem faço compra.*
-3. Ainda no menu da esquerda, **API keys** → botão **Create Key**.
-4. Nome da chave: `jarvis`. Confirme.
-5. **A chave aparece UMA vez só.** Copie inteira (começa com `sk-ant-`).
+## Parte 1 - criar a chave (5 minutos)
 
-## Onde colar
+1. Abra **console.anthropic.com**. É diferente do claude.ai - o console é a
+   parte de desenvolvedor. Entre com o mesmo e-mail de sempre.
 
-Na pasta do projeto:
+2. Se for a primeira vez, ele pede para criar uma organização. Pode chamar de
+   **KGFM** e seguir.
+
+3. No menu da esquerda procure **Billing** (ou *Plans & Billing*). Se o saldo
+   estiver zerado, clique em **Add credits** e coloque o mínimo, **US$ 5**.
+   Precisa de cartão de crédito.
+   *Este passo é seu - eu não coloco cartão nem faço compra.*
+
+4. Ainda no menu da esquerda, **API keys** → botão **Create Key**.
+
+5. Nome da chave: `jarvis`. Confirme.
+
+6. **A chave aparece uma vez só.** Copie inteira - ela começa com `sk-ant-`.
+   Se fechar a janela sem copiar, é só apagar e criar outra.
+
+---
+
+## Parte 2 - colar em DOIS lugares
+
+O Jarvis roda em dois lugares, e cada um lê a chave do seu próprio canto.
+
+### 2.1 - Na Vercel (o site no ar, o que você usa no celular)
+
+1. **vercel.com** → projeto **kgfm-jarvis**
+2. **Settings** → **Environment Variables**
+3. Procure `ANTHROPIC_API_KEY` (ela já existe, vazia). Clique nos três
+   pontinhos ao lado → **Edit**.
+4. Cole a chave no campo de valor. Deixe marcado *Production* e *Preview*.
+5. Salve.
+6. **Vá em Deployments e clique em Redeploy no deploy mais recente.**
+   Isto é obrigatório: variável nova só vale para deploys feitos DEPOIS dela.
+   Sem o redeploy, o site continua sem chave e você vai achar que não funcionou.
+
+### 2.2 - No PC (quando você roda pelo atalho)
+
+Abra no Bloco de Notas:
 
     C:\0 KGFM\03 GESTÃO\0311 ESTRATÉGICO\03112 JARVIS\.env
 
-Se o arquivo já existir, abra no Bloco de Notas e acrescente uma linha no fim.
-Se não existir, crie. A linha é assim, sem espaço e sem aspas:
+Ache a linha que começa com `ANTHROPIC_API_KEY=` e cole a chave logo depois do
+`=`, sem espaço e sem aspas:
 
     ANTHROPIC_API_KEY=sk-ant-cole-a-sua-aqui
 
-Salve e feche. Pronto - pode dormir. Eu leio o arquivo daqui.
+Salve e feche. Se o Jarvis estiver aberto, feche a janela preta e abra de novo.
 
-## Se você não fizer isso hoje
+---
 
-Nada trava. Eu construo o sistema inteiro com um classificador de mentira, que
-joga tudo numa caixa "sem classificar" e deixa você arrastar na mão. Quando a
-chave aparecer, ele liga sozinho, sem eu mexer em código. Só não dá para dizer
-que a captura funciona antes de a chave existir.
+## Parte 3 - conferir que funcionou
+
+Abra o Painel e, na caixa **"o que você está fazendo"**, escreva ou fale:
+
+> estou levantando os preços da cotação
+
+- **Funcionou:** ele responde com uma frase, o cronômetro começa a correr, e
+  aparece se aquilo é ou não a prioridade do dia.
+- **Não funcionou:** aparece *"Sem chave da API eu não entendo o que você
+  falou"*. Aí ou a chave não foi salva, ou faltou o **redeploy**.
+
+---
+
+## Quanto isso custa, de verdade
+
+O sistema usa o modelo pequeno onde a chamada é frequente e o grande só onde
+precisa pensar. Por uso:
+
+| O quê | Modelo | Custo aproximado por vez |
+|---|---|---|
+| Classificar uma captura | Haiku | menos de meio centavo de dólar |
+| Um comando de voz | Sonnet | cerca de US$ 0,015 |
+| Uma pergunta na conversa | Sonnet | cerca de US$ 0,015 |
+| Check-in ou check-out da semana | Sonnet | cerca de US$ 0,03 |
+
+Com uso pesado - 20 capturas, 10 comandos e 10 perguntas por dia - dá algo
+entre **US$ 8 e US$ 12 por mês**. Com uso normal, bem menos. Os US$ 5 mínimos
+duram semanas.
+
+**Você não precisa confiar nessa estimativa:** a tela **Configuração** mostra
+quantas chamadas foram feitas e o custo acumulado. A conta sobe ali antes de
+subir na fatura.
+
+---
+
+## Se acabar o crédito
+
+As telas continuam funcionando; só o que pensa volta a dizer que não tem chave.
+Nada se perde, nada quebra.
