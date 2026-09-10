@@ -69,6 +69,14 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
             <label className="text-xs fraco block mb-1">Valor estimado</label>
             <input name="valorEstimado" type="number" step="any" className="campo" />
           </div>
+          <div className="w-32">
+            <label className="text-xs fraco block mb-1">Recebe em (dias)</label>
+            <input name="prazoRecebimentoDias" type="number" placeholder="60" className="campo" />
+          </div>
+          <div className="w-28">
+            <label className="text-xs fraco block mb-1">Chance (%)</label>
+            <input name="probabilidade" type="number" defaultValue={50} className="campo" />
+          </div>
           <div>
             <label className="text-xs fraco block mb-1">Fase</label>
             <select name="fase" className="campo">

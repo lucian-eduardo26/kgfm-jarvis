@@ -2,7 +2,7 @@ import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { montarSemana } from '@/lib/semana'
 import { formatarHoras } from '@/lib/datas'
-import { calcularRunway, auditarHoraFundador, reais } from '@/lib/caixa'
+import { calcularRunway, auditarHoraFundador, preverEntradas, reais } from '@/lib/caixa'
 import { Moldura } from '@/components/Moldura'
 import { salvarCaixa } from '../acoes'
 
@@ -34,6 +34,8 @@ export default async function Caixa() {
   const emDesenvolvimento = projetos
     .filter((p) => !p.propostaEnviadaEm && p.fase === 'desenvolvimento')
     .reduce((sm, p) => sm + (p.valorEstimado ?? 0), 0)
+
+  const previsao = preverEntradas(projetos, r.queimaMensal, c?.margemBruta ?? 0)
 
   const corRunway =
     r.zona === 'vermelho' ? 'var(--vermelho)' : r.zona === 'ambar' ? 'var(--ambar)' : r.zona === 'verde' ? 'var(--verde)' : 'var(--cinza)'
@@ -115,16 +117,30 @@ export default async function Caixa() {
               <span className="dado">{reais(emDesenvolvimento)}</span>
             </li>
           </ul>
-          {r.configurado && r.queimaMensal > 0 && (
-            <p className="fraco text-sm mt-3">
-              Se tudo que ja tem proposta fechasse hoje, com margem de{' '}
-              {Math.round((c?.margemBruta ?? 0) * 100)}%, cobriria{' '}
-              <span className="dado">
-                {(((emProposta * (c?.margemBruta ?? 0)) / r.queimaMensal) || 0).toFixed(1)}
-              </span>{' '}
-              meses de queima. Isso e teto, nao previsao - nem tudo fecha.
+          {/* O que entra em 90 dias, com PRAZO DE RECEBIMENTO. Valor sem data
+              nao paga folha - foi a correcao que faltava nos dois planos. */}
+          <div className="mt-3 pt-3 border-t border-[var(--borda)]">
+            <p className="rotulo mb-2">o que entra em 90 dias</p>
+            <ul className="text-sm space-y-1">
+              <li className="flex justify-between">
+                <span>Com data de recebimento ate 90 dias</span>
+                <span className="dado">{reais(previsao.entraEm90Dias)}</span>
+              </li>
+              <li className="flex justify-between fraco">
+                <span>Ponderado pela probabilidade</span>
+                <span className="dado">{reais(previsao.entraEm90DiasPonderado)}</span>
+              </li>
+              {previsao.semPrazo > 0 && (
+                <li className="flex justify-between" style={{ color: 'var(--ambar)' }}>
+                  <span>Sem prazo informado</span>
+                  <span className="dado">{reais(previsao.semPrazo)}</span>
+                </li>
+              )}
+            </ul>
+            <p className="text-sm mt-2" style={{ color: previsao.semPrazo > 0 ? 'var(--ambar)' : 'var(--fraco)' }}>
+              {previsao.frase}
             </p>
-          )}
+          </div>
         </section>
       </div>
 

@@ -303,6 +303,8 @@ export async function criarProjetoComWbs(form: FormData) {
       nome,
       cliente,
       valorEstimado: valor,
+      prazoRecebimentoDias: form.get('prazoRecebimentoDias') ? Number(form.get('prazoRecebimentoDias')) : null,
+      probabilidade: form.get('probabilidade') ? Number(form.get('probabilidade')) : 50,
       fase,
       areaId: (porChave.get('comercial') ?? areaPadrao).id,
     },

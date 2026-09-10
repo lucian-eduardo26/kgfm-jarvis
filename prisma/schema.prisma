@@ -104,11 +104,16 @@ model Projeto {
   criadoEm      DateTime    @default(now()) @map("criado_em")
 
   // SPIN, na ordem. A trava da proposta olha implicacao e necessidade.
-  situacao          String?
-  problema          String?
-  implicacao        String?
-  necessidade       String?
-  propostaEnviadaEm DateTime? @map("proposta_enviada_em")
+  situacao             String?
+  problema             String?
+  implicacao           String?
+  necessidade          String?
+  propostaEnviadaEm    DateTime? @map("proposta_enviada_em")
+  // Dias entre FECHAR e o dinheiro ENTRAR. E o numero que decide entre um
+  // negocio grande e um rapido quando o caixa esta curto: projeto de R$ 300k
+  // que paga 60 dias apos a entrega nao resolve caixa em 90 dias.
+  prazoRecebimentoDias Int?      @map("prazo_recebimento_dias")
+  probabilidade        Int?      @default(50)
 
   area      Area      @relation(fields: [areaId], references: [id])
   frentes   Frente[]

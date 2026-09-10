@@ -138,3 +138,67 @@ export function auditarHoraFundador(
 export function reais(v: number): string {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 }
+
+
+// ---------- o que entra, e quando ----------
+//
+// A correcao mais importante que este arquivo faz nos dois planos que chegaram
+// pronto: nenhum deles olhava PRAZO DE RECEBIMENTO. Projeto de R$ 300k que paga
+// 60 dias depois da entrega nao resolve caixa em 90 dias - ele resolve caixa no
+// ano que vem. Com runway curto, prazo de recebimento manda mais que valor.
+
+export type ProjetoParaPrevisao = {
+  nome: string
+  valorEstimado: number | null
+  probabilidade: number | null
+  prazoRecebimentoDias: number | null
+  propostaEnviadaEm: Date | null
+}
+
+export type Previsao = {
+  entraEm90Dias: number
+  entraEm90DiasPonderado: number
+  semPrazo: number
+  cobreMesesDeQueima: number
+  frase: string
+}
+
+export function preverEntradas(
+  projetos: ProjetoParaPrevisao[],
+  queimaMensal: number,
+  margemBruta: number,
+): Previsao {
+  let bruto = 0
+  let ponderado = 0
+  let semPrazo = 0
+
+  for (const p of projetos) {
+    const valor = p.valorEstimado ?? 0
+    if (valor <= 0) continue
+    if (p.prazoRecebimentoDias == null) {
+      semPrazo += valor
+      continue
+    }
+    if (p.prazoRecebimentoDias > 90) continue
+    bruto += valor
+    ponderado += valor * ((p.probabilidade ?? 50) / 100)
+  }
+
+  const caixaGerado = ponderado * margemBruta
+  const cobre = queimaMensal > 0 ? caixaGerado / queimaMensal : 0
+
+  const frase =
+    semPrazo > 0
+      ? `${reais(semPrazo)} em projetos sem prazo de recebimento informado. Sem essa data eles nao entram na previsao - valor sem data nao paga folha.`
+      : bruto === 0
+        ? 'Nenhum projeto com recebimento previsto para os proximos 90 dias. O funil pode estar cheio e o caixa vazio ao mesmo tempo.'
+        : `Ponderado pela probabilidade e pela margem, o que entra em 90 dias cobre ${cobre.toFixed(1)} meses de queima.`
+
+  return {
+    entraEm90Dias: bruto,
+    entraEm90DiasPonderado: ponderado,
+    semPrazo,
+    cobreMesesDeQueima: cobre,
+    frase,
+  }
+}

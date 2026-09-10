@@ -39,3 +39,15 @@ Ideias boas que ficam registradas para não virarem desvio.
 - **Deploy na Vercel.** Hoje o sistema so roda no PC do Lucian.
 - **Editar limiar e limite de WIP por area na tela** de Configuracao (hoje muda
   no banco ou em scripts/semear.ts).
+
+## Da avaliacao dos planos externos, 10/09/2026
+
+- **Capacidade de entrega por periodo.** Hoje o Jarvis nao avisa quando o funil
+  vende mais do que a estrutura entrega - e atraso em cliente novo mata o land
+  and expand. Plano de caixa e plano de capacidade tem que ser o mesmo plano.
+- **Procedimento operacional por tipo de projeto** (o POP), para que delegar ao
+  PJ deixe de custar hora-fundador a cada vez.
+- **Custo da interface com o cliente separado do custo de execucao** na
+  auditoria da hora-fundador: delegar execucao nao delega interface.
+- **Alcada por cliente** (ate quanto passa sem board), para o Jarvis saber se um
+  ticket e "fecha em semanas" ou "entra em ciclo longo".
