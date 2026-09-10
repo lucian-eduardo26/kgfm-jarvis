@@ -1,5 +1,22 @@
 # A chave da API - passo a passo
 
+> ## ATENÇÃO: NÃO COMPRE DENTRO DO APLICATIVO DO CLAUDE
+>
+> Existem **dois lugares diferentes** que vendem crédito, e eles não se
+> conversam:
+>
+> | Onde | O que é | Serve para o Jarvis? |
+> |---|---|---|
+> | Dentro do app do Claude (menu em português, "uso extra") | crédito da sua assinatura | **NÃO** |
+> | **console.anthropic.com** → Billing | crédito da API | **SIM** |
+>
+> Se você comprar no lugar errado, o Jarvis continua dizendo que não tem chave.
+> O dinheiro não some - ele vira crédito de Claude Code, que você usa de
+> qualquer jeito - mas não é o que liga o Jarvis.
+>
+> **Confira sempre:** abra console.anthropic.com → Billing. Se o saldo aparece
+> ali, é o certo. Aconteceu de comprar no lugar errado em 10/09/2026.
+
 ## O que é essa chave, em português
 
 O Jarvis precisa que uma inteligência leia o que você fala ("Jarvis, estou
