@@ -12,7 +12,8 @@
     "exemplo": "tsx scripts/exemplo.ts",
     "limpar": "tsx scripts/exemplo.ts limpar",
     "rascunho": "tsx scripts/estrategia-rascunho.ts",
-    "caixa": "tsx scripts/caixa-inicial.ts"
+    "caixa": "tsx scripts/caixa-inicial.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
