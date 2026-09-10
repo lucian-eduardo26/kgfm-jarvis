@@ -1,12 +1,12 @@
 // A AGENDA, e as janelas que sobram nela.
 //
 // Newport: trabalho cognitivamente exigente precisa de bloco longo sem
-// interrupcao. O que mata nao e a reuniao em si - e o pedaco de 40 minutos
-// entre duas reunioes, que parece tempo livre e nao cabe nada profundo.
+// interrupcao. O que mata não e a reunião em si - e o pedaco de 40 minutos
+// entre duas reuniões, que parece tempo livre e não cabe nada profundo.
 //
-// Por isso o sistema nao pergunta "quanto tempo livre voce tem hoje": ele
+// Por isso o sistema não pergunta "quanto tempo livre você tem hoje": ele
 // calcula QUAL E A MAIOR JANELA CONTINUA. Cinco pedacos de 30 minutos somam
-// duas horas e meia e nao produzem uma proposta.
+// duas horas e meia e não produzem uma proposta.
 
 import { limitesDoDia, horaDecimalSP, formatarHoras } from './datas'
 import { INICIO_EXPEDIENTE, FIM_EXPEDIENTE } from './expediente'
@@ -34,7 +34,7 @@ export type Agenda = {
   frase: string
 }
 
-/** Minutos desde a meia-noite de Sao Paulo. */
+/** Minutos desde a meia-noite de São Paulo. */
 function minutosDoDia(d: Date, inicioDoDia: Date): number {
   return Math.round((d.getTime() - inicioDoDia.getTime()) / 60000)
 }
@@ -50,7 +50,7 @@ export function montarAgenda(compromissos: CompromissoDoDia[], agora: Date = new
   const abre = INICIO_EXPEDIENTE * 60
   const fecha = FIM_EXPEDIENTE * 60
 
-  // So o que cai dentro do expediente conta para o calculo de janela. Reuniao
+  // Só o que cai dentro do expediente conta para o cálculo de janela. Reuniao
   // as 20h e problema de outra natureza.
   const ocupados = compromissos
     .map((c) => ({
@@ -60,7 +60,7 @@ export function montarAgenda(compromissos: CompromissoDoDia[], agora: Date = new
     .filter((o) => o.ate > o.de)
     .sort((a, b) => a.de - b.de)
 
-  // Compromissos sobrepostos viram um bloco so - senao a conta de janela mente.
+  // Compromissos sobrepostos viram um bloco só - senao a conta de janela mente.
   const fundidos: { de: number; ate: number }[] = []
   for (const o of ocupados) {
     const ultimo = fundidos[fundidos.length - 1]
@@ -70,8 +70,8 @@ export function montarAgenda(compromissos: CompromissoDoDia[], agora: Date = new
 
   const minutosComprometidos = fundidos.reduce((s, o) => s + (o.ate - o.de), 0)
 
-  // As janelas: o que sobra entre os blocos, a partir de AGORA se o dia ja
-  // comecou. Janela no passado nao e janela.
+  // As janelas: o que sobra entre os blocos, a partir de AGORA se o dia já
+  // começou. Janela no passado não e janela.
   const agoraMin = Math.round(horaDecimalSP(agora) * 60)
   const piso = Math.max(abre, agoraMin)
 
@@ -96,13 +96,13 @@ export function montarAgenda(compromissos: CompromissoDoDia[], agora: Date = new
     frase =
       agoraMin >= fecha
         ? 'Expediente encerrado.'
-        : `Nenhum compromisso hoje. ${formatarHoras(maiorJanela)} continuos pela frente - dia de bloco profundo, se voce escolher um.`
+        : `Nenhum compromisso hoje. ${formatarHoras(maiorJanela)} contínuos pela frente - dia de bloco profundo, se você escolher um.`
   } else if (fragmentado) {
-    frase = `Sobram ${formatarHoras(sobra)} espalhados, mas a maior janela e de ${formatarHoras(maiorJanela)}. Isso nao cabe proposta nem engenharia - hoje e dia de trabalho raso: follow-up, prospeccao, respostas.`
+    frase = `Sobram ${formatarHoras(sobra)} espalhados, mas a maior janela e de ${formatarHoras(maiorJanela)}. Isso não cabe proposta nem engenharia - hoje e dia de trabalho raso: follow-up, prospecção, respostas.`
   } else if (!cabe && sobra > 0) {
     frase = `Restam ${formatarHoras(sobra)} no dia. Pouco para abrir frente nova; da para fechar pendencia curta.`
   } else if (!cabe) {
-    frase = 'Sem janela util no que resta do expediente.'
+    frase = 'Sem janela útil no que resta do expediente.'
   } else {
     frase = `${compromissos.length} ${compromissos.length === 1 ? 'compromisso' : 'compromissos'}, e a maior janela livre e de ${formatarHoras(maiorJanela)}. Cabe um bloco profundo - proteja ele.`
   }

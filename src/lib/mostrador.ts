@@ -1,7 +1,7 @@
-// A DEFINICAO DO MOSTRADOR VIVE SO AQUI.
+// A DEFINICAO DO MOSTRADOR VIVE SÓ AQUI.
 // No CRM ja aconteceu de cada tela contar diferente com o mesmo nome; a
-// correcao foi centralizar em um arquivo. Aqui ja nasce centralizado.
-// Justificativa de cada numero em docs/mostrador.md.
+// correção foi centralizar em um arquivo. Aqui já nasce centralizado.
+// Justificativa de cada número em docs/mostrador.md.
 
 import { diasUteisEntre, diasUteisDoMes } from './datas'
 
@@ -20,7 +20,7 @@ export type ConfigMostrador = {
   blocosAteDescansoLongo: number
 }
 
-// Os padroes da especificacao. A pagina de configuracao sobrescreve, e grava a
+// Os padrões da especificação. A página de configuração sobrescreve, e grava a
 // data - se o mostrador mudar de cor, tem que dar para saber se foi o mundo ou
 // se foi o peso.
 export const CONFIG_PADRAO: ConfigMostrador = {
@@ -32,7 +32,7 @@ export const CONFIG_PADRAO: ConfigMostrador = {
   diasAguardandoTerceiro: 5,
   diasCompromissoProximo: 2,
   autoEncerrarHoras: 3,
-  // O ciclo de trabalho. 25/5 e o Pomodoro classico, mas aqui e SUGESTAO:
+  // O ciclo de trabalho. 25/5 e o Pomodoro classico, mas aqui é SUGESTAO:
   // o sistema avisa que o bloco encheu e oferece continuar, descansar ou trocar.
   // Bloco imposto vira alarme ignorado em duas semanas.
   minutosBloco: 25,
@@ -41,8 +41,8 @@ export const CONFIG_PADRAO: ConfigMostrador = {
   blocosAteDescansoLongo: 4,
 }
 
-// Os quatro setores. Proposta parada e receita nao realizada, e prospeccao mora
-// dentro de Comercial - por isso o limiar mais curto e o dele.
+// Os quatro setores. Proposta parada e receita não realizada, e prospecção mora
+// dentro de Comercial - por isso o limiar mais curto é o dele.
 export const DIAS_PARA_CRITICO_PADRAO: Record<string, number> = {
   comercial: 3,
   adm: 4,
@@ -67,7 +67,7 @@ export const COR_DA_ZONA: Record<Zona, string> = {
 
 // ---------- movimento ----------
 
-/** Nota de uma frente pelo tempo parada, em dias uteis. */
+/** Nota de uma frente pelo tempo parada, em dias úteis. */
 export function notaMovimento(diasUteisParada: number): number {
   if (diasUteisParada <= 3) return 1
   if (diasUteisParada <= 7) return 0.6
@@ -75,7 +75,7 @@ export function notaMovimento(diasUteisParada: number): number {
   return 0
 }
 
-// ---------- criticos ----------
+// ---------- críticos ----------
 
 export type MotivoCritico = 'parada' | 'cobrar' | 'compromisso'
 
@@ -99,9 +99,9 @@ export type FrenteParaCalculo = {
 }
 
 /**
- * Criticos de uma frente. Sempre fato com data, nunca julgamento da IA:
- * se a IA decidir o que e critico, o numero muda sozinho e o sistema perde a
- * confianca - que e a unica coisa que o GTD diz importar.
+ * Críticos de uma frente. Sempre fato com data, nunca julgamento da IA:
+ * se a IA decidir o que é crítico, o número muda sozinho e o sistema perde a
+ * confianca - que é a única coisa que o GTD diz importar.
  */
 export function criticosDaFrente(
   f: FrenteParaCalculo,
@@ -113,16 +113,16 @@ export function criticosDaFrente(
   const base = { frenteId: f.id, titulo: f.titulo, bloqueia: f.bloqueiaQuantas }
 
   if (f.aguardandoQuem !== 'eu' && f.aguardandoDesde) {
-    // Regra de Goldratt: enquanto a bola esta com o outro, a frente NAO consome
-    // a capacidade da restricao e nao desconta. So vira critico quando passa a
-    // janela de cobranca - e ai o critico e a acao dele, nao o silencio alheio.
+    // Regra de Goldratt: enquanto a bola está com o outro, a frente NÃO consome
+    // a capacidade da restrição e não desconta. Só vira crítico quando passa a
+    // janela de cobranca - e ai o crítico e a ação dele, não o silêncio alheio.
     const dias = diasUteisEntre(f.aguardandoDesde, agora)
     if (dias >= cfg.diasAguardandoTerceiro) {
       achados.push({
         ...base,
         motivo: 'cobrar',
         dias,
-        texto: `sem retorno ha ${dias} dias uteis - cobrar`,
+        texto: `sem retorno há ${dias} dias úteis - cobrar`,
       })
     }
   } else {
@@ -132,7 +132,7 @@ export function criticosDaFrente(
         ...base,
         motivo: 'parada',
         dias,
-        texto: `parada ha ${dias} dias uteis`,
+        texto: `parada há ${dias} dias úteis`,
       })
     }
   }
@@ -145,7 +145,7 @@ export function criticosDaFrente(
         ...base,
         motivo: 'compromisso',
         dias: faltam,
-        texto: faltam <= 0 ? 'compromisso hoje e frente parada' : `compromisso em ${faltam} dias uteis e frente parada`,
+        texto: faltam <= 0 ? 'compromisso hoje e frente parada' : `compromisso em ${faltam} dias úteis e frente parada`,
       })
     }
   }
@@ -153,7 +153,7 @@ export function criticosDaFrente(
   return achados
 }
 
-/** 100 menos o desconto de cada critico. Tres criticos zeram a area. */
+/** 100 menos o desconto de cada crítico. Tres críticos zeram a área. */
 export function pontuacaoCriticos(criticos: Critico[], cfg: ConfigMostrador = CONFIG_PADRAO): number {
   let p = 100
   for (const c of criticos) {
@@ -162,11 +162,11 @@ export function pontuacaoCriticos(criticos: Critico[], cfg: ConfigMostrador = CO
   return Math.max(0, p)
 }
 
-// ---------- aderencia ----------
+// ---------- aderência ----------
 
 export type ObjetivoDoMes = { alvo: number | null; realizado: number }
 
-/** Pro-rata linear por dia util decorrido. Objetivo sem numero nao mede nada. */
+/** Pro-rata linear por dia útil decorrido. Objetivo sem número não mede nada. */
 export function pontuacaoAderencia(o: ObjetivoDoMes | null, agora: Date = new Date()): number | null {
   if (!o || o.alvo == null || o.alvo <= 0) return null
   const { total, decorridos } = diasUteisDoMes(agora)
@@ -175,7 +175,7 @@ export function pontuacaoAderencia(o: ObjetivoDoMes | null, agora: Date = new Da
   return Math.max(0, Math.min(100, (o.realizado / esperado) * 100))
 }
 
-// ---------- o indice ----------
+// ---------- o índice ----------
 
 export type ResultadoArea = {
   areaId: number
@@ -218,7 +218,7 @@ export function calcularArea(
     temObjetivoDoMes: temObjetivo,
   }
 
-  // Area sem frente aberta. Nunca verde por vazio: verde por vazio e como o
+  // Área sem frente aberta. Nunca verde por vazio: verde por vazio e como o
   // painel aprende a mentir.
   if (e.frentes.length === 0) {
     if (temObjetivo) {
@@ -239,7 +239,7 @@ export function calcularArea(
       movimento: 0,
       criticosPontos: 100,
       aderencia: null,
-      legenda: 'fora do foco este mes',
+      legenda: 'fora do foco este mês',
     }
   }
 
@@ -254,7 +254,7 @@ export function calcularArea(
     const soma = cfg.pesoMovimento + cfg.pesoCriticos + cfg.pesoAderencia
     indice = (movimento * cfg.pesoMovimento + criticosPontos * cfg.pesoCriticos + (aderencia as number) * cfg.pesoAderencia) / soma
   } else {
-    // Sem objetivo do mes a aderencia sai e o peso e redistribuido.
+    // Sem objetivo do mês a aderência sai e o peso é redistribuído.
     const soma = cfg.pesoMovimento + cfg.pesoCriticos
     indice = (movimento * cfg.pesoMovimento + criticosPontos * cfg.pesoCriticos) / soma
   }
@@ -285,7 +285,7 @@ function legendaDaArea(
     (a, b) => a.ultimoMovimentoEm.getTime() - b.ultimoMovimentoEm.getTime(),
   )[0]
   const dias = diasUteisEntre(maisParada.ultimoMovimentoEm, agora)
-  if (!temObjetivo) return 'sem objetivo do mes'
+  if (!temObjetivo) return 'sem objetivo do mês'
   if (dias === 0) return 'tudo movido hoje'
-  return `mais parada ha ${dias} dias uteis`
+  return `mais parada há ${dias} dias úteis`
 }

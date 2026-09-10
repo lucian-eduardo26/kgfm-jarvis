@@ -28,7 +28,7 @@ async function main() {
         valorEstimado: null,
       },
     }))
-  console.log(existente ? 'projeto ja existia' : 'projeto Jarvis KGFM criado')
+  console.log(existente ? 'projeto já existia' : 'projeto Jarvis KGFM criado')
 
   const frenteExistente = await prisma.frente.findFirst({
     where: { titulo: 'Construcao do Jarvis', status: { in: ['aberta', 'planejada'] } },
@@ -46,12 +46,12 @@ async function main() {
     }
     console.log('frente "Construcao do Jarvis" criada com 3 tarefas')
   } else {
-    console.log('frente ja existia')
+    console.log('frente já existia')
   }
 
   console.log('')
   console.log('Agora, quando estiver comigo, diga: "estou trocando ideia com o Jarvis"')
-  console.log('e o cronometro entra no centro de custo certo.')
+  console.log('e o cronômetro entra no centro de custo certo.')
 }
 
 main().finally(() => prisma.$disconnect())

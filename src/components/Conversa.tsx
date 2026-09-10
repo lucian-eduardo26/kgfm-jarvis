@@ -68,7 +68,7 @@ export function Conversa({ responderAcao }: { responderAcao: (h: Fala[]) => Prom
       setFalas([...novo, { quem: 'jarvis', texto: resposta }])
       falar(resposta)
     } catch {
-      setFalas([...novo, { quem: 'jarvis', texto: 'Deu erro na chamada. Confira a chave da API em Configuracao.' }])
+      setFalas([...novo, { quem: 'jarvis', texto: 'Deu erro na chamada. Confira a chave da API em Configuração.' }])
     } finally {
       setPensando(false)
     }
@@ -81,12 +81,12 @@ export function Conversa({ responderAcao }: { responderAcao: (h: Fala[]) => Prom
           <div className="cartao p-5">
             <p className="rotulo">jarvis em escuta</p>
             <p className="text-sm mt-2 max-w-2xl">
-              Eu leio o painel inteiro antes de responder: mostradores, criticos, frentes, o
-              cronometro e a estrategia carregada. Pergunte o que quiser sobre o estado da empresa -
+              Eu leio o painel inteiro antes de responder: mostradores, críticos, frentes, o
+              cronômetro e a estratégia carregada. Pergunte o que quiser sobre o estado da empresa -
               e conte comigo para discordar quando o dado disser outra coisa.
             </p>
             <p className="fraco text-xs mt-3">
-              Ainda nao mexo no sistema pela conversa: nao abro frente nem aponto hora. Para isso,
+              Ainda não mexo no sistema pela conversa: não abro frente nem aponto hora. Para isso,
               as telas.
             </p>
           </div>

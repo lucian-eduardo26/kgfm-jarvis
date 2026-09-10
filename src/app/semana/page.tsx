@@ -67,11 +67,11 @@ export default async function Semana() {
 
       {/* O desdobramento: semana -> mes -> objetivo */}
       <section className="cartao p-4 mt-3">
-        <p className="rotulo mb-3">o desdobramento ate o objetivo do mes</p>
+        <p className="rotulo mb-3">o desdobramento até o objetivo do mes</p>
         {s.objetivos.length === 0 ? (
           <p className="fraco text-sm">
-            Nenhum objetivo do mes com numero. Sem alvo nao existe desdobramento - e sem
-            desdobramento a semana e so uma lista de vontades. Carregue em Estrategia.
+            Nenhum objetivo do mês com número. Sem alvo não existe desdobramento - e sem
+            desdobramento a semana e só uma lista de vontades. Carregue em Estratégia.
           </p>
         ) : (
           <ul className="space-y-3">
@@ -108,8 +108,8 @@ export default async function Semana() {
             <p className="text-sm whitespace-pre-wrap leading-relaxed">{checkin.texto}</p>
           ) : (
             <p className="fraco text-sm">
-              O plano da semana sai por bloco de area, nunca por tarefa avulsa, e sempre com a secao
-              do que fica de fora - plano sem descarte nao e plano. Domingo a noite ou segunda cedo.
+              O plano da semana sai por bloco de área, nunca por tarefa avulsa, e sempre com a secao
+              do que fica de fora - plano sem descarte não e plano. Domingo a noite ou segunda cedo.
             </p>
           )}
         </section>
@@ -126,8 +126,8 @@ export default async function Semana() {
           ) : (
             <p className="fraco text-sm">
               Sexta no fim do dia: o que andou, onde esteve o gargalo, plano contra realidade, e a
-              leitura honesta das horas. Semana com muito tempo sem registro nao e boa nem ruim - e
-              semana que nao foi medida.
+              leitura honesta das horas. Semana com muito tempo sem registro não e boa nem ruim - e
+              semana que não foi medida.
             </p>
           )}
         </section>

@@ -1,5 +1,5 @@
 // Fuso unico do sistema. A Vercel roda em UTC; sem isto "hoje" vira as 21h
-// e "parado ha 3 dias" conta errado. Risco 7 do briefing.
+// e "parado há 3 dias" conta errado. Risco 7 do briefing.
 
 export const FUSO = 'America/Sao_Paulo'
 
@@ -26,19 +26,19 @@ function partes(d: Date): Partes {
   }
 }
 
-/** Meia-noite de Sao Paulo do dia daquele instante, como Date em UTC. */
+/** Meia-noite de São Paulo do dia daquele instante, como Date em UTC. */
 export function diaSP(d: Date = new Date()): Date {
   const p = partes(d)
   return new Date(Date.UTC(p.ano, p.mes - 1, p.dia))
 }
 
-/** "2026-09-10" no fuso de Sao Paulo. */
+/** "2026-09-10" no fuso de São Paulo. */
 export function hojeSP(d: Date = new Date()): string {
   const p = partes(d)
   return `${p.ano}-${String(p.mes).padStart(2, '0')}-${String(p.dia).padStart(2, '0')}`
 }
 
-/** "2026-09" - o periodo usado nos objetivos do mes. */
+/** "2026-09" - o período usado nos objetivos do mês. */
 export function mesSP(d: Date = new Date()): string {
   return hojeSP(d).slice(0, 7)
 }
@@ -63,8 +63,8 @@ function ehDiaUtil(d: Date): boolean {
 }
 
 /**
- * Dias uteis decorridos entre duas datas. Nao conta o dia inicial.
- * Fim de semana nao e abandono - por isso todo limiar do mostrador e em dia util.
+ * Dias úteis decorridos entre duas datas. Não conta o dia inicial.
+ * Fim de semana não e abandono - por isso todo limiar do mostrador e em dia útil.
  */
 export function diasUteisEntre(de: Date, ate: Date = new Date()): number {
   const a = diaSP(de)
@@ -94,7 +94,7 @@ export function diasUteisDoMes(d: Date = new Date()): { total: number; decorrido
   return { total, decorridos }
 }
 
-/** Inicio e fim do dia de Sao Paulo, em UTC - para filtrar apontamentos de hoje. */
+/** Inicio e fim do dia de São Paulo, em UTC - para filtrar apontamentos de hoje. */
 export function limitesDoDia(d: Date = new Date()): { inicio: Date; fim: Date } {
   const p = partes(d)
   const meiaNoiteUTC = Date.UTC(p.ano, p.mes - 1, p.dia)

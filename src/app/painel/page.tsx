@@ -59,7 +59,7 @@ export default async function Painel() {
             <strong style={{ color: 'var(--ambar)' }}>Isto e carga de exemplo.</strong>{' '}
             <span className="fraco">
               Tudo marcado com [exemplo] foi inventado para os ponteiros terem o que medir. Nenhum
-              numero aqui e da KGFM.
+              número aqui é da KGFM.
             </span>
           </p>
           <form action={limparExemplo}>
@@ -150,7 +150,7 @@ export default async function Painel() {
           <div className="painel-corpo">
           {d.criticosGerais.length === 0 ? (
             <p className="fraco text-sm">
-              Nenhum. Nao e tela quebrada - e o estado que o sistema existe para produzir.
+              Nenhum. Não e tela quebrada - e o estado que o sistema existe para produzir.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -235,8 +235,8 @@ export default async function Painel() {
       {!d.temEstrategia && (
         <div className="mt-3">
           <Vazio
-            titulo="O painel ainda mede atividade, nao progresso"
-            texto="Falta a estrategia: diagnostico, politica norteadora e os objetivos do ano e do mes. Sem isso os mostradores nao conseguem dizer se voce esta andando para o lado certo."
+            titulo="O painel ainda mede atividade, não progresso"
+            texto="Falta a estratégia: diagnostico, política norteadora e os objetivos do ano e do mês. Sem isso os mostradores não conseguem dizer se você está andando para o lado certo."
             acao={
               <Link href="/estrategia" className="botao inline-block">
                 Carregar estrategia
@@ -248,8 +248,8 @@ export default async function Painel() {
 
       {!temChave() && (
         <p className="fraco text-xs mt-3">
-          Sem chave da API: a captura funciona e guarda tudo, mas ninguem classifica. Os itens ficam
-          em Capturas esperando a mao.
+          Sem chave da API: a captura funciona e guarda tudo, mas ninguém classifica. Os itens ficam
+          em Capturas esperando a mão.
         </p>
       )}
 

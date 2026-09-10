@@ -1,5 +1,5 @@
-// Sessao de usuario unico. Nao vale pagar Clerk/Auth0 para uma pessoa.
-// A senha nunca fica no codigo: so o hash, numa variavel de ambiente.
+// Sessao de usuário único. Não vale pagar Clerk/Auth0 para uma pessoa.
+// A senha nunca fica no codigo: só o hash, numa variavel de ambiente.
 
 import crypto from 'node:crypto'
 import { cookies } from 'next/headers'
@@ -15,7 +15,7 @@ function segredo(): string {
   return process.env.APP_PASSWORD_HASH ?? ''
 }
 
-/** Assinatura do cookie: sem isto qualquer um digita o cookie na mao. */
+/** Assinatura do cookie: sem isto qualquer um digita o cookie na mão. */
 function assinar(valor: string): string {
   return crypto.createHmac('sha256', segredo() || 'sem-segredo').update(valor).digest('hex')
 }

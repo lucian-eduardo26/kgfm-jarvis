@@ -41,8 +41,8 @@ conferir('parada 20 dias', notaMovimento(20), 0)
 console.log('\n--- desconto por critico ---')
 const umCritico = [{ frenteId: 1, titulo: 'x', motivo: 'parada' as const, dias: 4, bloqueia: 0, texto: '' }]
 conferir('1 critico', pontuacaoCriticos(umCritico), 66)
-conferir('3 criticos zeram', pontuacaoCriticos([...umCritico, ...umCritico, ...umCritico]), 0)
-conferir('critico que bloqueia desconta o dobro', pontuacaoCriticos([{ ...umCritico[0], bloqueia: 1 }]), 32)
+conferir('3 críticos zeram', pontuacaoCriticos([...umCritico, ...umCritico, ...umCritico]), 0)
+conferir('crítico que bloqueia desconta o dobro', pontuacaoCriticos([{ ...umCritico[0], bloqueia: 1 }]), 32)
 
 console.log('\n--- calibragem do comercial em 10/09/2026 ---')
 const frente = (id: number, titulo: string, paradaHa: number): FrenteParaCalculo => ({
@@ -69,7 +69,7 @@ const comercial = calcularArea(
 )
 conferir('movimento', comercial.movimento, 45)
 conferir('criticos abertos', comercial.criticos.length, 2)
-conferir('pontos de criticos', comercial.criticosPontos, 32)
+conferir('pontos de críticos', comercial.criticosPontos, 32)
 conferir('indice', comercial.indice, 39)
 conferir('zona', comercial.zona, 'vermelho')
 console.log('   legenda:', comercial.legenda)
@@ -107,7 +107,7 @@ const esperando = calcularArea(
   CONFIG_PADRAO,
   AGORA,
 )
-conferir('esperando cliente ha 2 dias nao e critico', esperando.criticos.length, 0)
+conferir('esperando cliente há 2 dias não e crítico', esperando.criticos.length, 0)
 const cobrar = calcularArea(
   {
     areaId: 5,
@@ -126,7 +126,7 @@ const cobrar = calcularArea(
   CONFIG_PADRAO,
   AGORA,
 )
-conferir('esperando ha 6 dias vira critico de cobranca', cobrar.criticos[0]?.motivo, 'cobrar')
+conferir('esperando há 6 dias vira crítico de cobranca', cobrar.criticos[0]?.motivo, 'cobrar')
 
 console.log('\n--- tudo em dia ---')
 const saudavel = calcularArea(
@@ -141,7 +141,7 @@ const saudavel = calcularArea(
   CONFIG_PADRAO,
   AGORA,
 )
-conferir('area saudavel e verde', saudavel.zona, 'verde')
+conferir('área saudavel e verde', saudavel.zona, 'verde')
 
 console.log(falhas === 0 ? '\nTUDO PASSOU' : `\n${falhas} FALHA(S)`)
 process.exit(falhas === 0 ? 0 : 1)

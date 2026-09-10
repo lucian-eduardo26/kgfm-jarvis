@@ -8,9 +8,9 @@ import { salvarEstrategia, salvarObjetivo, medirObjetivo } from '../acoes'
 export const dynamic = 'force-dynamic'
 
 const HORIZONTES = [
-  { chave: 'cinco_anos', nome: '5 anos', ajuda: 'Onde a KGFM precisa estar: posicao de mercado, porte de projeto, capacidade.' },
-  { chave: 'dois_anos', nome: '2 anos', ajuda: 'As apostas estruturais que tornam o horizonte de 5 anos possivel.' },
-  { chave: 'ano', nome: 'Ano corrente', ajuda: 'Objetivos do ano, com numeros.' },
+  { chave: 'cinco_anos', nome: '5 anos', ajuda: 'Onde a KGFM precisa estar: posição de mercado, porte de projeto, capacidade.' },
+  { chave: 'dois_anos', nome: '2 anos', ajuda: 'As apostas estruturais que tornam o horizonte de 5 anos possível.' },
+  { chave: 'ano', nome: 'Ano corrente', ajuda: 'Objetivos do ano, com números.' },
 ] as const
 
 export default async function Estrategia() {
@@ -28,7 +28,7 @@ export default async function Estrategia() {
   return (
     <Moldura titulo="Estrategia">
       <p className="fraco text-sm mb-4 max-w-2xl">
-        Rumelt: estrategia e diagnostico, politica norteadora e acoes coerentes - nao lista de metas.
+        Rumelt: estratégia é diagnóstico, política norteadora e ações coerentes - não lista de metas.
         Guardada estruturada nesses tres campos, ela vira filtro: da para dizer &quot;essa
         oportunidade e otima e nao e nossa&quot;.
       </p>
@@ -46,7 +46,7 @@ export default async function Estrategia() {
               <textarea name="diagnostico" defaultValue={e?.diagnostico ?? ''} rows={3} className="campo mb-2 mt-1" />
               <label className="text-xs fraco">Politica norteadora - a abordagem escolhida</label>
               <textarea name="politicaNorteadora" defaultValue={e?.politicaNorteadora ?? ''} rows={3} className="campo mb-2 mt-1" />
-              <label className="text-xs fraco">Acoes coerentes - movimentos que se reforcam</label>
+              <label className="text-xs fraco">Ações coerentes - movimentos que se reforcam</label>
               <textarea name="acoes" defaultValue={e?.acoes ?? ''} rows={3} className="campo mb-3 mt-1" />
               <button className="botao w-full">Salvar</button>
             </form>
@@ -57,7 +57,7 @@ export default async function Estrategia() {
       <section className="cartao p-4 mt-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide">Objetivo do mes ({mes})</h2>
         <p className="fraco text-xs mt-1 mb-3">
-          Objetivo COM numero, por area - e o que liga a aderencia no mostrador. Objetivo sem numero
+          Objetivo COM número, por área - e o que liga a aderência no mostrador. Objetivo sem número
           nao mede nada, e area sem objetivo do mes aparece marcada no painel. Dia util {decorridos}{' '}
           de {total}.
         </p>
@@ -99,7 +99,7 @@ export default async function Estrategia() {
                   </span>
                   <span className="fraco">
                     {realizado} de {o.alvo ?? '-'}
-                    {ader != null && ` · aderencia ${Math.round(ader)}%`}
+                    {ader != null && ` · aderência ${Math.round(ader)}%`}
                   </span>
                   <form action={medirObjetivo} className="flex gap-1">
                     <input type="hidden" name="objetivoId" value={o.id} />

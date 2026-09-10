@@ -22,31 +22,31 @@ const ESTRATEGIAS = [
     horizonte: 'cinco_anos' as const,
     periodo: '2031',
     diagnostico:
-      'RASCUNHO - corrija. A KGFM entrega automacao intralogistica de qualidade, mas depende inteiramente de uma pessoa: capacidade, memoria e relacionamento estao todos no fundador. Isso limita o porte de projeto que a empresa pode aceitar sem risco.',
+      'RASCUNHO - corrija. A KGFM entrega automacao intralogistica de qualidade, mas depende inteiramente de uma pessoa: capacidade, memória e relacionamento estão todos no fundador. Isso limita o porte de projeto que a empresa pode aceitar sem risco.',
     politicaNorteadora:
-      'RASCUNHO - corrija. Subir o porte medio de projeto em vez de subir a quantidade, e transferir para processo e para gente o que hoje so existe na cabeca do fundador.',
+      'RASCUNHO - corrija. Subir o porte médio de projeto em vez de subir a quantidade, e transferir para processo e para gente o que hoje so existe na cabeca do fundador.',
     acoes:
-      'RASCUNHO - corrija. Padronizar solucoes que ja se repetem; construir um segundo par de maos tecnico; escolher dois ou tres setores onde a KGFM quer ser a referencia, e recusar o resto.',
+      'RASCUNHO - corrija. Padronizar solucoes que já se repetem; construir um segundo par de mãos técnico; escolher dois ou três setores onde a KGFM quer ser a referência, e recusar o resto.',
   },
   {
     horizonte: 'dois_anos' as const,
     periodo: '2028',
     diagnostico:
-      'RASCUNHO - corrija. Hoje o funil e irregular: a prospeccao so anda quando vira frente exclusiva, e nesses periodos a engenharia para. O resultado e receita em serra, nao em rampa.',
+      'RASCUNHO - corrija. Hoje o funil e irregular: a prospecção so anda quando vira frente exclusiva, e nesses periodos a engenharia para. O resultado e receita em serra, não em rampa.',
     politicaNorteadora:
-      'RASCUNHO - corrija. Cadencia acima de intensidade: prospeccao que nunca zera, mesmo devagar, vale mais do que arranque de quatro dias seguido de tres semanas de silencio.',
+      'RASCUNHO - corrija. Cadencia acima de intensidade: prospecção que nunca zera, mesmo devagar, vale mais do que arranque de quatro dias seguido de três semanas de silêncio.',
     acoes:
-      'RASCUNHO - corrija. Carteira de contas-alvo definida e revisada por trimestre; proposta padronizada para reduzir o tempo entre pedido e envio; um bloco fixo de prospeccao por semana que nao e negociavel.',
+      'RASCUNHO - corrija. Carteira de contas-alvo definida e revisada por trimestre; proposta padronizada para reduzir o tempo entre pedido e envio; um bloco fixo de prospecção por semana que não e negociavel.',
   },
   {
     horizonte: 'ano' as const,
     periodo: anoSP(),
     diagnostico:
-      'RASCUNHO - corrija. O gargalo da KGFM e a atencao do Lucian, e ela e disputada por quatro setores ao mesmo tempo. Proposta parada por inercia e nota fiscal atrasada sao os dois vazamentos com preco em dinheiro.',
+      'RASCUNHO - corrija. O gargalo da KGFM e a atenção do Lucian, e ela e disputada por quatro setores ao mesmo tempo. Proposta parada por inércia e nota fiscal atrasada são os dois vazamentos com preco em dinheiro.',
     politicaNorteadora:
-      'RASCUNHO - corrija. Nenhuma proposta dorme mais de tres dias uteis, e nenhuma nota fiscal atrasa. O que sobrar de atencao vai para engenharia de projeto fechado - nunca para construir infraestrutura.',
+      'RASCUNHO - corrija. Nenhuma proposta dorme mais de três dias úteis, e nenhuma nota fiscal atrasa. O que sobrar de atenção vai para engenharia de projeto fechado - nunca para construir infraestrutura.',
     acoes:
-      'RASCUNHO - corrija. Duas frentes abertas por setor, no maximo; um cronometro por vez; check-in de semana no domingo e check-out na sexta; toda oportunidade nova confrontada com esta politica antes de virar frente.',
+      'RASCUNHO - corrija. Duas frentes abertas por setor, no máximo; um cronômetro por vez; check-in de semana no domingo e check-out na sexta; toda oportunidade nova confrontada com está politica antes de virar frente.',
   },
 ]
 
@@ -61,7 +61,7 @@ async function main() {
   for (const e of ESTRATEGIAS) {
     const existente = await prisma.estrategia.findFirst({ where: { horizonte: e.horizonte } })
     if (existente) {
-      console.log('ja existe estrategia de', e.horizonte, '- nao sobrescrevi')
+      console.log('já existe estratégia de', e.horizonte, '- não sobrescrevi')
       continue
     }
     await prisma.estrategia.create({ data: e })
@@ -73,7 +73,7 @@ async function main() {
   for (const o of OBJETIVOS) {
     const existente = await prisma.objetivo.findFirst({ where: { descricao: o.descricao, periodo } })
     if (existente) {
-      console.log('ja existe objetivo:', o.descricao)
+      console.log('já existe objetivo:', o.descricao)
       continue
     }
     await prisma.objetivo.create({

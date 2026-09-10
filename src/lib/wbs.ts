@@ -1,13 +1,13 @@
-// WBS basica por projeto - o desdobramento padrao, nos quatro setores.
+// WBS basica por projeto - o desdobramento padrão, nos quatro setores.
 //
-// DECISAO DE PROJETO: os pacotes nascem com status "planejada", nao "aberta".
+// DECISÃO DE PROJETO: os pacotes nascem com status "planejada", não "aberta".
 // Se a WBS abrisse todas as frentes, um projeto novo estouraria o limite de WIP
-// das quatro areas de uma vez, e o Personal Kanban morreria no primeiro dia.
-// A WBS e o PLANO; o quadro e o AGORA. Voce ativa o pacote quando chega a vez -
-// e a ativacao passa pelo limite de WIP como qualquer outra frente.
+// das quatro áreas de uma vez, e o Personal Kanban morreria no primeiro dia.
+// A WBS é o PLANO; o quadro é o AGORA. Você ativa o pacote quando chega a vez -
+// e a ativação passa pelo limite de WIP como qualquer outra frente.
 //
-// Nao e o MS Project e nao quer ser: nao tem duracao, nem dependencia entre
-// pacotes, nem caminho critico. Tem o suficiente para o cronometro saber a que
+// Não e o MS Project e não quer ser: não tem duração, nem dependencia entre
+// pacotes, nem caminho crítico. Tem o suficiente para o cronômetro saber a que
 // projeto e a que setor cada hora pertence - o centro de custo.
 
 export type PacoteWbs = {
@@ -19,16 +19,16 @@ export type PacoteWbs = {
 export type FaseWbs = 'desenvolvimento' | 'fechado' | 'entregue'
 
 export const WBS: Record<FaseWbs, PacoteWbs[]> = {
-  // Antes de entrar: o projeto ainda e uma aposta. Tudo aqui e custo de venda.
+  // Antes de entrar: o projeto ainda é uma aposta. Tudo aqui é custo de venda.
   desenvolvimento: [
     {
       area: 'comercial',
-      pacote: 'Qualificacao e levantamento',
+      pacote: 'Qualificação e levantamento',
       tarefas: ['Entender a demanda com o cliente', 'Visita tecnica', 'Levantar restricoes de layout e operacao'],
     },
     {
       area: 'engenharia',
-      pacote: 'Concepcao tecnica',
+      pacote: 'Concepcao técnica',
       tarefas: ['Definir conceito e layout', 'Lista preliminar de materiais', 'Dimensionar equipamentos'],
     },
     {
@@ -39,7 +39,7 @@ export const WBS: Record<FaseWbs, PacoteWbs[]> = {
     {
       area: 'adm',
       pacote: 'Proposta e cadastro',
-      tarefas: ['Precificar', 'Montar a proposta', 'Cadastro e condicoes comerciais', 'Enviar e registrar o envio'],
+      tarefas: ['Precificar', 'Montar a proposta', 'Cadastro e condições comerciais', 'Enviar e registrar o envio'],
     },
   ],
 
@@ -48,7 +48,7 @@ export const WBS: Record<FaseWbs, PacoteWbs[]> = {
     {
       area: 'adm',
       pacote: 'Contrato e faturamento',
-      tarefas: ['Contrato ou pedido formal', 'Cronograma de medicao', 'Emitir nota fiscal', 'Acompanhar recebimento'],
+      tarefas: ['Contrato ou pedido formal', 'Cronograma de medição', 'Emitir nota fiscal', 'Acompanhar recebimento'],
     },
     {
       area: 'engenharia',
@@ -68,11 +68,11 @@ export const WBS: Record<FaseWbs, PacoteWbs[]> = {
     {
       area: 'comercial',
       pacote: 'Relacao durante a obra',
-      tarefas: ['Reuniao de acompanhamento', 'Tratar aditivos e mudancas de escopo'],
+      tarefas: ['Reunião de acompanhamento', 'Tratar aditivos e mudancas de escopo'],
     },
   ],
 
-  // Entregue: onde o dinheiro costuma ficar parado sem ninguem olhar.
+  // Entregue: onde o dinheiro costuma ficar parado sem ninguém olhar.
   entregue: [
     {
       area: 'adm',
@@ -87,12 +87,12 @@ export const WBS: Record<FaseWbs, PacoteWbs[]> = {
     {
       area: 'comercial',
       pacote: 'Pos-venda',
-      tarefas: ['Colher o resultado obtido', 'Mapear a proxima oportunidade na conta'],
+      tarefas: ['Colher o resultado obtido', 'Mapear a próxima oportunidade na conta'],
     },
   ],
 }
 
-/** A WBS acumula: projeto fechado tambem carrega o que sobrou do desenvolvimento. */
+/** A WBS acumula: projeto fechado também carrega o que sobrou do desenvolvimento. */
 export function pacotesDaFase(fase: FaseWbs): PacoteWbs[] {
   if (fase === 'desenvolvimento') return WBS.desenvolvimento
   if (fase === 'fechado') return [...WBS.desenvolvimento, ...WBS.fechado]

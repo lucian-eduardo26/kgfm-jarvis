@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 async function main() {
   const existente = await prisma.caixa.findUnique({ where: { id: 1 } })
   if (existente) {
-    console.log('caixa ja existe, nao sobrescrevi')
+    console.log('caixa já existe, não sobrescrevi')
     return
   }
   await prisma.caixa.create({

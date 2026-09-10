@@ -1,21 +1,21 @@
 // Check-in de domingo e check-out de sexta.
 //
-// A conta e feita AQUI, em codigo. O modelo so escreve o texto em cima de
-// numeros que ja existem - se ele calculasse, a taxa mudaria de valor a cada
-// vez que fosse perguntada, e um numero que muda sozinho nao serve para decidir.
+// A conta e feita AQUI, em codigo. O modelo só escreve o texto em cima de
+// números que já existem - se ele calculasse, a taxa mudaria de valor a cada
+// vez que fosse perguntada, e um número que muda sozinho não serve para decidir.
 //
 // Da literatura, cada ritual carrega uma coisa:
-// - GTD: a revisao semanal e o que impede o sistema de virar cemiterio. Sem um
-//   momento fixo de reconciliacao, ninguem confia no que esta guardado - e um
-//   sistema em que nao se confia continua sendo carregado na cabeca.
-// - Newport: o plano da semana e por BLOCO de area, nunca por tarefa avulsa, e
-//   trabalho profundo precisa de janela grande, nao de sobra entre reunioes.
-// - Goldratt: o plano comeca pelo que destrava fluxo, nao pelo que esta mais
+// - GTD: a revisão semanal é o que impede o sistema de virar cemitério. Sem um
+//   momento fixo de reconciliacao, ninguém confia no que está guardado - e um
+//   sistema em que não se confia continua sendo carregado na cabeça.
+// - Newport: o plano da semana e por BLOCO de área, nunca por tarefa avulsa, e
+//   trabalho profundo precisa de janela grande, não de sobra entre reuniões.
+// - Goldratt: o plano começa pelo que destrava fluxo, não pelo que está mais
 //   atrasado, e o check-out pergunta onde o gargalo esteve.
-// - Rumelt: bloco que nao amarra em objetivo do mes e candidato a descarte, e
+// - Rumelt: bloco que não amarra em objetivo do mês e candidato a descarte, e
 //   o check-in diz isso na cara.
 // - Pressfield: o check-out compara expediente com hora apontada. Semana sem
-//   registro nao e semana boa nem ruim - e semana que nao aconteceu.
+//   registro não e semana boa nem ruim - e semana que não aconteceu.
 
 import { prisma } from './prisma'
 import { mesSP, diasUteisDoMes, limitesDoDia, formatarHoras } from './datas'
@@ -110,7 +110,7 @@ export async function montarSemana(agora: Date = new Date()): Promise<DadosDaSem
   const minutosExpedienteDecorrido = diasUteisDecorridos * (FIM_EXPEDIENTE - INICIO_EXPEDIENTE) * 60
   const minutosNoEscuro = Math.max(0, minutosExpedienteDecorrido - minutosApontados)
 
-  // O desdobramento: do objetivo do mes ate quanto falta por dia util.
+  // O desdobramento: do objetivo do mês até quanto falta por dia útil.
   const { total, decorridos } = diasUteisDoMes(agora)
   const restantesNoMes = Math.max(0, total - decorridos)
   const desdobrados: ObjetivoDesdobrado[] = objetivos
@@ -144,7 +144,7 @@ export async function montarSemana(agora: Date = new Date()): Promise<DadosDaSem
     .filter((f) => diasParada(f.ultimoMovimentoEm) >= f.area.diasParaCritico)
     .map((f) => ({
       titulo: f.titulo,
-      texto: `parada ha ${diasParada(f.ultimoMovimentoEm)} dias uteis (${f.area.nome})`,
+      texto: `parada há ${diasParada(f.ultimoMovimentoEm)} dias úteis (${f.area.nome})`,
       bloqueia: 0,
     }))
 
@@ -177,24 +177,24 @@ export async function montarSemana(agora: Date = new Date()): Promise<DadosDaSem
   }
 }
 
-/** O bloco de numeros que vai junto com o pedido ao modelo. */
+/** O bloco de números que vai junto com o pedido ao modelo. */
 export function textoDaSemana(s: DadosDaSemana): string {
   const l: string[] = []
-  l.push(`SEMANA de ${s.inicio.toLocaleDateString('pt-BR')} - ${s.diasUteisNaSemana} dias uteis, ${s.diasUteisDecorridosNaSemana} decorridos.`)
+  l.push(`SEMANA de ${s.inicio.toLocaleDateString('pt-BR')} - ${s.diasUteisNaSemana} dias úteis, ${s.diasUteisDecorridosNaSemana} decorridos.`)
   l.push('')
   l.push('TEMPO:')
   l.push(`- expediente decorrido na semana: ${formatarHoras(s.minutosExpedienteDecorrido)}`)
-  l.push(`- apontado no cronometro: ${formatarHoras(s.minutosApontados)}`)
+  l.push(`- apontado no cronômetro: ${formatarHoras(s.minutosApontados)}`)
   l.push(`- sem registro: ${formatarHoras(s.minutosNoEscuro)} (${s.percentualNoEscuro}%)`)
   for (const h of s.horasPorArea) l.push(`- ${h.area}: ${formatarHoras(h.minutos)}`)
 
-  l.push('', 'OBJETIVOS DO MES E O DESDOBRAMENTO (ja calculado, nao recalcule):')
-  if (s.objetivos.length === 0) l.push('- nenhum objetivo do mes com numero. Sem isso nao existe desdobramento.')
+  l.push('', 'OBJETIVOS DO MÊS E O DESDOBRAMENTO (já calculado, não recalcule):')
+  if (s.objetivos.length === 0) l.push('- nenhum objetivo do mês com número. Sem isso não existe desdobramento.')
   for (const o of s.objetivos) {
     l.push(
       `- ${o.descricao}${o.area ? ` [${o.area}]` : ''}: ${o.realizado} de ${o.alvo}. ` +
-        `Esperado a esta altura do mes: ${o.esperadoHoje}. ${o.noRitmo ? 'NO RITMO' : 'ATRASADO'}. ` +
-        `Faltam ${o.faltam} em ${o.diasUteisRestantesNoMes} dias uteis = ${o.porSemana} por semana, ${o.porDiaUtil} por dia util.`,
+        `Esperado a esta altura do mês: ${o.esperadoHoje}. ${o.noRitmo ? 'NO RITMO' : 'ATRASADO'}. ` +
+        `Faltam ${o.faltam} em ${o.diasUteisRestantesNoMes} dias úteis = ${o.porSemana} por semana, ${o.porDiaUtil} por dia útil.`,
     )
   }
 
@@ -209,7 +209,7 @@ export function textoDaSemana(s: DadosDaSemana): string {
   }
 
   if (s.pacotesPlanejados.length > 0) {
-    l.push('', 'PACOTES DE WBS PLANEJADOS (ainda nao ativados):')
+    l.push('', 'PACOTES DE WBS PLANEJADOS (ainda não ativados):')
     for (const p of s.pacotesPlanejados) l.push(`- ${p.titulo} [${p.area}${p.projeto ? ' / ' + p.projeto : ''}]`)
   }
 

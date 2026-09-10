@@ -3,18 +3,18 @@
 // O Windows vem com Daniel e Maria, vozes de 2010 que soam como robo de
 // secretaria eletronica. Existem vozes MUITO melhores e igualmente gratuitas -
 // as "Natural" / "Online (Natural)" da Microsoft - e o navegador as expoe
-// automaticamente quando estao instaladas. O Edge expoe uma lista enorme delas
+// automaticamente quando estão instaladas. O Edge expoe uma lista enorme delas
 // sem instalar nada.
 //
-// Por isso este arquivo faz duas coisas: escolhe a melhor voz disponivel
+// Por isso este arquivo faz duas coisas: escolhe a melhor voz disponível
 // sozinho, e deixa o Lucian trocar se quiser.
 //
 // Voz de cinema de verdade (ElevenLabs e afins) e assinatura mensal - foi
-// recusada de proposito: ele nao quer mensalidade, e a diferenca nao paga isso.
+// recusada de propósito: ele não quer mensalidade, e a diferenca não paga isso.
 
 const CHAVE = 'jarvis.voz'
 
-/** Quanto uma voz vale, so pelo nome. Maior e melhor. */
+/** Quanto uma voz vale, só pelo nome. Maior e melhor. */
 function qualidade(v: SpeechSynthesisVoice): number {
   const n = v.name.toLowerCase()
   let q = 0
@@ -38,7 +38,7 @@ export function vozesDisponiveis(): SpeechSynthesisVoice[] {
     .sort((a, b) => qualidade(b) - qualidade(a))
 }
 
-/** As vozes chegam em duas etapas no Chrome: a lista comeca vazia. */
+/** As vozes chegam em duas etapas no Chrome: a lista começa vazia. */
 export function aoCarregarVozes(cb: () => void): () => void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return () => {}
   if (window.speechSynthesis.getVoices().length > 0) cb()
@@ -59,7 +59,7 @@ export function escolherVoz(nome: string) {
   try {
     localStorage.setItem(CHAVE, nome)
   } catch {
-    // navegador sem armazenamento: segue com a escolha automatica
+    // navegador sem armazenamento: segue com a escolha automática
   }
 }
 
@@ -71,8 +71,8 @@ export function vozAtual(): SpeechSynthesisVoice | null {
 }
 
 /**
- * Fala. Um pouco mais devagar que o padrao e com tom levemente grave - o
- * padrao do Windows e apressado e agudo, e e metade da sensacao de robo.
+ * Fala. Um pouco mais devagar que o padrão e com tom levemente grave - o
+ * padrão do Windows e apressado e agudo, e e metade da sensacao de robo.
  */
 export function falar(texto: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis || !texto.trim()) return

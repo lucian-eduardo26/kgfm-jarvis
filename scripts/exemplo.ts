@@ -47,9 +47,9 @@ async function carregar() {
     data: {
       horizonte: 'ano',
       periodo: anoSP(),
-      diagnostico: `${MARCA} O gargalo e a atencao do dono: quatro areas competem pela mesma cabeca.`,
+      diagnostico: `${MARCA} O gargalo e a atenção do dono: quatro áreas competem pela mesma cabeca.`,
       politicaNorteadora: 'Concentrar em poucos projetos de alto valor e proteger blocos de trabalho profundo.',
-      acoes: 'Uma frente por vez por area; proposta nao dorme mais de tres dias uteis.',
+      acoes: 'Uma frente por vez por área; proposta não dorme mais de três dias úteis.',
     },
   })
 
@@ -93,7 +93,7 @@ async function carregar() {
   })
   const convites = await prisma.frente.create({
     data: {
-      titulo: `${MARCA} Cadencia de prospeccao`,
+      titulo: `${MARCA} Cadencia de prospecção`,
       areaId: areas.comercial.id,
       ultimoMovimentoEm: diasUteisAtras(1),
     },

@@ -1,4 +1,4 @@
-// Monta tudo que o painel mostra, numa passada so.
+// Monta tudo que o painel mostra, numa passada só.
 
 import { prisma } from './prisma'
 import { lerConfig } from './configuracao'
@@ -41,8 +41,8 @@ export type DadosDoPainel = {
 }
 
 /**
- * Cronometro esquecido vira mentira: uma noite dormida vira 14 horas de
- * engenharia. Passou do limite, encerra sozinho e marca para revisao.
+ * Cronômetro esquecido vira mentira: uma noite dormida vira 14 horas de
+ * engenharia. Passou do limite, encerra sozinho e marca para revisão.
  */
 export async function encerrarCronometrosEsquecidos(horas: number) {
   const limite = new Date(Date.now() - horas * 3600_000)
@@ -133,7 +133,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
     )
   })
 
-  // Minutos de hoje por area, recortando o que caiu dentro do dia.
+  // Minutos de hoje por área, recortando o que caiu dentro do dia.
   const minutosPorArea = new Map<number, number>()
   let minutosHoje = 0
   for (const ap of apontamentosHoje) {
@@ -190,8 +190,8 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
           tarefaTitulo: tarefaDoDescanso?.titulo ?? null,
         }
       : null,
-    // Em compromisso agora: o ciclo fica em silencio. Alarme no meio de uma
-    // visita a cliente e o jeito mais rapido de o sistema ser desinstalado.
+    // Em compromisso agora: o ciclo fica em silêncio. Alarme no meio de uma
+    // visita a cliente é o jeito mais rápido de o sistema ser desinstalado.
     emCompromisso: agendaMontada.compromissos.some((k) => k.inicio <= agora && k.fim > agora),
     // As duas contagens que nao se substituem: a hora dele (exclusiva, acima)
     // e o que gira em paralelo sem consumir hora nenhuma.

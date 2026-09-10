@@ -1,11 +1,11 @@
 // A trava do SPIN.
 //
-// Regra: proposta so sai depois que o cliente ADMITIU o custo do problema
+// Regra: proposta só sai depois que o cliente ADMITIU o custo do problema
 // (Implicacao) e disse o que precisa (Necessidade). Sem isso, mandar proposta e
-// pedir desconto - o cliente ainda nao tem motivo para pagar caro.
+// pedir desconto - o cliente ainda não tem motivo para pagar caro.
 //
 // Como toda trava deste sistema, ela avisa e oferece o botao de liberar ao
-// lado, na mesma tela. Nao existe bloqueio que o Lucian nao consiga passar por
+// lado, na mesma tela. Não existe bloqueio que o Lucian não consiga passar por
 // cima; existe bloqueio que ele nao consegue passar por cima SEM PERCEBER.
 
 export type EstadoSpin = {
@@ -36,7 +36,7 @@ export function degraus(e: EstadoSpin): DegrauSpin[] {
       letra: 'P',
       nome: 'Problema',
       campo: 'problema',
-      pergunta: 'O que nao funciona? Onde para, onde erra, onde falta gente.',
+      pergunta: 'O que não funciona? Onde para, onde erra, onde falta gente.',
       preenchido: Boolean(e.problema?.trim()),
     },
     {
@@ -50,7 +50,7 @@ export function degraus(e: EstadoSpin): DegrauSpin[] {
       letra: 'N',
       nome: 'Necessidade',
       campo: 'necessidade',
-      pergunta: 'O que ELE disse que precisa? Se quem descreveu a solucao foi voce, este campo esta vazio.',
+      pergunta: 'O que ELE disse que precisa? Se quem descreveu a solução foi você, este campo está vazio.',
       preenchido: Boolean(e.necessidade?.trim()),
     },
   ]
@@ -81,14 +81,14 @@ export function podeMandarProposta(e: EstadoSpin): Veredito {
     faltam,
     aviso:
       faltam.includes('Implicacao') && faltam.includes('Necessidade')
-        ? 'O cliente ainda nao admitiu o que o problema custa, nem disse o que precisa. Mandar proposta agora e disputar preco - volte e faca a ligacao de qualificacao.'
+        ? 'O cliente ainda não admitiu o que o problema custa, nem disse o que precisa. Mandar proposta agora e disputar preço - volte e faça a ligacao de qualificação.'
         : so && faltam[0] === 'Implicacao'
-          ? 'Falta o custo do problema com as palavras dele. Sem numero de dor, o seu numero vira caro por definicao.'
-          : 'Falta a necessidade dita por ele. Se quem desenhou a solucao foi voce, a proposta vira palpite caro.',
+          ? 'Falta o custo do problema com as palavras dele. Sem número de dor, o seu número vira caro por definicao.'
+          : 'Falta a necessidade dita por ele. Se quem desenhou a solução foi você, a proposta vira palpite caro.',
   }
 }
 
-/** Quanto do SPIN esta de pe, de 0 a 100 - para a barra na tela. */
+/** Quanto do SPIN está de pe, de 0 a 100 - para a barra na tela. */
 export function completude(e: EstadoSpin): number {
   const d = degraus(e)
   return Math.round((d.filter((x) => x.preenchido).length / d.length) * 100)

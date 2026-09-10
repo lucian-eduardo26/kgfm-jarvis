@@ -24,19 +24,19 @@ export default async function Capturas() {
 
   return (
     <Moldura titulo="Capturas">
-      {/* Classificacao errada e silenciosa: este numero e o alarme. */}
+      {/* Classificação errada é silenciosa: este número é o alarme. */}
       {total > 0 && (
         <p className="fraco text-sm mb-3">
           {total} capturas · {corrigidos} corrigidas na mao (
           {Math.round((corrigidos / total) * 100)}%). Se esse numero subir muito, quem esta errando e
-          a classificacao, nao voce.
+          a classificação, não você.
         </p>
       )}
 
       {itens.length === 0 ? (
         <Vazio
           titulo="Nada capturado ainda"
-          texto="A caixa de baixo aceita qualquer coisa: uma ideia, um nome, um prazo. Sem escolher pasta, sem campo obrigatorio. Se levar mais que dez segundos, esta errado."
+          texto="A caixa de baixo aceita qualquer coisa: uma ideia, um nome, um prazo. Sem escolher pasta, sem campo obrigatório. Se levar mais que dez segundos, está errado."
         />
       ) : (
         <ul className="space-y-2">

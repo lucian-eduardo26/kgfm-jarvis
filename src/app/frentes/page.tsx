@@ -53,8 +53,8 @@ export default async function Frentes({
             {areaTravada.nome} ja tem {areaTravada.limiteWip} frentes abertas.
           </p>
           <p className="fraco text-sm mt-1">
-            Trabalho em progresso nao entrega valor. O certo e fechar uma antes de abrir outra - mas
-            a decisao e sua, e o sistema nao bloqueia sem oferecer a saida.
+            Trabalho em progresso não entrega valor. O certo e fechar uma antes de abrir outra - mas
+            a decisão e sua, e o sistema não bloqueia sem oferecer a saída.
           </p>
           <form action={abrirFrente} className="mt-3 flex flex-wrap gap-2">
             <input type="hidden" name="titulo" value={sp.titulo ?? ''} />
@@ -72,7 +72,7 @@ export default async function Frentes({
       <form action={abrirFrente} className="cartao p-4 mb-3 flex flex-wrap gap-2 items-end">
         <div className="flex-1 min-w-[220px]">
           <label className="text-xs fraco block mb-1">Nova frente</label>
-          <input name="titulo" placeholder="Ex.: Cotacao Shopee pecas pequenas" className="campo" />
+          <input name="titulo" placeholder="Ex.: Cotacao Shopee peças pequenas" className="campo" />
         </div>
         <div>
           <label className="text-xs fraco block mb-1">Area</label>
@@ -90,7 +90,7 @@ export default async function Frentes({
       {frentes.length === 0 ? (
         <Vazio
           titulo="Nenhuma frente aberta"
-          texto="Frente e a unidade do painel: um assunto que anda, nao uma tarefa solta. Abra as que estao vivas hoje - o mostrador so mede o que existe aqui."
+          texto="Frente e a unidade do painel: um assunto que anda, não uma tarefa solta. Abra as que estão vivas hoje - o mostrador só mede o que existe aqui."
         />
       ) : (
         <div className="grid lg:grid-cols-2 gap-3">
@@ -118,7 +118,7 @@ export default async function Frentes({
                       {f.area.nome}
                       {f.etapa ? ` · ${nomeDaEtapa(f.area.chave, f.etapa)}` : ''}
                       {f.projeto ? ` · ${f.projeto.nome}` : ''} ·{' '}
-                      {parada === 0 ? 'movida hoje' : `parada ha ${parada} dias uteis`}
+                      {parada === 0 ? 'movida hoje' : `parada há ${parada} dias úteis`}
                     </p>
                   </div>
                   {criticos.length > 0 && (

@@ -2,22 +2,22 @@
 //
 // O raciocinio veio do Lucian em 10/09/2026, e ele muda o sistema:
 //
-//   "O relogio do Jarvis, do Lucian, da KGFM nao para. E dinheiro na mesa ou
-//    dinheiro no lixo. Se eu estou aqui com voce e nao tem tarefa ao mesmo
-//    tempo, isso custa caro. Mas nao e binario: se eu estou no Jarvis, tem
+//   "O relógio do Jarvis, do Lucian, da KGFM não para. E dinheiro na mesa ou
+//    dinheiro no lixo. Se eu estou aqui com você e não tem tarefa ao mesmo
+//    tempo, isso custa caro. Mas não e binario: se eu estou no Jarvis, tem
 //    coisa acontecendo, tem projeto rolando. Quanto mais coisas simultaneas
-//    rodando, sao engrenagens girando."
+//    rodando, são engrenagens girando."
 //
-// Ate aqui o sistema media UMA coisa: a hora dele, exclusiva, um cronometro por
-// vez. Isso e metade da verdade. A outra metade e o que avanca SEM ele:
+// Até aqui o sistema media UMA coisa: a hora dele, exclusiva, um cronômetro por
+// vez. Isso é metade da verdade. A outra metade é o que avança SEM ele:
 //
 //   - o lote na galvanica, que leva tres dias e nao pede nada;
 //   - a peca sendo cortada no fornecedor;
 //   - a proposta na mao do cliente;
 //   - o PJ montando em campo.
 //
-// Isso e Goldratt lido ate o fim. A restricao e a atencao dele - e o trabalho
-// da restricao nao e produzir o dia todo, e MANTER O RESTO DO SISTEMA
+// Isso é Goldratt lido até o fim. A restrição e a atenção dele - e o trabalho
+// da restrição não e produzir o dia todo, e MANTER O RESTO DO SISTEMA
 // ALIMENTADO. Uma hora dele que deixa seis engrenagens girando vale mais que
 // tres horas dele com o resto parado. Maquina parada nao custa; FLUXO parado
 // custa.
@@ -43,7 +43,7 @@ export type Engrenagem = {
   titulo: string
   area: string
   projeto: string | null
-  /** ha quantos dias uteis esta girando fora */
+  /** há quantos dias úteis está girando fora */
   dias: number
   quem: 'cliente' | 'terceiro'
 }
@@ -62,7 +62,7 @@ export type Engrenagens = {
   naMinhaMao: NaMinhaMao[]
   paradasNaMinhaMao: number
   frase: string
-  /** true quando a hora dele esta sendo gasta e quase nada gira em paralelo */
+  /** true quando a hora dele está sendo gasta e quase nada gira em paralelo */
   poucasGirando: boolean
 }
 
@@ -103,25 +103,25 @@ export function montarEngrenagens(
   const paradasNaMinhaMao = naMinhaMao.filter((x) => x.critica).length
 
   // Poucas engrenagens girando E a hora dele correndo: e a combinacao cara.
-  // Ele esta produzindo sozinho enquanto o resto do sistema nao avanca.
+  // Ele está produzindo sozinho enquanto o resto do sistema não avanca.
   const poucasGirando = girando.length <= 1 && temCronometroRodando
 
   let frase: string
   if (frentes.length === 0) {
-    frase = 'Nada aberto. Nenhuma engrenagem girando e nenhuma na sua mao - o sistema nao tem o que medir.'
+    frase = 'Nada aberto. Nenhuma engrenagem girando e nenhuma na sua mão - o sistema não tem o que medir.'
   } else if (girando.length === 0) {
     frase = temCronometroRodando
-      ? `Nada girando em paralelo: tudo o que existe depende de voce. A sua hora atual e a unica coisa que a KGFM esta produzindo agora.`
-      : 'Nada girando em paralelo, e nenhum cronometro rodando. Neste minuto a empresa esta parada inteira.'
+      ? `Nada girando em paralelo: tudo o que existe depende de você. A sua hora atual é a única coisa que a KGFM está produzindo agora.`
+      : 'Nada girando em paralelo, e nenhum cronômetro rodando. Neste minuto a empresa está parada inteira.'
   } else if (poucasGirando) {
-    frase = `So ${girando.length} engrenagem girando enquanto a sua hora corre. Antes de mergulhar, veja o que da para empurrar para o lado de fora - fornecedor, cliente, terceiro - e deixar rodando enquanto voce trabalha.`
+    frase = `Só ${girando.length} engrenagem girando enquanto a sua hora corre. Antes de mergulhar, veja o que da para empurrar para o lado de fora - fornecedor, cliente, terceiro - e deixar rodando enquanto você trabalha.`
   } else {
     const maisVelha = girando[0]
     frase =
       `${girando.length} engrenagens girando sem consumir a sua hora` +
-      (maisVelha.dias > 0 ? `, a mais antiga ha ${maisVelha.dias} dias uteis (${maisVelha.titulo}).` : '.') +
+      (maisVelha.dias > 0 ? `, a mais antiga há ${maisVelha.dias} dias úteis (${maisVelha.titulo}).` : '.') +
       (paradasNaMinhaMao > 0
-        ? ` E ${paradasNaMinhaMao} na sua mao ja estourou o prazo - essas nao giram sozinhas.`
+        ? ` E ${paradasNaMinhaMao} na sua mão já estourou o prazo - essas não giram sozinhas.`
         : '')
   }
 

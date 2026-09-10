@@ -1,12 +1,12 @@
-// A IA le a captura e decide tipo, area e frente. O usuario so corrige.
-// Sem chave da API o sistema NAO quebra: devolve null e o item fica em "novo",
-// esperando a mao. Melhor um item sem classificar do que uma captura perdida.
+// A IA le a captura e decide tipo, área e frente. O usuário só corrige.
+// Sem chave da API o sistema NÃO quebra: devolve null e o item fica em "novo",
+// esperando a mão. Melhor um item sem classificar do que uma captura perdida.
 
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from './prisma'
 
 // Modelo pequeno: classificar e a chamada mais frequente do sistema, e o custo
-// da API e risco nomeado no briefing.
+// da API é risco nomeado no briefing.
 const MODELO = 'claude-haiku-4-5-20251001'
 
 // US$ por milhao de tokens, para a estimativa em chamadas_ia.
@@ -38,7 +38,7 @@ export async function classificar(texto: string): Promise<Classificacao | null> 
     '',
     'FRENTES ABERTAS:',
     ...(frentes.length
-      ? frentes.map((f) => `- id ${f.id}: ${f.titulo} (area ${f.area.nome}${f.projeto ? `, projeto ${f.projeto.nome}` : ''})`)
+      ? frentes.map((f) => `- id ${f.id}: ${f.titulo} (área ${f.area.nome}${f.projeto ? `, projeto ${f.projeto.nome}` : ''})`)
       : ['- nenhuma']),
   ].join('\n')
 
@@ -49,11 +49,11 @@ export async function classificar(texto: string): Promise<Classificacao | null> 
     model: MODELO,
     max_tokens: 300,
     system:
-      'Voce classifica capturas rapidas de um dono de empresa de automacao intralogistica. ' +
-      'Responda SO com JSON, sem texto em volta, no formato ' +
+      'Você classifica capturas rapidas de um dono de empresa de automacao intralogistica. ' +
+      'Responda SÓ com JSON, sem texto em volta, no formato ' +
       '{"tipo":"tarefa|insight|compromisso|oportunidade|indefinido","areaId":numero|null,"frenteId":numero|null,"venceEm":"AAAA-MM-DD"|null,"confianca":0a1}. ' +
       'Use frenteId apenas quando a captura for claramente sobre aquela frente. ' +
-      'Na duvida use indefinido e confianca baixa - errar calado e pior do que admitir duvida.',
+      'Na dúvida use indefinido e confiança baixa - errar calado é pior do que admitir dúvida.',
     messages: [{ role: 'user', content: `Hoje e ${hoje}.\n\n${catalogo}\n\nCAPTURA:\n${texto}` }],
   })
 

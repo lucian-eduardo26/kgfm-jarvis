@@ -1,4 +1,4 @@
-// O painel das engrenagens: o que gira sozinho, e o que so anda com ele.
+// O painel das engrenagens: o que gira sozinho, e o que só anda com ele.
 
 import Link from 'next/link'
 import type { Engrenagens as Dados } from '@/lib/engrenagens'
@@ -27,7 +27,7 @@ export function Engrenagens({ e }: { e: Dados }) {
 
         {e.girando.length > 0 && (
           <>
-            <p className="rotulo mt-4 mb-1.5">girando sem voce</p>
+            <p className="rotulo mt-4 mb-1.5">girando sem você</p>
             <ul className="space-y-1.5">
               {e.girando.map((g) => (
                 <li key={g.id} className="flex items-baseline gap-2 text-sm">
@@ -53,7 +53,7 @@ export function Engrenagens({ e }: { e: Dados }) {
 
         {e.naMinhaMao.length > 0 && (
           <>
-            <p className="rotulo mt-4 mb-1.5">so anda com voce</p>
+            <p className="rotulo mt-4 mb-1.5">so anda com você</p>
             <ul className="space-y-1.5">
               {e.naMinhaMao.slice(0, 8).map((m) => (
                 <li key={m.id} className="flex items-baseline gap-2 text-sm">
@@ -74,7 +74,7 @@ export function Engrenagens({ e }: { e: Dados }) {
                   >
                     {m.diasParada > 0 ? `${m.diasParada}d parada` : 'hoje'}
                   </span>
-                  {/* Empurrar para fora e o movimento que transforma uma coisa
+                  {/* Empurrar para fora é o movimento que transforma uma coisa
                       na mao dele numa engrenagem girando. */}
                   <form action={mudarEspera} className="shrink-0">
                     <input type="hidden" name="frenteId" value={m.id} />

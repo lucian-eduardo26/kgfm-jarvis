@@ -1,4 +1,4 @@
-// A linha do tempo do projeto: o que ja aconteceu e o que ainda vai.
+// A linha do tempo do projeto: o que já aconteceu e o que ainda vai.
 
 import type { ResumoProjeto, EventoProjeto } from '@/lib/linhaDoTempo'
 import { formatarHoras } from '@/lib/datas'
@@ -20,8 +20,8 @@ export function LinhaDoTempo({ r, limite = 14 }: { r: ResumoProjeto; limite?: nu
   if (r.eventos.length === 0) {
     return (
       <p className="fraco text-xs mt-3">
-        Sem historico ainda. Ele se escreve sozinho conforme voce aponta hora e mexe nas frentes -
-        nao ha nada para preencher a mao.
+        Sem histórico ainda. Ele se escreve sozinho conforme você aponta hora e mexe nas frentes -
+        não há nada para preencher a mão.
       </p>
     )
   }

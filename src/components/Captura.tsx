@@ -5,7 +5,7 @@
 // O microfone daqui estava INOPERANTE (achado em 10/09/2026): o `onend` so
 // apagava a luz, o texto reconhecido ficava no campo e nunca ia para lugar
 // nenhum. Agora usa o mesmo motor de escuta do comando de voz, que escuta
-// continuo e devolve o texto de verdade.
+// contínuo e devolve o texto de verdade.
 
 import { useEffect, useRef, useState } from 'react'
 import { capturar } from '@/app/acoes'

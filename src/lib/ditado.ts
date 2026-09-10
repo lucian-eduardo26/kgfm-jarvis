@@ -1,43 +1,43 @@
-// DITADO: quando o Lucian nao esta dizendo "estou fazendo X", e sim DITANDO
+// DITADO: quando o Lucian não está dizendo "estou fazendo X", e sim DITANDO
 // TRABALHO NOVO.
 //
 // O caso que revelou a falta (10/09/2026), na voz dele:
 //
-//   "o motoboy tem que buscar as pecas na usinagem do Dennis. Depois eu analiso
+//   "o motoboy tem que buscar as peças na usinagem do Dennis. Depois eu analiso
 //    a qualidade e mando pro banho na Soriel, da Jaqueline. Quando ficar pronto
 //    eu coleto, valido, embalo, e marco uma visita na Riachuelo para entregar -
-//    que ja e visita comercial. E tem pecas em Santo Andre na Draco Laser."
+//    que já e visita comercial. E tem peças em Santo Andre na Draco Laser."
 //
 // A comparacao por palavras (casar.ts) nao tinha o que casar: nenhuma dessas
-// frentes existia. Ela respondeu "nao tenho certeza de qual frente e", que e o
-// pior tipo de resposta - tecnicamente correta e completamente inutil.
+// frentes existia. Ela respondeu "não tenho certeza de qual frente e", que é o
+// pior tipo de resposta - tecnicamente correta e completamente inútil.
 //
-// Aqui a IA GANHA O DIREITO DE CRIAR: area, frente, projeto, tarefas em ordem,
-// e prazo. E o unico lugar do sistema onde ela escreve estrutura, e e onde vale
-// pagar por isso - ditar uma cadeia de logistica a mao levaria dez minutos.
+// Aqui a IA GANHA O DIREITO DE CRIAR: área, frente, projeto, tarefas em ordem,
+// e prazo. E o único lugar do sistema onde ela escreve estrutura, e e onde vale
+// pagar por isso - ditar uma cadeia de logística a mão levaria dez minutos.
 //
-// O QUE ELA CONTINUA NAO PODENDO FAZER:
+// O QUE ELA CONTINUA NÃO PODENDO FAZER:
 // - inventar cliente, valor ou data que nao foram ditos;
 // - mexer em frente que ja existe sem ser mandada;
-// - decidir prioridade - isso e conta, e a conta e feita em agora.ts.
+// - decidir prioridade - isso é conta, e a conta e feita em agora.ts.
 
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from './prisma'
 import { hojeSP } from './datas'
 import { textoParaIa } from './etapas'
 
-// MODELO PEQUENO, decidido por medicao em 10/09/2026.
+// MODELO PEQUENO, decidido por medição em 10/09/2026.
 //
 // Comparados na mesma frase real (Trava Clinker + Batoque do Logimat):
 //   sonnet  US$ 0,0098  6,1s
 //   haiku   US$ 0,0018  3,1s   <- 5x mais barato, 2x mais rapido
 //
 // E o pequeno acertou tudo: separou os dois projetos, marcou como JA FEITA a
-// conferencia da usinagem, deixou as pecas do Clinker pendentes. Organizar
-// ditado em JSON e extracao estruturada, nao raciocinio dificil - o modelo
+// conferência da usinagem, deixou as peças do Clinker pendentes. Organizar
+// ditado em JSON e extracao estruturada, não raciocinio difícil - o modelo
 // grande estava sendo pago para fazer trabalho de modelo pequeno.
 //
-// Se algum dia a qualidade cair, e so voltar para 'claude-sonnet-5' aqui e
+// Se algum dia a qualidade cair, e só voltar para 'claude-sonnet-5' aqui e
 // ajustar PRECO para { entrada: 3, saida: 15 }.
 const MODELO = 'claude-haiku-4-5-20251001'
 const PRECO = { entrada: 1, saida: 5 }
@@ -54,65 +54,65 @@ export type PlanoDitado = {
   }[]
   compromissos: { titulo: string; data: string; inicio: string; fim: string; local?: string | null }[]
   comecarAgora?: string | null
-  /** id de tarefa que ja existe e que ele quer comecar agora */
+  /** id de tarefa que já existe e que ele quer começar agora */
   tarefaExistenteId?: number | null
 }
 
 const INSTRUCAO = `Voce organiza o trabalho ditado pelo Lucian, dono da KGFM - integradora de automacao intralogistica em Guarulhos. Ele fala rapido, misturando varias coisas na mesma frase, e voce transforma isso em estrutura.
 
-Responda SO com JSON, sem texto em volta:
+Responda SÓ com JSON, sem texto em volta:
 
 {
-  "entendi": "uma frase curta dizendo o que voce entendeu",
+  "entendi": "uma frase curta dizendo o que você entendeu",
   "frentes": [
     {
       "titulo": "nome curto do assunto",
       "area": "comercial|engenharia|producao|adm",
-      "etapa": "a etapa dentro da area, da lista abaixo",
+      "etapa": "a etapa dentro da área, da lista abaixo",
       "projeto": "nome do projeto, se ele citou" ou null,
       "cliente": "nome do cliente, se ele citou" ou null,
       "tarefas": [ { "titulo": "acao concreta", "venceEm": "AAAA-MM-DD" ou null, "feita": true se ele disse que JA foi feita, "minutos": quanto durou se ele disse, ou null } ]
     }
   ],
   "compromissos": [ { "titulo": "", "data": "AAAA-MM-DD", "inicio": "HH:MM", "fim": "HH:MM", "local": "" ou null } ],
-  "comecarAgora": "titulo exato de uma tarefa que ele ja esta fazendo agora" ou null,
-  "tarefaExistenteId": numero da tarefa que JA EXISTE e que ele esta comecando agora, ou null
+  "comecarAgora": "titulo exato de uma tarefa que ele já está fazendo agora" ou null,
+  "tarefaExistenteId": número da tarefa que JA EXISTE e que ele está começando agora, ou null
 }
 
 ETAPAS DENTRO DE CADA AREA (escolha uma, sempre):
 {{ETAPAS}}
 
-COMO DECIDIR A AREA:
-- producao: buscar, coletar, transportar, usinagem, tratamento, banho, galvanica, fabricacao, montagem, conferencia de qualidade, embalagem, motoboy, fornecedor de peca.
+COMO DECIDIR A ÁREA:
+- produção: buscar, coletar, transportar, usinagem, tratamento, banho, galvânica, fabricação, montagem, conferência de qualidade, embalagem, motoboy, fornecedor de peça.
 - engenharia: projeto, detalhamento, layout, dimensionamento, lista de materiais, desenho.
-- comercial: prospeccao, visita a cliente, proposta, negociacao, cotacao, relacionamento.
+- comercial: prospecção, visita a cliente, proposta, negociação, cotacao, relacionamento.
 - adm: nota fiscal, cobranca, contrato, financeiro, cadastro, documento.
 
-REGRAS QUE NAO SE QUEBRAM:
-- TODO trabalho de producao e engenharia PERTENCE A UM PROJETO. Se ele citar o
+REGRAS QUE NÃO SE QUEBRAM:
+- TODO trabalho de produção e engenharia PERTENCE A UM PROJETO. Se ele citar o
   nome ("batoque do Logimat", "trava do Clinker"), use como projeto. Se falar de
-  peca, usinagem, banho ou entrega sem dizer o projeto, use o projeto que ja
+  peça, usinagem, banho ou entrega sem dizer o projeto, use o projeto que já
   existe com essa peca; se nao existir nenhum, crie com o nome da peca. Projeto e
   a espinha: e por ele que as horas se somam no fim.
-- Uma frente por ASSUNTO, nao uma por tarefa. Uma sequencia de logistica do
+- Uma frente por ASSUNTO, não uma por tarefa. Uma sequência de logística do
   mesmo lote e UMA frente com varias tarefas em ordem.
-- REAPROVEITAR FRENTE EXISTENTE E EXCECAO, nao regra: so quando for literalmente
+- REAPROVEITAR FRENTE EXISTENTE E EXCECAO, não regra: só quando for literalmente
   o mesmo assunto, com as mesmas pessoas ou o mesmo lote. Assunto novo pede
-  frente nova. Encaixar tarefa nova num pacote generico que ja existe faz o
+  frente nova. Encaixar tarefa nova num pacote generico que já existe faz o
   trabalho sumir de vista.
-- SE ELE ESTA COMECANDO ALGO QUE JA EXISTE, nao crie de novo: devolva o numero
-  em "tarefaExistenteId". Ele nao vai repetir o titulo exato - vai dizer "estou
-  fazendo a logistica das pecas pra trazer da usinagem" e a tarefa se chama
-  "Logistica de retorno da usinagem". E a mesma coisa. Case pelo sentido.
-- SE ELE DISSE QUE ALGO JA FOI FEITO ("ja foi conferido", "ja busquei", "isso
+- SE ELE ESTA COMECANDO ALGO QUE JA EXISTE, não crie de novo: devolva o número
+  em "tarefaExistenteId". Ele não vai repetir o titulo exato - vai dizer "estou
+  fazendo a logística das peças pra trazer da usinagem" e a tarefa se chama
+  "Logística de retorno da usinagem". E a mesma coisa. Case pelo sentido.
+- SE ELE DISSE QUE ALGO JA FOI FEITO ("já foi conferido", "ja busquei", "isso
   ja esta ok"), a tarefa entra com "feita": true. Se ele nao disser quanto
   durou, use 30 minutos - o registro aproximado vale mais que registro nenhum.
 - As tarefas ficam na ORDEM em que acontecem.
 - Se uma acao serve a dois fins (entregar peca e visitar o cliente), ela vira
-  UMA tarefa e voce escreve os dois fins no titulo.
-- NAO invente cliente, valor, endereco nem data que ele nao disse.
+  UMA tarefa e você escreve os dois fins no titulo.
+- NÃO invente cliente, valor, endereco nem data que ele não disse.
 - "hoje a tarde", "amanha", "semana passada" viram data real a partir de hoje.
-- Titulo de tarefa e acao curta: comeca com verbo. Nomes de pessoa e empresa que
+- Título de tarefa é ação curta: começa com verbo. Nomes de pessoa e empresa que
   ele citar entram no titulo - e assim que ele reconhece depois.`
 
 export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDitado | null; usouIa: boolean }> {
@@ -129,10 +129,10 @@ export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDi
 
   const contexto = [
     `Hoje e ${hojeSP()}.`,
-    `Areas: ${areas.map((a) => a.chave).join(', ')}.`,
+    `Áreas: ${areas.map((a) => a.chave).join(', ')}.`,
     frentes.length
       ? [
-          'Frentes que ja existem (so reuse se for LITERALMENTE o mesmo assunto; na duvida, crie nova):',
+          'Frentes que já existem (só reuse se for LITERALMENTE o mesmo assunto; na duvida, crie nova):',
           ...frentes.map(
             (f) =>
               `- ${f.titulo}` +
@@ -148,8 +148,8 @@ export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDi
   const cliente = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const r = await cliente.messages.create({
     model: MODELO,
-    // 1200 cortava o JSON no meio numa cadeia de logistica com varias tarefas,
-    // e o parse falhava sem dizer por que. Plano longo precisa de espaco.
+    // 1200 cortava o JSON no meio numa cadeia de logística com varias tarefas,
+    // e o parse falhava sem dizer por que. Plano longo precisa de espaço.
     max_tokens: 4000,
     system: `${INSTRUCAO.replace('{{ETAPAS}}', textoParaIa())}\n\n${contexto}`,
     messages: [{ role: 'user', content: texto }],
@@ -180,7 +180,7 @@ export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDi
 
 export type Criado = { linhas: string[]; tarefaParaComecar: number | null }
 
-/** Grava o plano. Reusa frente que ja existe com o mesmo titulo, nunca duplica. */
+/** Grava o plano. Reusa frente que já existe com o mesmo titulo, nunca duplica. */
 export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
   const linhas: string[] = []
   let tarefaParaComecar: number | null = null
@@ -233,9 +233,9 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
       })
 
       if (t.feita) {
-        // Tarefa que ele DISSE que ja foi feita entra com o tempo lancado, e
-        // marcada como revisar: e registro aproximado, lembrado depois - nao
-        // cronometrado na hora. Sem isso o projeto nasce sem historico e as
+        // Tarefa que ele DISSE que já foi feita entra com o tempo lancado, e
+        // marcada como revisar: e registro aproximado, lembrado depois - não
+        // cronometrado na hora. Sem isso o projeto nasce sem histórico e as
         // horas totais nunca fecham com a realidade.
         const minutos = t.minutos && t.minutos > 0 ? t.minutos : 30
         const fim = new Date()

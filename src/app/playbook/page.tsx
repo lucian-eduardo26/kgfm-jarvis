@@ -20,9 +20,9 @@ export default async function Playbook() {
   return (
     <Moldura titulo="Playbook KGFM">
       <p className="fraco text-sm mb-4 max-w-3xl">
-        O lastro tecnico. Serve a duas coisas: parar de deixar o que a KGFM ja sabe morando so na
-        sua cabeca, e dar chao para a IA quando ela te ajudar a redigir - sem isto ela inventa
-        especificacao com cara de certeza.
+        O lastro técnico. Serve a duas coisas: parar de deixar o que a KGFM já sabe morando só na
+        sua cabeça, e dar chao para a IA quando ela te ajudar a redigir - sem isto ela inventa
+        especificação com cara de certeza.
       </p>
 
       <form action={salvarConhecimento} className="cartao p-4 mb-3">
@@ -54,7 +54,7 @@ export default async function Playbook() {
       {notas.length === 0 ? (
         <Vazio
           titulo="Playbook vazio"
-          texto="Comece pelo que voce repete em toda reuniao: quando usar cada tipo de transportador, o que a KGFM faz diferente, o checklist de NR12. Tres notas ja mudam a qualidade do que a IA escreve."
+          texto="Comece pelo que você repete em toda reunião: quando usar cada tipo de transportador, o que a KGFM faz diferente, o checklist de NR12. Três notas já mudam a qualidade do que a IA escreve."
         />
       ) : (
         <div className="grid lg:grid-cols-2 gap-3">

@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 const FASES = [
   { chave: 'desenvolvimento', nome: 'Desenvolvimento', ajuda: 'antes de fechar - ainda e aposta, e custo de venda' },
   { chave: 'fechado', nome: 'Fechado', ajuda: 'virou obrigacao, com cliente contando os dias' },
-  { chave: 'entregue', nome: 'Entregue', ajuda: 'onde o dinheiro costuma ficar parado sem ninguem olhar' },
+  { chave: 'entregue', nome: 'Entregue', ajuda: 'onde o dinheiro costuma ficar parado sem ninguém olhar' },
 ] as const
 
 export default async function Projetos({ searchParams }: { searchParams: Promise<{ wip?: string; spin?: string }> }) {
@@ -50,7 +50,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
           </p>
           <p className="fraco text-sm mt-1">
             Ativar &quot;{travada.titulo}&quot; agora significa mais uma coisa aberta na mesma cabeca.
-            O certo e fechar uma antes - mas a decisao e sua.
+            O certo e fechar uma antes - mas a decisão e sua.
           </p>
           <form action={ativarPacote} className="mt-3 flex gap-2">
             <input type="hidden" name="frenteId" value={travada.id} />
@@ -95,7 +95,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
           <button className="botao">Criar com WBS</button>
         </div>
         <p className="fraco text-xs mt-2">
-          A WBS padrao entra desdobrada nos quatro setores, com os pacotes PLANEJADOS - nao abertos.
+          A WBS padrão entra desdobrada nos quatro setores, com os pacotes PLANEJADOS - não abertos.
           Plano nao consome limite de WIP; so o que voce ativa e que conta.
         </p>
       </form>
@@ -103,7 +103,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
       {projetos.length === 0 ? (
         <Vazio
           titulo="Nenhum projeto"
-          texto="Projeto e o centro de custo: e por ele que as horas do cronometro se agrupam. Crie um e a WBS desdobra sozinha em Comercial, Engenharia, Producao e ADM."
+          texto="Projeto é o centro de custo: é por ele que as horas do cronômetro se agrupam. Crie um e a WBS desdobra sozinha em Comercial, Engenharia, Produção e ADM."
         />
       ) : (
         <div className="space-y-3">

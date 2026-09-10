@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Jarvis KGFM',
   description: 'O que eu faco agora, e por que.',
   manifest: '/manifest.webmanifest',
-  // O iPhone ignora o manifesto para o icone da tela inicial: ele quer
+  // O iPhone ignora o manifesto para o ícone da tela inicial: ele quer
   // apple-touch-icon, PNG opaco e sem cantos arredondados - o iOS arredonda
   // sozinho. Por isso os dois caminhos aparecem aqui.
   icons: {

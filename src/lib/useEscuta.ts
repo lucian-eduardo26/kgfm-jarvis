@@ -1,21 +1,21 @@
 'use client'
 
-// O MOTOR DE ESCUTA. Um so, usado pelo comando de voz e pela captura.
+// O MOTOR DE ESCUTA. Um só, usado pelo comando de voz e pela captura.
 //
 // POR QUE O MICROFONE CORTAVA (10/09/2026):
 // os dois estavam com `continuous = false`. Nesse modo o navegador encerra o
-// reconhecimento no primeiro silencio - e quem esta ditando uma sequencia
+// reconhecimento no primeiro silêncio - e quem está ditando uma sequência
 // respira no meio da frase. Pior ainda: o comando mandava sozinho no `onend`,
-// entao a frase ia pela metade e o sistema respondia sobre metade do assunto.
+// então a frase ia pela metade e o sistema respondia sobre metade do assunto.
 //
-// A correcao tem tres partes, e as tres importam:
+// A correção tem três partes, e as três importam:
 //
 // 1. `continuous = true` - nao encerra no silencio.
-// 2. Religar no `onend` - o Android encerra sozinho MESMO em modo continuo,
+// 2. Religar no `onend` - o Android encerra sozinho MESMO em modo contínuo,
 //    por limite de tempo. Enquanto o botao estiver aceso, o motor volta.
-// 3. NUNCA enviar sozinho. Quem decide que a frase acabou e a pessoa.
+// 3. NUNCA enviar sozinho. Quem decide que a frase acabou é a pessoa.
 //
-// A captura estava pior: o `onend` so apagava a luz, e o texto ficava no campo
+// A captura estava pior: o `onend` só apagava a luz, e o texto ficava no campo
 // sem nunca ir para lugar nenhum.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -42,9 +42,9 @@ export type Escuta = {
   /** o navegador oferece reconhecimento de fala? */
   disponivel: boolean
   ouvindo: boolean
-  /** o que ja foi reconhecido em definitivo */
+  /** o que já foi reconhecido em definitivo */
   texto: string
-  /** o pedaco que ainda esta sendo reconhecido, para a pessoa ver que funciona */
+  /** o pedaco que ainda está sendo reconhecido, para a pessoa ver que funciona */
   parcial: string
   erro: string | null
   comecar: () => void
@@ -97,7 +97,7 @@ export function useEscuta(): Escuta {
 
     rr.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setErro('O navegador nao liberou o microfone. Toque no cadeado ao lado do endereco e permita.')
+        setErro('O navegador não liberou o microfone. Toque no cadeado ao lado do endereco e permita.')
         querOuvir.current = false
         setOuvindo(false)
       } else if (e.error === 'audio-capture') {
@@ -105,7 +105,7 @@ export function useEscuta(): Escuta {
         querOuvir.current = false
         setOuvindo(false)
       }
-      // 'no-speech' e 'aborted' nao sao erro: o onend religa
+      // 'no-speech' e 'aborted' não são erro: o onend religa
     }
 
     rr.onend = () => {
@@ -128,7 +128,7 @@ export function useEscuta(): Escuta {
       try {
         rr.abort()
       } catch {
-        // ja estava parado
+        // já estava parado
       }
     }
   }, [])
@@ -140,7 +140,7 @@ export function useEscuta(): Escuta {
     try {
       rec.current?.start()
     } catch {
-      // ja estava escutando
+      // já estava escutando
     }
   }, [])
 
@@ -151,7 +151,7 @@ export function useEscuta(): Escuta {
     try {
       rec.current?.stop()
     } catch {
-      // ja estava parado
+      // já estava parado
     }
   }, [])
 

@@ -1,8 +1,8 @@
 // A casca do hub: trilho de icones a esquerda (desktop), cabecalho com a marca
-// e os tres pontinhos.
+// e os três pontinhos.
 //
-// No celular o trilho some e a navegacao continua sendo os tres pontinhos - e
-// o que cabe na mao, e o mockup do telefone tambem mostra so o menu.
+// No celular o trilho some e a navegação continua sendo os três pontinhos - e
+// o que cabe na mão, e o mockup do telefone também mostra só o menu.
 
 import Link from 'next/link'
 import { Menu } from './Menu'
@@ -13,7 +13,7 @@ const ATALHOS = [
   { href: '/frentes', nome: 'Frentes', d: 'M4 6h16M4 12h16M4 18h10' },
   { href: '/semana', nome: 'A semana', d: 'M4 5h16v15H4zM4 9h16M9 3v4M15 3v4' },
   { href: '/conversa', nome: 'Conversa', d: 'M4 5h16v11H9l-5 4z' },
-  { href: '/config', nome: 'Configuracao', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6M4 12h2M18 12h2M12 4v2M12 18v2' },
+  { href: '/config', nome: 'Configuração', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6M4 12h2M18 12h2M12 4v2M12 18v2' },
 ]
 
 function Icone({ d, preenchido }: { d: string; preenchido: boolean }) {

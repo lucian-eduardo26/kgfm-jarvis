@@ -1,20 +1,20 @@
-// O TEMPO SEM REGISTRO E TEMPO NAO MEDIDO - E SO ISSO.
+// O TEMPO SEM REGISTRO E TEMPO NÃO MEDIDO - E SÓ ISSO.
 //
 // Decisao do Lucian, 10/09/2026: "parou de fazer algo, estou fazendo nada -
-// tambem e contabilizado, para confrontar". Sem isso o painel so soma o que ele
-// lembrou de apontar, e um sistema que so mostra acerto nao confronta ninguem.
+// também e contabilizado, para confrontar". Sem isso o painel só soma o que ele
+// lembrou de apontar, e um sistema que só mostra acerto não confronta ninguém.
 //
 // CORRECAO no mesmo dia, e ele estava certo: o sistema chamava o buraco de
-// "nada feito", e isso e uma afirmacao que ele NAO PODE FAZER. O buraco pode
+// "nada feito", e isso é uma afirmacao que ele NÃO PODE FAZER. O buraco pode
 // ser ociosidade, pode ser trabalho que ele esqueceu de apontar, pode ser noite
 // de sono. Chamar tudo de ociosidade transforma erro de lancamento em prejuizo
-// no fechamento da semana - e ensina a desconfiar do numero.
+// no fechamento da semana - e ensina a desconfiar do número.
 //
-// Agora o buraco se chama NAO MEDIDO, e ao lado dele existe o botao de lancar
+// Agora o buraco se chama NÃO MEDIDO, e ao lado dele existe o botao de lancar
 // o que faltou. Medir e dele; julgar nao e do sistema.
 //
 // A conta e deliberadamente crua: expediente decorrido menos minutos apontados.
-// Nao existe desconto de almoco, de reuniao nem de banheiro - se foi trabalho,
+// Não existe desconto de almoço, de reunião nem de banheiro - se foi trabalho,
 // aponta; se nao foi, e buraco mesmo, e o buraco tem que aparecer.
 
 import { horaDecimalSP, limitesDoDia } from './datas'
@@ -28,7 +28,7 @@ export function ehDiaUtilHoje(agora: Date = new Date()): boolean {
   return s !== 0 && s !== 6
 }
 
-/** Minutos de expediente que ja passaram hoje. Fora do dia util, zero. */
+/** Minutos de expediente que já passaram hoje. Fora do dia útil, zero. */
 export function minutosDeExpedienteAteAgora(agora: Date = new Date()): number {
   if (!ehDiaUtilHoje(agora)) return 0
   const h = horaDecimalSP(agora)
@@ -52,15 +52,15 @@ export function confrontar(minutosApontados: number, agora: Date = new Date()): 
 
   let frase: string
   if (minutosExpediente === 0) {
-    frase = 'Fora do expediente. O que for apontado agora e credito, nao obrigacao.'
+    frase = 'Fora do expediente. O que for apontado agora e credito, não obrigacao.'
   } else if (percentual >= 80) {
-    frase = 'Quase nada do dia esta medido. Isso nao quer dizer que nada foi feito - quer dizer que o sistema nao sabe. Lance o que faltou e o numero passa a valer.'
+    frase = 'Quase nada do dia está medido. Isso não quer dizer que nada foi feito - quer dizer que o sistema não sabe. Lance o que faltou e o número passa a valer.'
   } else if (percentual >= 50) {
-    frase = 'Mais da metade do expediente nao foi medido. Se foi trabalho, lance - senao a semana fecha com um buraco que nao e verdade.'
+    frase = 'Mais da metade do expediente não foi medido. Se foi trabalho, lance - senao a semana fecha com um buraco que não e verdade.'
   } else if (percentual >= 25) {
-    frase = 'Um quarto do dia sem registro. Nao da para melhorar o que nao aparece - e nao da para cobrar o que nao foi medido.'
+    frase = 'Um quarto do dia sem registro. Não da para melhorar o que não aparece - e não da para cobrar o que não foi medido.'
   } else if (minutosNoEscuro > 0) {
-    frase = 'Quase todo o expediente esta medido. E assim que o mostrador para de chutar.'
+    frase = 'Quase todo o expediente está medido. E assim que o mostrador para de chutar.'
   } else {
     frase = 'Expediente inteiro apontado.'
   }

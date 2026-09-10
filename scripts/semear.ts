@@ -6,7 +6,7 @@
 // RESSALVA REGISTRADA (leia docs/areas-e-medicao.md): com prospeccao dentro de
 // Comercial, o mostrador perde a capacidade de mostrar prospeccao morrendo
 // enquanto a proposta anda - que e o sintoma que originou o projeto. A saida
-// barata e manter uma frente permanente "Cadencia de prospeccao" em Comercial e
+// barata e manter uma frente permanente "Cadencia de prospecção" em Comercial e
 // olhar o tempo apontado nela. Se em duas semanas isso nao bastar, o corte
 // alternativo esta no documento.
 
@@ -25,7 +25,7 @@ const AREAS = [
     diasParaCritico: 3,
   },
   { chave: 'engenharia', nome: 'Engenharia', ordem: 2, metaHorasSemana: 14, diasParaCritico: 7 },
-  { chave: 'producao', nome: 'Producao', ordem: 3, metaHorasSemana: 10, diasParaCritico: 5 },
+  { chave: 'producao', nome: 'Produção', ordem: 3, metaHorasSemana: 10, diasParaCritico: 5 },
   {
     chave: 'adm',
     nome: 'ADM',
@@ -56,9 +56,9 @@ async function main() {
     const usada = a.frentes.length + a.projetos.length + a.objetivos.length + a.itens.length
     if (usada === 0) {
       await prisma.area.delete({ where: { id: a.id } })
-      console.log('area antiga removida:', a.chave)
+      console.log('área antiga removida:', a.chave)
     } else {
-      console.log(`area antiga "${a.chave}" AINDA EM USO (${usada} registros) - nao removi`)
+      console.log(`área antiga "${a.chave}" AINDA EM USO (${usada} registros) - não removi`)
     }
   }
 }

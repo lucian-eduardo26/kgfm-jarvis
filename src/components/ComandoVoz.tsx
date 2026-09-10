@@ -1,17 +1,17 @@
 'use client'
 
-// "Jarvis, o motoboy tem que buscar as pecas na usinagem do Dennis..."
+// "Jarvis, o motoboy tem que buscar as peças na usinagem do Dennis..."
 //
-// Duas coisas mudaram em 10/09/2026, e as duas vieram de reclamacao com razao:
+// Duas coisas mudaram em 10/09/2026, e as duas vieram de reclamacao com razão:
 //
-// 1. O MICROFONE CORTAVA no meio da fala. Agora usa o motor unico
+// 1. O MICROFONE CORTAVA no meio da fala. Agora usa o motor único
 //    (src/lib/useEscuta.ts): escuta continua, religa sozinho, e SO ENVIA
-//    QUANDO VOCE MANDA. Quem decide que a frase acabou e voce.
+//    QUANDO VOCÊ MANDA. Quem decide que a frase acabou e você.
 //
-// 2. QUANDO NAO CASAVA, MORRIA. Dizia "nao tenho certeza de qual frente e" -
-//    correto e inutil. Agora, se e assunto novo, o sistema organiza: cria a
-//    frente na area certa, as tarefas na ordem, os prazos. O que ele criou
-//    aparece listado aqui embaixo, para voce conferir na hora.
+// 2. QUANDO NÃO CASAVA, MORRIA. Dizia "não tenho certeza de qual frente e" -
+//    correto e inútil. Agora, se e assunto novo, o sistema organiza: cria a
+//    frente na área certa, as tarefas na ordem, os prazos. O que ele criou
+//    aparece listado aqui embaixo, para você conferir na hora.
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -46,7 +46,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
         tarefa: null,
         frente: null,
         area: null,
-        resposta: 'Deu erro na chamada. Confira a chave da API em Configuracao.',
+        resposta: 'Deu erro na chamada. Confira a chave da API em Configuração.',
         alinhamento: 'sem prioridade definida',
         recomendado: null,
         usouIa: false,
@@ -60,14 +60,14 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
   const corDoVeredito =
     r?.alinhamento === 'e a prioridade'
       ? 'var(--verde)'
-      : r?.alinhamento === 'nao e a prioridade'
+      : r?.alinhamento === 'não e a prioridade'
         ? 'var(--ambar)'
         : 'var(--fraco)'
 
   return (
     <section className="cartao">
       <div className="painel-cabeca">
-        <span className="rotulo">o que voce esta fazendo</span>
+        <span className="rotulo">o que você está fazendo</span>
         <span className="flex items-center gap-2">
           {escuta.ouvindo && (
             <span className="text-[10px]" style={{ color: 'var(--laranja)' }}>
@@ -76,7 +76,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
           )}
           {processando && <span className="text-[10px] dado">ORGANIZANDO</span>}
           {r?.usouIa && (
-            <span className="text-[10px] dado" title="esta resposta gastou credito da API">
+            <span className="text-[10px] dado" title="está resposta gastou credito da API">
               via IA
             </span>
           )}
@@ -169,8 +169,8 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
             {r.alinhamento !== 'sem prioridade definida' && (
               <p className="text-xs mt-2" style={{ color: corDoVeredito }}>
                 {r.alinhamento === 'e a prioridade'
-                  ? 'Isto e o que o painel apontaria agora.'
-                  : `O painel apontaria outra coisa: ${r.recomendado}. Voce decide - mas decide sabendo.`}
+                  ? 'Isto é o que o painel apontaria agora.'
+                  : `O painel apontaria outra coisa: ${r.recomendado}. Você decide - mas decide sabendo.`}
               </p>
             )}
           </div>

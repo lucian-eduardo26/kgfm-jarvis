@@ -1,6 +1,6 @@
 'use client'
 
-// Tres pontinhos. E a UNICA navegacao do sistema - nada de menu em arvore.
+// Tres pontinhos. E a UNICA navegação do sistema - nada de menu em arvore.
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -14,9 +14,9 @@ const PAGINAS = [
   { href: '/projetos', nome: 'Projetos' },
   { href: '/frentes', nome: 'Frentes' },
   { href: '/playbook', nome: 'Playbook' },
-  { href: '/estrategia', nome: 'Estrategia' },
+  { href: '/estrategia', nome: 'Estratégia' },
   { href: '/capturas', nome: 'Capturas' },
-  { href: '/config', nome: 'Configuracao' },
+  { href: '/config', nome: 'Configuração' },
 ]
 
 export function Menu() {

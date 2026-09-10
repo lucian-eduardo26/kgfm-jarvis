@@ -5,12 +5,12 @@
 // pagaria umas US$ 7 por mes so para dizer "estou fazendo tal coisa" - com a
 // espera de alguns segundos junto.
 //
-// Mas ligar o cronometro nao e um problema de raciocinio: e um problema de
-// PARECIDO COM. "Estou levantando os precos da cotacao" tem que casar com a
-// frente "Cotacao de pecas pequenas". Isso e comparacao de palavras, e roda
+// Mas ligar o cronômetro não e um problema de raciocinio: e um problema de
+// PARECIDO COM. "Estou levantando os preços da cotacao" tem que casar com a
+// frente "Cotacao de peças pequenas". Isso é comparacao de palavras, e roda
 // aqui em milissegundos, de graca e sem internet.
 //
-// A IA fica para quando a comparacao NAO tem certeza - e para conversar, que e
+// A IA fica para quando a comparacao NÃO tem certeza - e para conversar, que e
 // onde ela realmente pensa.
 //
 // O veredito de prioridade continua vindo do codigo, como sempre veio. Ele
@@ -43,7 +43,7 @@ export function palavras(s: string): string[] {
 /**
  * Quanto o texto falado combina com um alvo, de 0 a 1.
  * Palavra inteira vale 1; comeco de palavra com 4+ letras vale 0,6 - assim
- * "cotacao" casa com "cotacoes" e "preco" com "precos".
+ * "cotacao" casa com "cotacoes" e "preço" com "preços".
  */
 export function parecenca(falado: string[], alvo: string): number {
   const alvoP = palavras(alvo)
@@ -74,16 +74,16 @@ const PERGUNTA = /\?|^\s*(o que|qual|quais|quanto|quando|quem|por que|porque|com
  * A intencao da frase.
  *
  * ARMADILHA que este codigo existe para evitar (achada em 10/09/2026): a
- * primeira versao procurava a palavra em qualquer lugar do texto. Ai ele ditou
+ * primeira versão procurava a palavra em qualquer lugar do texto. Ai ele ditou
  * "...depois de PRONTO eu coleto, valido e embalo..." e o sistema entendeu
- * "terminei" - e marcou uma tarefa como feita no meio de um ditado de logistica.
+ * "terminei" - e marcou uma tarefa como feita no meio de um ditado de logística.
  *
- * Duas regras corrigem isso, e as duas sao sobre POSICAO e TAMANHO:
+ * Duas regras corrigem isso, e as duas são sobre POSICAO e TAMANHO:
  *
  * 1. Frase longa e DITADO, nunca comando curto. Ninguem diz "parei" em
  *    quarenta palavras.
- * 2. "Parei" e "terminei" so valem NO COMECO da frase. No meio, sao parte da
- *    narrativa do que vai acontecer - nao um comando.
+ * 2. "Parei" e "terminei" só valem NO COMECO da frase. No meio, são parte da
+ *    narrativa do que vai acontecer - não um comando.
  */
 export function lerIntencao(texto: string): Intencao {
   const t = normalizar(texto)
@@ -94,7 +94,7 @@ export function lerIntencao(texto: string): Intencao {
     return PERGUNTA.test(texto.toLowerCase().trim()) ? 'perguntar' : 'iniciar'
   }
 
-  // Comando de encerrar so vale nas primeiras palavras.
+  // Comando de encerrar só vale nas primeiras palavras.
   const comeco = palavrasTotais.slice(0, 4).join(' ')
   if (PARAR.test(comeco)) return 'parar'
   if (CONCLUIR.test(comeco)) return 'concluir'
@@ -110,16 +110,16 @@ export function lerIntencao(texto: string): Intencao {
 }
 
 /**
- * E ditado, e nao comando?
+ * E ditado, e não comando?
  *
- * "Estou fazendo o levantamento" tem cinco palavras. Uma cadeia de logistica
- * tem sessenta. O tamanho sozinho ja separa os dois, e separar ANTES de tentar
+ * "Estou fazendo o levantamento" tem cinco palavras. Uma cadeia de logística
+ * tem sessenta. O tamanho sozinho já separa os dois, e separar ANTES de tentar
  * casar evita o erro que aconteceu em 10/09/2026: a frase longa continha
- * "visita" e "qualidade", casou com a tarefa "Visita tecnica" que existia por
- * acaso, e o cronometro partiu na coisa errada em vez de organizar o trabalho
+ * "visita" e "qualidade", casou com a tarefa "Visita técnica" que existia por
+ * acaso, e o cronômetro partiu na coisa errada em vez de organizar o trabalho
  * novo.
  *
- * Tambem conta a QUANTIDADE DE ACOES: duas ou mais acoes encadeadas ja e plano,
+ * Também conta a QUANTIDADE DE AÇÕES: duas ou mais ações encadeadas já e plano,
  * mesmo em frase curta.
  */
 export function ehDitado(texto: string): boolean {
@@ -158,9 +158,9 @@ export function tituloDoFalado(texto: string): string {
 }
 
 /**
- * Acha a frente e a tarefa mais provaveis. Confiante quando a melhor nota passa
+ * Acha a frente e a tarefa mais prováveis. Confiante quando a melhor nota passa
  * de 0,5 E abre pelo menos 0,2 sobre a segunda colocada - sem essa folga, duas
- * frentes parecidas fariam o cronometro cair na errada calado, que e pior do
+ * frentes parecidas fariam o cronômetro cair na errada calado, que é pior do
  * que perguntar.
  */
 export function casar(texto: string, alvos: AlvoPossivel[]): Casamento {

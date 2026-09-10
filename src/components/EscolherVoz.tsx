@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { vozesDisponiveis, aoCarregarVozes, vozEscolhida, escolherVoz, falar } from '@/lib/vozNavegador'
 
-const FRASE = 'Cotacao de pecas pequenas esta parada ha doze dias uteis e trava outra frente. E o que eu faria agora.'
+const FRASE = 'Cotacao de peças pequenas está parada há doze dias úteis e trava outra frente. E o que eu faria agora.'
 
 export function EscolherVoz() {
   const [vozes, setVozes] = useState<{ nome: string; lang: string; boa: boolean }[]>([])
@@ -31,7 +31,7 @@ export function EscolherVoz() {
       <p className="rotulo mb-2">a voz do jarvis</p>
 
       {vozes.length === 0 ? (
-        <p className="fraco text-sm">Este navegador nao oferece vozes em portugues.</p>
+        <p className="fraco text-sm">Este navegador não oferece vozes em portugues.</p>
       ) : (
         <>
           <div className="flex flex-wrap gap-2 items-center">
@@ -66,7 +66,7 @@ export function EscolherVoz() {
       {!temBoa && (
         <div className="mt-3 pt-3 border-t border-[var(--linha)]">
           <p className="text-sm" style={{ color: 'var(--ambar)' }}>
-            So existem as vozes antigas do Windows nesta maquina - por isso soa como robo.
+            Só existem as vozes antigas do Windows nesta máquina - por isso soa como robo.
           </p>
           <p className="fraco text-sm mt-1">
             Duas formas de resolver, as duas de graca e sem mensalidade:

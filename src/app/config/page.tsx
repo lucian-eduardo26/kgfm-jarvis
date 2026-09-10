@@ -20,8 +20,8 @@ export default async function Configuracao() {
   return (
     <Moldura titulo="Configuracao" atalhoAtivo="/config">
       <p className="fraco text-sm mb-4 max-w-2xl">
-        Tudo aqui nasce com o padrao da especificacao. Cada mudanca guarda a data - se o mostrador
-        mudar de cor, voce precisa conseguir responder se foi o mundo que mudou ou se foi o peso.
+        Tudo aqui nasce com o padrão da especificação. Cada mudanca guarda a data - se o mostrador
+        mudar de cor, você precisa conseguir responder se foi o mundo que mudou ou se foi o peso.
       </p>
 
       <form action={salvarConfig} className="cartao p-4">
@@ -64,13 +64,13 @@ export default async function Configuracao() {
         <div className="flex gap-2 mt-4">
           <button className="botao">Salvar</button>
           <button formAction={restaurarPadrao} className="botao-fantasma">
-            Voltar ao padrao
+            Voltar ao padrão
           </button>
         </div>
       </form>
 
       <section className="cartao p-4 mt-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide mb-3">Limiares por area</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide mb-3">Limiares por área</h2>
         <ul className="text-sm space-y-1">
           {areas.map((a) => (
             <li key={a.id} className="flex justify-between">
@@ -82,7 +82,7 @@ export default async function Configuracao() {
           ))}
         </ul>
         <p className="fraco text-xs mt-2">
-          Editar limiar por area entra junto com a tela de areas. Hoje muda no banco.
+          Editar limiar por área entra junto com a tela de áreas. Hoje muda no banco.
         </p>
       </section>
 
@@ -95,7 +95,7 @@ export default async function Configuracao() {
           <strong>US$ {(gasto._sum.custoEstimado ?? 0).toFixed(4)}</strong> estimados
         </p>
         <p className="fraco text-xs mt-1">
-          A conta sobe aqui antes de subir na fatura. Classificacao usa o modelo pequeno de proposito.
+          A conta sobe aqui antes de subir na fatura. Classificacao usa o modelo pequeno de propósito.
         </p>
       </section>
     </Moldura>

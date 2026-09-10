@@ -1,12 +1,12 @@
-// FACA AGORA - a faixa de cima do painel.
+// FAÇA AGORA - a faixa de cima do painel.
 //
-// Regra de Goldratt, deterministica: aponta para o que DESTRAVA FLUXO, nao para
-// o mais atrasado. Item atrasado que nao bloqueia nada perde para item no prazo
-// que trava tres frentes. Toda recomendacao carrega o argumento.
+// Regra de Goldratt, deterministica: aponta para o que DESTRAVA FLUXO, não para
+// o mais atrasado. Item atrasado que não bloqueia nada perde para item no prazo
+// que trava três frentes. Toda recomendacao carrega o argumento.
 //
-// Nao usa IA de proposito: recomendacao gerada por LLM na hora do request
+// Não usa IA de propósito: recomendacao gerada por LLM na hora do request
 // deixaria o painel abrindo girando (risco tecnico 3), e uma regra que o Lucian
-// consegue conferir vale mais do que um palpite que ele nao consegue.
+// consegue conferir vale mais do que um palpite que ele não consegue.
 
 import type { DadosDoPainel } from './painel'
 
@@ -20,9 +20,9 @@ export type FacaAgora = {
 export function decidirAgora(d: DadosDoPainel): FacaAgora {
   if (!d.temEstrategia) {
     return {
-      titulo: 'Carregar a estrategia',
+      titulo: 'Carregar a estratégia',
       porque:
-        'Sem diagnostico, politica norteadora e objetivos, o painel mede atividade em vez de progresso - e o filtro de oportunidade nao filtra nada.',
+        'Sem diagnostico, política norteadora e objetivos, o painel mede atividade em vez de progresso - e o filtro de oportunidade não filtra nada.',
       area: null,
       frenteId: null,
     }
@@ -31,7 +31,7 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
   if (d.cronometro) {
     return {
       titulo: d.cronometro.tarefaTitulo,
-      porque: `Cronometro rodando em ${d.cronometro.areaNome}. Um de cada vez: terminar isto antes de abrir outra coisa.`,
+      porque: `Cronômetro rodando em ${d.cronometro.areaNome}. Um de cada vez: terminar isto antes de abrir outra coisa.`,
       area: d.cronometro.areaNome,
       frenteId: d.cronometro.frenteId,
     }
@@ -42,13 +42,13 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
   if (bloqueador) {
     return {
       titulo: bloqueador.titulo,
-      porque: `Trava ${bloqueador.bloqueia} ${bloqueador.bloqueia === 1 ? 'outra frente' : 'outras frentes'} e esta ${bloqueador.texto}. Destravar isto libera mais fluxo do que qualquer outra coisa hoje.`,
+      porque: `Trava ${bloqueador.bloqueia} ${bloqueador.bloqueia === 1 ? 'outra frente' : 'outras frentes'} e está ${bloqueador.texto}. Destravar isto libera mais fluxo do que qualquer outra coisa hoje.`,
       area: null,
       frenteId: bloqueador.frenteId,
     }
   }
 
-  // 2. Nada bloqueando: a area mais doente, e dentro dela o critico mais velho.
+  // 2. Nada bloqueando: a área mais doente, e dentro dela o crítico mais velho.
   const doentes = d.areas.filter((a) => a.zona !== 'cinza').sort((x, y) => x.indice - y.indice)
   const pior = doentes[0]
   if (pior && pior.criticos.length > 0) {
@@ -57,18 +57,18 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
       titulo: c.titulo,
       porque:
         c.motivo === 'cobrar'
-          ? `${pior.nome} esta em ${pior.indice}. A bola voltou para voce ha ${c.dias} dias uteis: e cobrar, nao esperar.`
-          : `${pior.nome} e a area mais doente do painel (${pior.indice} de 100) e esta e a frente ${c.texto}.`,
+          ? `${pior.nome} está em ${pior.indice}. A bola voltou para você há ${c.dias} dias úteis: e cobrar, não esperar.`
+          : `${pior.nome} e a área mais doente do painel (${pior.indice} de 100) e está e a frente ${c.texto}.`,
       area: pior.nome,
       frenteId: c.frenteId,
     }
   }
 
-  // 3. Sem critico nenhum: fila vazia e sinal de saude, nao de tela quebrada.
+  // 3. Sem crítico nenhum: fila vazia é sinal de saúde, não de tela quebrada.
   if (pior && pior.frentesAbertas === 0) {
     return {
       titulo: `Abrir frente em ${pior.nome}`,
-      porque: `${pior.nome} tem objetivo do mes e nenhuma frente aberta. Objetivo sem frente e desejo.`,
+      porque: `${pior.nome} tem objetivo do mês e nenhuma frente aberta. Objetivo sem frente é desejo.`,
       area: pior.nome,
       frenteId: null,
     }
@@ -77,15 +77,15 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
   if (d.itensSemClassificar > 0) {
     return {
       titulo: `Revisar ${d.itensSemClassificar} ${d.itensSemClassificar === 1 ? 'captura' : 'capturas'}`,
-      porque: 'Nenhum critico aberto. E a hora de reconciliar a caixa de entrada, antes que ela vire cemiterio.',
+      porque: 'Nenhum crítico aberto. E a hora de reconciliar a caixa de entrada, antes que ela vire cemiterio.',
       area: null,
       frenteId: null,
     }
   }
 
   return {
-    titulo: 'Nada critico',
-    porque: 'Nenhuma frente estourou prazo e a caixa esta limpa. Escolha o bloco profundo do dia pela estrategia, nao pela pressao.',
+    titulo: 'Nada crítico',
+    porque: 'Nenhuma frente estourou prazo e a caixa está limpa. Escolha o bloco profundo do dia pela estratégia, não pela pressão.',
     area: null,
     frenteId: null,
   }

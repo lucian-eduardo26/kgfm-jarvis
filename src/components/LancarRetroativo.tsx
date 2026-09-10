@@ -1,6 +1,6 @@
 // Lancar o que ficou sem registro. Fica ao lado do buraco do dia, porque toda
 // trava neste sistema tem o botao de liberar do lado, na mesma tela - e aqui a
-// "trava" e o proprio numero acusando um buraco que pode nao ser verdade.
+// "trava" e o próprio número acusando um buraco que pode não ser verdade.
 
 import { lancarRetroativo } from '@/app/acoes'
 
@@ -30,7 +30,7 @@ export function LancarRetroativo({ tarefas, hoje }: { tarefas: Opcao[]; hoje: st
         </button>
       </form>
       <p className="text-[11px] fraco mt-1.5">
-        Entra marcado como lembrado depois, nao cronometrado na hora - o historico continua honesto.
+        Entra marcado como lembrado depois, não cronometrado na hora - o histórico continua honesto.
       </p>
     </details>
   )

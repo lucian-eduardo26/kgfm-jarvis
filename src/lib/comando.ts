@@ -1,19 +1,19 @@
 // "Jarvis, estou fazendo o detalhamento do transportador."
 //
-// O caminho mais curto entre a boca do Lucian e o cronometro rodando.
+// O caminho mais curto entre a boca do Lucian e o cronômetro rodando.
 //
 // COMO ISSO FICOU BARATO (refeito em 10/09/2026):
 // A primeira versao chamava um modelo grande TODA VEZ - US$ 0,012 e alguns
 // segundos por comando. A 20 comandos por dia isso vira mensalidade disfarcada,
-// e o Lucian reclamou com razao.
+// e o Lucian reclamou com razão.
 //
-// Ligar o cronometro nao e problema de raciocinio, e problema de "parecido com":
-// "levantando os precos da cotacao" tem que casar com a frente "Cotacao de
+// Ligar o cronômetro não e problema de raciocinio, e problema de "parecido com":
+// "levantando os preços da cotacao" tem que casar com a frente "Cotacao de
 // pecas pequenas". Isso e comparacao de palavras (src/lib/casar.ts), roda em
 // milissegundos, de graca, sem internet e sem espera.
 //
-// A IA so entra quando a comparacao NAO tem certeza, ou quando ele perguntou
-// algo em vez de mandar. Na pratica: quase nunca.
+// A IA só entra quando a comparacao NÃO tem certeza, ou quando ele perguntou
+// algo em vez de mandar. Na prática: quase nunca.
 //
 // O veredito de prioridade nunca dependeu da IA - ele sempre foi calculado
 // aqui, comparando com a recomendacao real do painel.
@@ -38,7 +38,7 @@ export type ResultadoComando = {
   frente: string | null
   area: string | null
   resposta: string
-  alinhamento: 'e a prioridade' | 'nao e a prioridade' | 'sem prioridade definida'
+  alinhamento: 'e a prioridade' | 'não e a prioridade' | 'sem prioridade definida'
   recomendado: string | null
   /** true quando precisou gastar credito da API. */
   usouIa: boolean
@@ -68,13 +68,13 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
   const agora = new Date()
   const intencao = lerIntencao(texto)
 
-  // ---------- parar: nao precisa casar com nada ----------
+  // ---------- parar: não precisa casar com nada ----------
   if (intencao === 'parar') {
     const abertos = await prisma.apontamento.findMany({
       where: { encerradoEm: null },
       include: { tarefa: { include: { frente: true } } },
     })
-    if (abertos.length === 0) return vazio('Nenhum cronometro estava rodando.', recomendado)
+    if (abertos.length === 0) return vazio('Nenhum cronômetro estava rodando.', recomendado)
 
     await prisma.apontamento.updateMany({
       where: { encerradoEm: null },
@@ -119,8 +119,8 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     tarefas: f.tarefas.map((t) => ({ id: t.id, titulo: t.titulo })),
   }))
 
-  // Texto longo, ou com varias acoes encadeadas, NUNCA passa pelo casamento de
-  // palavras: e plano, e plano se organiza, nao se "casa".
+  // Texto longo, ou com varias ações encadeadas, NUNCA passa pelo casamento de
+  // palavras: e plano, e plano se organiza, não se "casa".
   const m = ehDitado(texto)
     ? { confiante: false, frenteId: null, tarefaId: null, tituloDaTarefaNova: tituloDoFalado(texto), nota: 0, segunda: 0 }
     : casar(texto, alvos)
@@ -129,7 +129,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
   if (intencao === 'concluir') {
     if (!m.confiante || !m.tarefaId) {
       return vazio(
-        'Nao consegui identificar qual tarefa terminou. Diga o nome dela, ou marque como feita na tela de Frentes.',
+        'Não consegui identificar qual tarefa terminou. Diga o nome dela, ou marque como feita na tela de Frentes.',
         recomendado,
       )
     }
@@ -156,39 +156,39 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     }
   }
 
-  // ---------- pergunta: a IA responde, nao escreve nada ----------
+  // ---------- pergunta: a IA responde, não escreve nada ----------
   if (intencao === 'perguntar') {
     return await comIa(texto, recomendado, null)
   }
 
-  // ---------- nao casou com nada: e DITADO, nao comando ----------
+  // ---------- não casou com nada: e DITADO, não comando ----------
   //
-  // Este era o beco sem saida do sistema. Quando ele ditava trabalho novo -
-  // "o motoboy busca as pecas na usinagem do Dennis, depois vai pro banho na
-  // Soriel" - a comparacao por palavras nao tinha o que casar e respondia
-  // "nao tenho certeza de qual frente e": tecnicamente correta e inutil.
+  // Este era o beco sem saída do sistema. Quando ele ditava trabalho novo -
+  // "o motoboy busca as peças na usinagem do Dennis, depois vai pro banho na
+  // Soriel" - a comparacao por palavras não tinha o que casar e respondia
+  // "não tenho certeza de qual frente e": tecnicamente correta e inútil.
   //
-  // Agora, se nao casou, o sistema entende que e trabalho NOVO e organiza:
-  // cria a frente na area certa, as tarefas na ordem, e os prazos.
+  // Agora, se não casou, o sistema entende que é trabalho NOVO e organiza:
+  // cria a frente na área certa, as tarefas na ordem, e os prazos.
   if (!m.confiante) {
     const { plano, usouIa } = await interpretarDitado(texto)
 
     if (!plano || !plano.frentes?.length) {
       if (!usouIa) {
         return vazio(
-          'Sem chave da API eu so consigo casar com o que ja existe - e isto aqui e assunto novo. Configure ANTHROPIC_API_KEY, ou abra a frente na tela de Frentes.',
+          'Sem chave da API eu só consigo casar com o que já existe - e isto aqui é assunto novo. Configure ANTHROPIC_API_KEY, ou abra a frente na tela de Frentes.',
           recomendado,
         )
       }
-      return vazio('Nao consegui organizar isso. Repita separando as coisas: o que fazer, onde, e para quando.', recomendado, true)
+      return vazio('Não consegui organizar isso. Repita separando as coisas: o que fazer, onde, e para quando.', recomendado, true)
     }
 
     const { linhas, tarefaParaComecar } = await gravarDitado(plano)
 
-    // Ele pode estar comecando algo que JA EXISTE, dito com outras palavras:
-    // "a logistica das pecas pra trazer da usinagem" e a tarefa
-    // "Logistica de retorno da usinagem". O modelo aponta o numero, e aqui a
-    // gente confere que a tarefa existe mesmo antes de ligar o relogio.
+    // Ele pode estar começando algo que JA EXISTE, dito com outras palavras:
+    // "a logística das peças pra trazer da usinagem" e a tarefa
+    // "Logística de retorno da usinagem". O modelo aponta o número, e aqui a
+    // gente confere que a tarefa existe mesmo antes de ligar o relógio.
     let alvo = tarefaParaComecar
     if (!alvo && plano.tarefaExistenteId) {
       const existe = await prisma.tarefa.findFirst({
@@ -197,7 +197,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
       if (existe) alvo = existe.id
     }
 
-    // Se ele disse que ja esta fazendo uma delas, o relogio parte junto.
+    // Se ele disse que já está fazendo uma delas, o relógio parte junto.
     let tarefaIniciada: string | null = null
     let frenteIniciada: string | null = null
     let areaIniciada: string | null = null
@@ -237,7 +237,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
 
   // ---------- iniciar, com certeza e sem custo ----------
   const frente = frentes.find((f) => f.id === m.frenteId)
-  if (!frente) return vazio('A frente que eu entendi nao existe mais.', recomendado)
+  if (!frente) return vazio('A frente que eu entendi não existe mais.', recomendado)
 
   let tarefaId = m.tarefaId
   let tituloTarefa: string
@@ -251,7 +251,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     tituloTarefa = nova.titulo
   }
 
-  // Um cronometro por vez, no sistema inteiro.
+  // Um cronômetro por vez, no sistema inteiro.
   const anterior = await prisma.apontamento.findFirst({
     where: { encerradoEm: null },
     include: { tarefa: true },
@@ -271,9 +271,9 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     ? 'sem prioridade definida'
     : recomendacao.frenteId === frente.id
       ? 'e a prioridade'
-      : 'nao e a prioridade'
+      : 'não e a prioridade'
 
-  // A resposta e montada com FATO, nao com opiniao de modelo.
+  // A resposta e montada com FATO, não com opinião de modelo.
   const partes: string[] = [`Rodando: ${tituloTarefa}.`]
   if (anterior && anterior.tarefaId !== tarefaId) {
     const minAnterior = Math.round((agora.getTime() - anterior.iniciadoEm.getTime()) / 60000)
@@ -282,7 +282,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
   if (frente.bloqueiaEstas.length > 0) {
     partes.push(`Esta frente trava ${frente.bloqueiaEstas.length} outra${frente.bloqueiaEstas.length > 1 ? 's' : ''}.`)
   } else if (paradaHa >= frente.area.diasParaCritico) {
-    partes.push(`Estava parada ha ${paradaHa} dias uteis.`)
+    partes.push(`Estava parada há ${paradaHa} dias úteis.`)
   }
 
   return {
@@ -299,7 +299,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
   }
 }
 
-/** O caminho caro. So quando a comparacao nao deu conta. */
+/** O caminho caro. Só quando a comparacao não deu conta. */
 async function comIa(
   texto: string,
   recomendado: string | null,
@@ -308,9 +308,9 @@ async function comIa(
   if (!process.env.ANTHROPIC_API_KEY?.trim()) {
     if (alvosParaEscolher && alvosParaEscolher.length > 0) {
       const nomes = alvosParaEscolher.slice(0, 4).map((a) => a.frenteTitulo).join(', ')
-      return vazio(`Nao tenho certeza de qual frente e. Repita com o nome dela - as abertas sao: ${nomes}.`, recomendado)
+      return vazio(`Não tenho certeza de qual frente e. Repita com o nome dela - as abertas são: ${nomes}.`, recomendado)
     }
-    return vazio('Nao achei frente aberta para isso. Abra a frente primeiro.', recomendado)
+    return vazio('Não achei frente aberta para isso. Abra a frente primeiro.', recomendado)
   }
 
   const estado = await montarEstado()
@@ -320,10 +320,10 @@ async function comIa(
     model: MODELO,
     max_tokens: 350,
     system: [
-      'Voce e o Jarvis da KGFM. O Lucian falou com voce enquanto trabalha e a busca por palavras nao teve certeza do que ele quis dizer.',
-      'Responda em no maximo duas frases, portugues do Brasil, direto, sem elogio, hifen no lugar de travessao.',
-      'Se for pergunta, responda com o que esta no ESTADO abaixo e nada alem disso.',
-      'Se ele quis comecar algo e voce conseguir identificar a frente, diga o nome dela e peca para ele repetir usando esse nome - voce nao liga o cronometro nesta situacao.',
+      'Você é o Jarvis da KGFM. O Lucian falou com você enquanto trabalha e a busca por palavras não teve certeza do que ele quis dizer.',
+      'Responda em no máximo duas frases, portugues do Brasil, direto, sem elogio, hifen no lugar de travessao.',
+      'Se for pergunta, responda com o que está no ESTADO abaixo e nada além disso.',
+      'Se ele quis começar algo e você conseguir identificar a frente, diga o nome dela é peça para ele repetir usando esse nome - você não liga o cronômetro nesta situacao.',
       '',
       estado,
     ].join('\n'),
@@ -343,6 +343,6 @@ async function comIa(
     })
     .catch(() => {})
 
-  const resposta = r.content.find((c) => c.type === 'text')?.text ?? 'Nao consegui formular.'
+  const resposta = r.content.find((c) => c.type === 'text')?.text ?? 'Não consegui formular.'
   return { ...vazio(resposta, recomendado, true) }
 }

@@ -1,22 +1,22 @@
 // A LINHA DO TEMPO DO PROJETO.
 //
 // Pedido do Lucian em 10/09/2026: "eu quero a linha do tempo, as tarefas, os
-// entregaveis de cada projeto. Gerir assim e melhor do que inventar a roda e
+// entregáveis de cada projeto. Gerir assim é melhor do que inventar a roda e
 // fazer igual ao Project, que fica pesado."
 //
-// Por isso aqui NAO existe diagrama de Gantt, dependencia entre tarefas nem
-// caminho critico. Existe o que ele precisa para saber onde o projeto esta:
-// o que ja aconteceu, com data, e o que falta acontecer.
+// Por isso aqui NÃO existe diagrama de Gantt, dependencia entre tarefas nem
+// caminho crítico. Existe o que ele precisa para saber onde o projeto está:
+// o que já aconteceu, com data, e o que falta acontecer.
 //
-// A materia-prima ja estava toda no banco e nunca tinha sido lida junta:
+// A materia-prima já estava toda no banco e nunca tinha sido lida junta:
 //   - `movimentos`: cada toque numa frente, com data (foi para isso que a
 //     tabela existe - a revisao trimestral pede dado, nao memoria)
 //   - `tarefas`: o que falta, e o que foi concluido e quando
 //   - `apontamentos`: quanto tempo custou
 //   - `itens` tipo compromisso: os prazos ditos
 //
-// Isso significa que a linha do tempo nao pede NENHUM trabalho novo dele. Ela e
-// subproduto de apontar hora e mexer nas frentes - que ele ja faz.
+// Isso significa que a linha do tempo não pede NENHUM trabalho novo dele. Ela e
+// subproduto de apontar hora e mexer nas frentes - que ele já faz.
 
 export type EventoProjeto = {
   em: Date
@@ -82,8 +82,8 @@ export function montarLinhaDoTempo(p: EntradaProjeto, agora: Date = new Date()):
       futuro: false,
     })
 
-    // Os movimentos de trabalho viram UM evento por dia, e nao um por toque -
-    // senao a linha do tempo vira log de sistema e ninguem le.
+    // Os movimentos de trabalho viram UM evento por dia, e não um por toque -
+    // senao a linha do tempo vira log de sistema e ninguém le.
     const trabalhoPorDia = new Map<string, Date>()
     for (const m of f.movimentos) {
       const tipo = ROTULO[m.tipo]

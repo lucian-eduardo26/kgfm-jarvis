@@ -1,7 +1,7 @@
 'use server'
 
-// Todas as acoes de escrita. Server Actions em vez de rotas de API: e menos
-// codigo para a mesma coisa, e o sistema tem um usuario so.
+// Todas as ações de escrita. Server Actions em vez de rotas de API: e menos
+// codigo para a mesma coisa, e o sistema tem um usuário só.
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -29,7 +29,7 @@ export async function sair() {
   redirect('/entrar')
 }
 
-/** Captura. Zero campo obrigatorio alem do texto. A IA classifica depois. */
+/** Captura. Zero campo obrigatório além do texto. A IA classifica depois. */
 export async function capturar(form: FormData) {
   const bruto = String(form.get('conteudo') ?? '').trim()
   if (!bruto) return
@@ -39,7 +39,7 @@ export async function capturar(form: FormData) {
     data: { conteudo: bruto, conteudoBruto: bruto, origem },
   })
 
-  // Classificar nunca pode segurar a captura. Se a IA falhar ou nao houver
+  // Classificar nunca pode segurar a captura. Se a IA falhar ou não houver
   // chave, o item fica em "novo" e aparece na lista para o Lucian arrastar.
   try {
     const c = await classificar(bruto)
@@ -59,7 +59,7 @@ export async function capturar(form: FormData) {
       if (c.frenteId) await registrarMovimento(c.frenteId, 'captura', bruto.slice(0, 120))
     }
   } catch {
-    // silencio de proposito: o item ja esta salvo, que e o que importa
+    // silêncio de propósito: o item já está salvo, que é o que importa
   }
 
   revalidatePath('/painel')
@@ -148,9 +148,9 @@ export async function criarTarefa(form: FormData) {
 }
 
 /**
- * O cronometro. So UM apontamento aberto no sistema inteiro: comecar outra
+ * O cronômetro. Só UM apontamento aberto no sistema inteiro: começar outra
  * tarefa encerra a anterior com motivo "troca". O limite de WIP deixa de ser
- * aviso e vira fisica.
+ * aviso e vira física.
  */
 export async function iniciarCronometro(form: FormData) {
   const tarefaId = Number(form.get('tarefaId'))
@@ -259,7 +259,7 @@ export async function medirObjetivo(form: FormData) {
 
 /**
  * Apaga a carga de exemplo. Fica na tela, ao lado do aviso, porque o Lucian
- * nao roda comando: trava com botao de liberar do lado, na mesma tela.
+ * não roda comando: trava com botao de liberar do lado, na mesma tela.
  */
 export async function limparExemplo() {
   const MARCA = '[exemplo]'
@@ -287,8 +287,8 @@ export async function falarComJarvis(historico: Fala[]): Promise<string> {
 }
 
 /**
- * Cria o projeto e desdobra a WBS padrao nos quatro setores.
- * Os pacotes nascem PLANEJADOS: a WBS e o plano, o quadro e o agora.
+ * Cria o projeto e desdobra a WBS padrão nos quatro setores.
+ * Os pacotes nascem PLANEJADOS: a WBS é o plano, o quadro é o agora.
  */
 export async function criarProjetoComWbs(form: FormData) {
   const nome = String(form.get('nome') ?? '').trim()
@@ -359,7 +359,7 @@ export async function mudarFaseProjeto(form: FormData) {
   const fase = String(form.get('fase')) as FaseWbs
   const projeto = await prisma.projeto.update({ where: { id }, data: { fase } })
 
-  // Ao mudar de fase, os pacotes da fase nova que ainda nao existem sao criados.
+  // Ao mudar de fase, os pacotes da fase nova que ainda não existem são criados.
   const existentes = new Set((await prisma.frente.findMany({ where: { projetoId: id } })).map((f) => f.pacote))
   const areas = new Map((await prisma.area.findMany()).map((a) => [a.chave, a]))
   let ordem = 100
@@ -375,7 +375,7 @@ export async function mudarFaseProjeto(form: FormData) {
   revalidatePath('/projetos')
 }
 
-/** "Jarvis, estou fazendo X" - fala vira cronometro rodando. */
+/** "Jarvis, estou fazendo X" - fala vira cronômetro rodando. */
 export async function comandoDeVoz(texto: string): Promise<ResultadoComando> {
   const r = await executarComando(texto)
   revalidatePath('/painel')
@@ -393,7 +393,7 @@ export async function rodarCheckout() {
   revalidatePath('/semana')
 }
 
-/** SPIN do projeto. Nada obrigatorio: guarda o que ja se sabe. */
+/** SPIN do projeto. Nada obrigatório: guarda o que já se sabe. */
 export async function salvarSpin(form: FormData) {
   const id = Number(form.get('projetoId'))
   await prisma.projeto.update({
@@ -462,7 +462,7 @@ export async function apagarConhecimento(form: FormData) {
   revalidatePath('/playbook')
 }
 
-/** Os numeros do caixa. Uma linha so, id 1. */
+/** Os números do caixa. Uma linha só, id 1. */
 export async function salvarCaixa(form: FormData) {
   const n = (k: string) => {
     const v = Number(form.get(k))
@@ -484,7 +484,7 @@ export async function salvarCaixa(form: FormData) {
 /**
  * Marcar compromisso. A hora vem como "14:30" e a data como "2026-09-10";
  * junto as duas no fuso de Sao Paulo, senao a Vercel (que roda em UTC) marca
- * a reuniao tres horas fora do lugar.
+ * a reunião três horas fora do lugar.
  */
 export async function criarCompromisso(form: FormData) {
   const titulo = String(form.get('titulo') ?? '').trim()
@@ -508,7 +508,7 @@ export async function apagarCompromisso(form: FormData) {
   revalidatePath('/painel')
 }
 
-/** Mais um bloco na mesma tarefa: reinicia o bloco sem parar o cronometro. */
+/** Mais um bloco na mesma tarefa: reinicia o bloco sem parar o cronômetro. */
 export async function continuarBloco(form: FormData) {
   const id = Number(form.get('apontamentoId'))
   await prisma.apontamento.update({
@@ -519,7 +519,7 @@ export async function continuarBloco(form: FormData) {
 }
 
 /**
- * Descansar. O cronometro PARA - descanso nao e trabalho e nao pode entrar na
+ * Descansar. O cronômetro PARA - descanso não e trabalho e não pode entrar na
  * conta de horas. A tarefa fica guardada para o sistema saber para onde voltar.
  */
 export async function comecarDescanso(form: FormData) {
@@ -569,12 +569,12 @@ export async function encerrarDescanso() {
 /**
  * LANCAMENTO RETROATIVO - consertar o que ficou sem registro.
  *
- * Existe porque o buraco do dia nao e ociosidade por definicao: pode ser
+ * Existe porque o buraco do dia não e ociosidade por definicao: pode ser
  * trabalho que ele esqueceu de apontar. Sem este botao, erro de lancamento
- * virava prejuizo no fechamento da semana, e o numero perdia a autoridade.
+ * virava prejuizo no fechamento da semana, e o número perdia a autoridade.
  *
  * O apontamento nasce JA FECHADO e marcado como revisar - fica claro no
- * historico que aquilo foi lembrado depois, nao cronometrado na hora.
+ * histórico que aquilo foi lembrado depois, não cronometrado na hora.
  */
 export async function lancarRetroativo(form: FormData) {
   const tarefaId = Number(form.get('tarefaId'))

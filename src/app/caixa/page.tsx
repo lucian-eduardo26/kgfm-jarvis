@@ -45,7 +45,7 @@ export default async function Caixa() {
       <section className="cartao p-5" style={{ borderColor: corRunway }}>
         <p className="rotulo">dias de vida do caixa</p>
         <div className="flex flex-wrap items-end gap-4 mt-1">
-          <p className="numero text-6xl leading-none" style={{ color: corRunway }}>
+          <p className="número text-6xl leading-none" style={{ color: corRunway }}>
             {r.configurado && r.zona !== 'cinza' ? r.dias : '--'}
           </p>
           {r.configurado && (
@@ -123,7 +123,7 @@ export default async function Caixa() {
             <p className="rotulo mb-2">o que entra em 90 dias</p>
             <ul className="text-sm space-y-1">
               <li className="flex justify-between">
-                <span>Com data de recebimento ate 90 dias</span>
+                <span>Com data de recebimento até 90 dias</span>
                 <span className="dado">{reais(previsao.entraEm90Dias)}</span>
               </li>
               <li className="flex justify-between fraco">
@@ -145,7 +145,7 @@ export default async function Caixa() {
       </div>
 
       <form action={salvarCaixa} className="cartao p-4 mt-3">
-        <p className="rotulo mb-3">os numeros do caixa</p>
+        <p className="rotulo mb-3">os números do caixa</p>
         <div className="grid sm:grid-cols-3 gap-3">
           <label className="block">
             <span className="text-xs fraco">Saldo em caixa hoje (R$)</span>
@@ -192,8 +192,8 @@ export default async function Caixa() {
         </div>
         <button className="botao mt-3">Salvar</button>
         <p className="fraco text-xs mt-2">
-          O saldo nao se atualiza sozinho - o Jarvis nao fala com banco nenhum. Corrija aqui quando o
-          numero mudar de verdade; runway em cima de saldo velho e pior do que runway nenhum.
+          O saldo não se atualiza sozinho - o Jarvis não fala com banco nenhum. Corrija aqui quando o
+          número mudar de verdade; runway em cima de saldo velho é pior do que runway nenhum.
         </p>
       </form>
     </Moldura>

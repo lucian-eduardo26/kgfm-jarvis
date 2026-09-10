@@ -1,15 +1,15 @@
 // O mostrador - anel de percentual.
 //
-// Terceira versao, e a direcao veio dos mockups que o Lucian mandou em
-// 10/09/2026: anel fechado com o numero grande no meio, no lugar do arco
+// Terceira versão, e a direção veio dos mockups que o Lucian mandou em
+// 10/09/2026: anel fechado com o número grande no meio, no lugar do arco
 // aberto. E o instrumento que aparece nos dois - no painel do desktop e no
 // telefone.
 //
-// A REGRA DE COR, que os mockups nao tinham e sem a qual isto vira enfeite:
+// A REGRA DE COR, que os mockups não tinham e sem a qual isto vira enfeite:
 // a MOLDURA e laranja (marca), mas o PREENCHIMENTO DO ANEL e estado -
-// verde, ambar ou vermelho. Se o anel tambem fosse laranja, os quatro
-// mostradores ficariam identicos e o painel pararia de comunicar em dois
-// segundos, que e a unica coisa que ele precisa fazer.
+// verde, âmbar ou vermelho. Se o anel também fosse laranja, os quatro
+// mostradores ficariam idênticos e o painel pararia de comunicar em dois
+// segundos, que é a única coisa que ele precisa fazer.
 
 import Link from 'next/link'
 import { COR_DA_ZONA, type Zona } from '@/lib/mostrador'

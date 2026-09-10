@@ -3,22 +3,22 @@
 // O CICLO DE TRABALHO.
 //
 // Pomodoro, mas sem a tirania do Pomodoro. O sistema SUGERE - avisa que o bloco
-// encheu e oferece tres saidas: continuar, descansar, ou trocar de tarefa.
+// encheu e oferece três saidas: continuar, descansar, ou trocar de tarefa.
 // Bloco imposto vira alarme ignorado em duas semanas; bloco sugerido vira
 // habito.
 //
-// Tres decisoes que fazem diferenca:
+// Tres decisões que fazem diferenca:
 //
-// 1. DESCANSO NAO E APONTAMENTO. Se o descanso entrasse como hora trabalhada,
+// 1. DESCANSO NÃO E APONTAMENTO. Se o descanso entrasse como hora trabalhada,
 //    o painel diria que ele produziu enquanto tomava cafe. Fica em tabela
-//    propria e nao entra na conta de horas.
+//    própria e não entra na conta de horas.
 //
-// 2. PARAR SEMPRE PERGUNTA "E AGORA?". Antes, parar o cronometro jogava o
+// 2. PARAR SEMPRE PERGUNTA "E AGORA?". Antes, parar o cronômetro jogava o
 //    tempo direto no buraco do dia sem dizer nada - o Lucian parava e o sistema
 //    comecava a contar ocioso calado. Agora parar abre a escolha.
 //
-// 3. DURANTE COMPROMISSO, SILENCIO. O sistema conhece a agenda: se ele esta em
-//    reuniao, o bloco nao apita. Alarme tocando no meio de uma visita a cliente
+// 3. DURANTE COMPROMISSO, SILENCIO. O sistema conhece a agenda: se ele está em
+//    reunião, o bloco não apita. Alarme tocando no meio de uma visita a cliente
 //    e o jeito mais rapido de o sistema ser desinstalado.
 
 import { useEffect, useRef, useState } from 'react'
@@ -77,15 +77,15 @@ function tocar(grave = false) {
     }
     setTimeout(() => ctx.close(), 1500)
   } catch {
-    // sem audio disponivel: o aviso visual continua valendo
+    // sem áudio disponível: o aviso visual continua valendo
   }
 }
 
 export function Ciclo({ cronometro, descanso, emCompromisso, ciclo, acoes }: Props) {
-  // O relogio so comeca DEPOIS de montar no navegador.
-  // Se o primeiro render ja calculasse a hora, o servidor produziria um texto
+  // O relógio só começa DEPOIS de montar no navegador.
+  // Se o primeiro render já calculasse a hora, o servidor produziria um texto
   // e o navegador outro, e o React reclamaria de hidratacao - foi o que
-  // aconteceu em 10/09/2026. Ate montar, a tela mostra tracos.
+  // aconteceu em 10/09/2026. Até montar, a tela mostra tracos.
   const [agora, setAgora] = useState<number | null>(null)
   const jaTocou = useRef(false)
   const router = useRouter()
@@ -103,7 +103,7 @@ export function Ciclo({ cronometro, descanso, emCompromisso, ciclo, acoes }: Pro
         <p className="font-medium mt-0.5 truncate">
           {descanso ? (descanso.tarefaTitulo ?? 'pausa') : (cronometro?.tarefaTitulo ?? '')}
         </p>
-        <p className="numero text-3xl mt-1 fraco">--:--</p>
+        <p className="número text-3xl mt-1 fraco">--:--</p>
       </section>
     )
   }
@@ -130,7 +130,7 @@ export function Ciclo({ cronometro, descanso, emCompromisso, ciclo, acoes }: Pro
                 ? descanso.tarefaTitulo
                   ? `Volta para: ${descanso.tarefaTitulo}`
                   : 'Hora de voltar.'
-                : 'Este tempo nao conta como trabalho - e para nao contar mesmo.'}
+                : 'Este tempo não conta como trabalho - e para não contar mesmo.'}
             </p>
           </div>
           <div className="flex items-center gap-3">
