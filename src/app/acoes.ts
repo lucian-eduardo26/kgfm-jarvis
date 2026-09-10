@@ -14,6 +14,7 @@ import { responder, type Fala } from '@/lib/conversa'
 import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
+import { podeMandarProposta } from '@/lib/spin'
 
 export async function entrar(form: FormData) {
   const senha = String(form.get('senha') ?? '')
@@ -384,4 +385,92 @@ export async function rodarCheckin() {
 export async function rodarCheckout() {
   await fazerCheckout()
   revalidatePath('/semana')
+}
+
+/** SPIN do projeto. Nada obrigatorio: guarda o que ja se sabe. */
+export async function salvarSpin(form: FormData) {
+  const id = Number(form.get('projetoId'))
+  await prisma.projeto.update({
+    where: { id },
+    data: {
+      situacao: String(form.get('situacao') ?? '') || null,
+      problema: String(form.get('problema') ?? '') || null,
+      implicacao: String(form.get('implicacao') ?? '') || null,
+      necessidade: String(form.get('necessidade') ?? '') || null,
+    },
+  })
+  revalidatePath('/projetos')
+}
+
+/**
+ * Registrar proposta enviada. A trava do SPIN mora aqui - e o botao de liberar
+ * fica ao lado dela, na mesma tela.
+ */
+export async function marcarPropostaEnviada(form: FormData) {
+  const id = Number(form.get('projetoId'))
+  const forcar = form.get('forcar') === '1'
+  const p = await prisma.projeto.findUnique({ where: { id } })
+  if (!p) return
+  const v = podeMandarProposta(p)
+  if (!v.liberado && !forcar) redirect(`/projetos?spin=${id}`)
+  await prisma.projeto.update({ where: { id }, data: { propostaEnviadaEm: new Date() } })
+  revalidatePath('/projetos')
+  revalidatePath('/painel')
+}
+
+/** O decisor, com o que dói para ELE. Carnegie aplicado. */
+export async function salvarDecisor(form: FormData) {
+  const projetoId = Number(form.get('projetoId'))
+  const nome = String(form.get('nome') ?? '').trim()
+  if (!nome) return
+  await prisma.decisor.create({
+    data: {
+      projetoId,
+      nome,
+      cargo: String(form.get('cargo') ?? '') || null,
+      oQueDoiParaEle: String(form.get('oQueDoiParaEle') ?? '') || null,
+      interesses: String(form.get('interesses') ?? '') || null,
+    },
+  })
+  revalidatePath('/projetos')
+}
+
+export async function salvarConhecimento(form: FormData) {
+  const titulo = String(form.get('titulo') ?? '').trim()
+  const conteudo = String(form.get('conteudo') ?? '').trim()
+  if (!titulo || !conteudo) return
+  const id = form.get('id') ? Number(form.get('id')) : null
+  const dados = {
+    titulo,
+    conteudo,
+    categoria: String(form.get('categoria') ?? 'tecnico'),
+    tags: String(form.get('tags') ?? '') || null,
+  }
+  if (id) await prisma.conhecimento.update({ where: { id }, data: dados })
+  else await prisma.conhecimento.create({ data: dados })
+  revalidatePath('/playbook')
+}
+
+export async function apagarConhecimento(form: FormData) {
+  await prisma.conhecimento.delete({ where: { id: Number(form.get('id')) } })
+  revalidatePath('/playbook')
+}
+
+/** Os numeros do caixa. Uma linha so, id 1. */
+export async function salvarCaixa(form: FormData) {
+  const n = (k: string) => {
+    const v = Number(form.get(k))
+    return Number.isFinite(v) ? v : 0
+  }
+  const dados = {
+    saldo: n('saldo'),
+    custoFixoMensal: n('custoFixoMensal'),
+    parcelaEmprestimo: n('parcelaEmprestimo'),
+    margemBruta: Math.max(0.01, Math.min(1, n('margemBruta') / 100)),
+    limiteBaixoTicket: n('limiteBaixoTicket'),
+    tetoHoraBaixoTicket: Math.max(0, Math.min(1, n('tetoHoraBaixoTicket') / 100)),
+  }
+  await prisma.caixa.upsert({ where: { id: 1 }, create: { id: 1, ...dados }, update: dados })
+  revalidatePath('/caixa')
+  revalidatePath('/painel')
 }

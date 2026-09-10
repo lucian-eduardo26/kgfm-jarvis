@@ -15,6 +15,7 @@ import { montarPainel } from './painel'
 import { decidirAgora } from './agora'
 import { confrontar } from './expediente'
 import { formatarHoras } from './datas'
+import { calcularRunway, reais } from './caixa'
 
 const MODELO = 'claude-sonnet-5'
 const PRECO = { entrada: 3, saida: 15 }
@@ -41,19 +42,36 @@ const INSTRUCAO = [
   '- Newport: engenharia e proposta sao trabalho profundo; prospeccao e follow-up sao rasos. Misturar degrada os dois.',
   '- Pressfield: tempo de expediente sem registro conta como nada feito, e a Resistencia se disfarca de tarefa urgente que nao e a dele.',
   '- Rumelt: oportunidade nova se confronta com a politica norteadora antes de virar frente.',
+  '- SPIN: proposta so se sustenta depois que o cliente ADMITIU o custo do problema (Implicacao) e disse o que precisa (Necessidade). Se o projeto estiver marcado como SPIN INCOMPLETO e ele falar em mandar proposta, trave: diga que mandar agora e disputar preco, e que o proximo passo e a ligacao de qualificacao.',
+  '- Carnegie: abordagem fala do problema DELE, com as palavras dele. Se houver decisor com "dói para ele" registrado, use aquilo. Nunca sugira mandar catalogo ou lista de equipamento.',
+  '- Especificacao tecnica sai do PLAYBOOK. Se o playbook nao cobre, diga que nao esta no playbook em vez de inventar numero de equipamento.',
+  '- Dinheiro pesa: entre duas coisas parecidas, a que tem mais valor em jogo ganha, e diga o valor.',
+  '- RUNWAY MANDA. Com menos de 30 dias de caixa nao existe projeto estrategico: existe o que fatura rapido. Prefira o que ja tem cadastro aprovado, o que se compra com verba de gerente e nao de board, e o que vira pedido em semanas. Com mais de 90 dias, pode trabalhar o funil longo. Nunca sugira bloco profundo em coisa que so gera dinheiro depois do caixa acabar.',
 ].join('\n')
 
 export async function montarEstado(): Promise<string> {
   const d = await montarPainel()
   const agora = decidirAgora(d)
   const c = confrontar(d.minutosHoje)
-  const [estrategias, frentes, projetos] = await Promise.all([
+  const [estrategias, frentes, projetos, playbook] = await Promise.all([
     prisma.estrategia.findMany(),
     prisma.frente.findMany({ where: { status: 'aberta' }, include: { area: true, projeto: true } }),
-    prisma.projeto.findMany({ where: { ativo: true } }),
+    prisma.projeto.findMany({ where: { ativo: true }, include: { decisores: true } }),
+    prisma.conhecimento.findMany({ orderBy: { atualizadoEm: 'desc' }, take: 40 }),
   ])
 
   const linhas: string[] = ['ESTADO (unica fonte de verdade sobre a empresa)', '']
+
+  // O caixa vem primeiro: com runway curto, todo o resto muda de peso.
+  const runway = calcularRunway(d.caixa)
+  linhas.push('CAIXA:')
+  if (!runway.configurado) linhas.push('- nao informado. Nao afirme nada sobre caixa, prazo ou sobrevivencia.')
+  else {
+    linhas.push(`- runway: ${runway.dias} dias de vida (${runway.zona})`)
+    linhas.push(`- queima: ${reais(runway.queimaMensal)} por mes`)
+    linhas.push(`- faturamento de equilibrio: ${reais(runway.faturamentoDeEquilibrio)} por mes`)
+  }
+
 
   linhas.push('MOSTRADORES:')
   for (const a of d.areas) {
@@ -85,8 +103,39 @@ export async function montarEstado(): Promise<string> {
   }
 
   if (projetos.length > 0) {
-    linhas.push('', 'PROJETOS:')
-    for (const p of projetos) linhas.push(`- ${p.nome} (${p.fase})${p.cliente ? ` - ${p.cliente}` : ''}`)
+    linhas.push('', 'PROJETOS (valor em jogo, qualificacao SPIN e quem decide):')
+    for (const p of projetos) {
+      linhas.push(
+        `- ${p.nome} (${p.fase})${p.cliente ? ` - ${p.cliente}` : ''}` +
+          `${p.valorEstimado ? ` - R$ ${p.valorEstimado.toLocaleString('pt-BR')}` : ' - sem valor informado'}` +
+          `${p.propostaEnviadaEm ? ` - proposta enviada em ${p.propostaEnviadaEm.toLocaleDateString('pt-BR')}` : ''}`,
+      )
+      // SPIN: sem Implicacao e Necessidade, proposta e disputa de preco.
+      const faltando = [
+        !p.implicacao?.trim() ? 'Implicacao' : null,
+        !p.necessidade?.trim() ? 'Necessidade' : null,
+      ].filter(Boolean)
+      if (p.problema?.trim()) linhas.push(`  problema: ${p.problema}`)
+      if (p.implicacao?.trim()) linhas.push(`  implicacao (o custo, nas palavras dele): ${p.implicacao}`)
+      if (p.necessidade?.trim()) linhas.push(`  necessidade dita por ele: ${p.necessidade}`)
+      if (faltando.length) linhas.push(`  SPIN INCOMPLETO - falta ${faltando.join(' e ')}. Proposta agora vira disputa de preco.`)
+      for (const d of p.decisores) {
+        linhas.push(
+          `  decisor: ${d.nome}${d.cargo ? ` (${d.cargo})` : ''}` +
+            `${d.oQueDoiParaEle ? ` - dói para ele: ${d.oQueDoiParaEle}` : ''}` +
+            `${d.interesses ? ` - interesses: ${d.interesses}` : ''}`,
+        )
+      }
+    }
+  }
+
+  if (playbook.length > 0) {
+    // O lastro tecnico: e daqui que sai especificacao, nunca da sua memoria.
+    linhas.push('', 'PLAYBOOK KGFM (lastro tecnico - use isto e nao invente especificacao):')
+    for (const n of playbook) {
+      linhas.push(`- [${n.categoria}] ${n.titulo}${n.tags ? ` (${n.tags})` : ''}`)
+      linhas.push(`  ${n.conteudo.replace(/\s+/g, ' ').slice(0, 600)}`)
+    }
   }
 
   linhas.push('', 'ESTRATEGIA:')

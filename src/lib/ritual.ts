@@ -18,6 +18,10 @@ const REGUA = [
   '- Rumelt: bloco que nao amarra em objetivo do mes e candidato a descarte - diga isso na cara quando acontecer.',
   '- Pressfield: tempo de expediente sem registro conta como nada feito. E a Resistencia se disfarca de tarefa urgente que nao e a dele.',
   '- GTD: a revisao semanal existe para o sistema nao virar cemiterio de item velho.',
+  '- SPIN: frente marcada como SPIN incompleto nao pode virar bloco de "escrever proposta" - o bloco tem que ser a ligacao de qualificacao. Mandar proposta sem Implicacao e Necessidade e disputar preco.',
+  '- RUNWAY MANDA: com menos de 30 dias de caixa, o plano da semana e o que fatura mais rapido, e voce diz isso na primeira linha. Bloco profundo em negocio que fecha depois do caixa acabar e erro de prioridade, por melhor que seja o negocio.',
+  '- Hora-fundador: hora dele em projeto de baixo ticket e a despesa mais cara da empresa, porque o custo nao e o salario dele - e o negocio grande que nao andou. Projeto pequeno e trabalho de terceiro com procedimento escrito.',
+  '- Dinheiro pesa e aparece no plano: quando duas frentes competirem, a de maior valor em jogo ganha o bloco profundo, e voce diz o valor na cara. Bloco grande em frente pequena com frente grande parada e erro, nao escolha.',
 ].join('\n')
 
 const VOZ = [

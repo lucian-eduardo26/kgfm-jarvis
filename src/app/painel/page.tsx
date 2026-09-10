@@ -13,6 +13,7 @@ import { limparExemplo, comandoDeVoz } from '../acoes'
 import { ComandoVoz } from '@/components/ComandoVoz'
 import { confrontar } from '@/lib/expediente'
 import { vozDoDia } from '@/lib/resistencia'
+import { calcularRunway, reais } from '@/lib/caixa'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +23,15 @@ export default async function Painel() {
   const agora = decidirAgora(d)
   const horas = new Map(d.horasHoje.map((h) => [h.areaId, h.minutos]))
   const c = confrontar(d.minutosHoje)
+  const runway = calcularRunway(d.caixa)
+  const corDoRunway =
+    runway.zona === 'vermelho'
+      ? 'var(--vermelho)'
+      : runway.zona === 'ambar'
+        ? 'var(--ambar)'
+        : runway.zona === 'verde'
+          ? 'var(--verde)'
+          : 'var(--borda)'
   const voz = vozDoDia({
     percentualNoEscuro: c.percentualNoEscuro,
     minutosExpediente: c.minutosExpediente,
@@ -35,6 +45,38 @@ export default async function Painel() {
 
   return (
     <Moldura titulo="Painel">
+      {/* O RUNWAY FICA ACIMA DO PAINEL, nao dentro dele: mostrador verde numa
+          empresa com 40 dias de caixa e instrumento medindo a coisa errada com
+          muita precisao. */}
+      <Link
+        href="/caixa"
+        className="cartao block px-4 py-2.5 mb-3"
+        style={{ borderColor: corDoRunway }}
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <span className="rotulo">caixa</span>
+          {runway.configurado && runway.zona !== 'cinza' ? (
+            <>
+              <span className="text-sm">
+                <span className="numero text-2xl mr-1" style={{ color: corDoRunway }}>
+                  {runway.dias}
+                </span>
+                <span className="fraco">dias de vida</span>
+              </span>
+              <span className="text-xs fraco">
+                equilibrio em <span className="dado">{reais(runway.faturamentoDeEquilibrio)}</span> por mes
+              </span>
+            </>
+          ) : (
+            <span className="text-xs fraco">
+              {runway.configurado
+                ? 'saldo de hoje nao informado - sem ele nao existe runway'
+                : 'custo fixo nao informado - o sistema mede trabalho sem saber quanto tempo de vida ele tem'}
+            </span>
+          )}
+        </div>
+      </Link>
+
       {/* Aviso de carga de teste. Trava com botao de liberar do lado. */}
       {d.temExemplo && (
         <div className="cartao p-3 mb-3 flex flex-wrap items-center justify-between gap-2" style={{ borderColor: 'var(--ambar)' }}>
@@ -138,13 +180,13 @@ export default async function Painel() {
 
           {/* Uma barra so: o dia inteiro, com o buraco visivel. */}
           <div className="h-3 rounded-full overflow-hidden flex bg-[var(--cartao-alto)] mb-2">
-            {d.areas.map((a) => {
+            {d.areas.map((a, i) => {
               const min = horas.get(a.areaId) ?? 0
               const base = Math.max(c.minutosExpediente, d.minutosHoje, 1)
               return (
                 <div
                   key={a.areaId}
-                  style={{ width: `${(min / base) * 100}%`, background: COR_DA_ZONA[a.zona] }}
+                  style={{ width: `${(min / base) * 100}%`, background: 'var(--ciano)', opacity: 1 - i * 0.18 }}
                   title={`${a.nome}: ${formatarHoras(min)}`}
                 />
               )
@@ -167,15 +209,15 @@ export default async function Painel() {
           </p>
 
           <ul className="space-y-1.5 mt-3">
-            {d.areas.map((a) => {
+            {d.areas.map((a, i) => {
               const min = horas.get(a.areaId) ?? 0
               return (
                 <li key={a.areaId} className="flex justify-between text-xs">
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ background: COR_DA_ZONA[a.zona] }} />
+                    <span className="w-2 h-2 rounded-full" style={{ background: 'var(--ciano)', opacity: 1 - i * 0.18 }} />
                     {a.nome}
                   </span>
-                  <span className="fraco font-mono tabular-nums">{formatarHoras(min)}</span>
+                  <span className="dado">{formatarHoras(min)}</span>
                 </li>
               )
             })}

@@ -9,9 +9,11 @@ import { useEffect, useRef, useState } from 'react'
 const PAGINAS = [
   { href: '/painel', nome: 'Painel' },
   { href: '/conversa', nome: 'Conversa' },
+  { href: '/caixa', nome: 'Caixa e runway' },
   { href: '/semana', nome: 'A semana' },
   { href: '/projetos', nome: 'Projetos' },
   { href: '/frentes', nome: 'Frentes' },
+  { href: '/playbook', nome: 'Playbook' },
   { href: '/estrategia', nome: 'Estrategia' },
   { href: '/capturas', nome: 'Capturas' },
   { href: '/config', nome: 'Configuracao' },

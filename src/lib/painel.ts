@@ -4,6 +4,7 @@ import { prisma } from './prisma'
 import { lerConfig } from './configuracao'
 import { calcularArea, type FrenteParaCalculo, type ResultadoArea } from './mostrador'
 import { mesSP, limitesDoDia } from './datas'
+import type { EstadoCaixa } from './caixa'
 
 export type CronometroCorrente = {
   apontamentoId: number
@@ -28,6 +29,7 @@ export type DadosDoPainel = {
   frentesAbertas: number
   temEstrategia: boolean
   temExemplo: boolean
+  caixa: EstadoCaixa | null
 }
 
 /**
@@ -49,7 +51,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
   const periodoMes = mesSP(agora)
   const { inicio, fim } = limitesDoDia(agora)
 
-  const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos] =
+  const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos, caixa] =
     await Promise.all([
       prisma.area.findMany({ orderBy: { ordem: 'asc' } }),
       prisma.frente.findMany({ where: { status: 'aberta' } }),
@@ -74,6 +76,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
       prisma.item.count({ where: { status: 'novo', descartadoEm: null } }),
       prisma.estrategia.count(),
       prisma.frente.count({ where: { titulo: { contains: '[exemplo]' } } }),
+      prisma.caixa.findUnique({ where: { id: 1 } }),
     ])
 
   const bloqueiaPorFrente = new Map(bloqueios.map((b) => [b.frenteBloqueadoraId, b._count._all]))
@@ -157,5 +160,6 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
     frentesAbertas: frentes.length,
     temEstrategia: estrategias > 0,
     temExemplo: exemplos > 0,
+    caixa,
   }
 }

@@ -30,10 +30,12 @@ export const CONFIG_PADRAO: ConfigMostrador = {
   autoEncerrarHoras: 3,
 }
 
+// Os quatro setores. Proposta parada e receita nao realizada, e prospeccao mora
+// dentro de Comercial - por isso o limiar mais curto e o dele.
 export const DIAS_PARA_CRITICO_PADRAO: Record<string, number> = {
-  prospeccao: 2,
   comercial: 3,
-  entregas: 5,
+  adm: 4,
+  producao: 5,
   engenharia: 7,
 }
 
@@ -46,9 +48,9 @@ export function zonaDoIndice(indice: number): Zona {
 }
 
 export const COR_DA_ZONA: Record<Zona, string> = {
-  verde: '#16A34A',
+  verde: '#22C55E',
   ambar: '#F59E0B',
-  vermelho: '#DC2626',
+  vermelho: '#F43F5E',
   cinza: '#6B7280',
 }
 

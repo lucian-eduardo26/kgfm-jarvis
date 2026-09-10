@@ -50,12 +50,12 @@ export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, h
     <Link href={href} className="cartao bloco-mostrador block p-3 sm:p-4">
       <div className="flex items-baseline justify-between gap-2">
         <span className="rotulo">{nome}</span>
-        <span className="text-[10px] fraco font-mono">{String(frentes).padStart(2, '0')} FR</span>
+        <span className="text-[10px] dado">{String(frentes).padStart(2, '0')} FR</span>
       </div>
 
       <svg viewBox="0 0 120 96" className="w-full max-w-[188px] mx-auto" role="img" aria-label={`${nome}: ${indice} de 100`}>
         {/* trilho */}
-        <path d={arco(DE, ATE, R)} stroke="rgba(255,255,255,.07)" strokeWidth="2" fill="none" strokeLinecap="round" />
+        <path d={arco(DE, ATE, R)} stroke="rgba(34,211,238,.13)" strokeWidth="2" fill="none" strokeLinecap="round" />
 
         {/* escala: 11 marcas, e as tres da zona um pouco mais longas */}
         {Array.from({ length: 11 }, (_, i) => {
@@ -66,7 +66,7 @@ export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, h
           const ate = ponto(a, R + (limite ? 8 : 6))
           // So os dois limites de zona sao coloridos. O resto e escala seca:
           // dez marcas coloridas viram confete e param de significar.
-          const corMarca = limite ? (v === 40 ? COR_DA_ZONA.ambar : COR_DA_ZONA.verde) : "rgba(255,255,255,.5)"
+          const corMarca = limite ? (v === 40 ? COR_DA_ZONA.ambar : COR_DA_ZONA.verde) : "var(--ciano)"
           return (
             <line
               key={v}
@@ -76,7 +76,7 @@ export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, h
               y2={ate.y}
               stroke={corMarca}
               strokeWidth={limite ? 1.4 : 0.9}
-              opacity={limite ? 0.9 : 0.22}
+              opacity={limite ? 0.9 : 0.3}
               strokeLinecap="round"
             />
           )
@@ -104,7 +104,7 @@ export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, h
           cy={CY}
           r={R + 13}
           fill="none"
-          stroke="rgba(255,255,255,.09)"
+          stroke="rgba(34,211,238,.22)"
           strokeWidth="0.6"
           strokeDasharray="1.5 5"
           className="anel"
@@ -121,7 +121,7 @@ export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, h
         >
           {vazio ? '--' : indice}
         </text>
-        <text x={CX} y={CY + 20} textAnchor="middle" fontSize="6.5" fill="var(--fraco)" letterSpacing="2">
+        <text x={CX} y={CY + 20} textAnchor="middle" fontSize="6.5" fill="var(--ciano)" opacity="0.7" letterSpacing="2">
           INDICE
         </text>
       </svg>
@@ -133,7 +133,7 @@ export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, h
         {legenda}
       </p>
       {minutosHoje != null && (
-        <p className="text-[10px] fraco font-mono mt-1">
+        <p className="text-[10px] dado mt-1" style={{ opacity: minutosHoje > 0 ? 1 : 0.45 }}>
           {minutosHoje > 0 ? `${Math.round(minutosHoje)} MIN HOJE` : 'SEM REGISTRO HOJE'}
         </p>
       )}

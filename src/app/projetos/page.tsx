@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { formatarHoras } from '@/lib/datas'
 import { Moldura, Vazio } from '@/components/Moldura'
 import { criarProjetoComWbs, ativarPacote, mudarFaseProjeto } from '../acoes'
+import { Spin } from '@/components/Spin'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +13,7 @@ const FASES = [
   { chave: 'entregue', nome: 'Entregue', ajuda: 'onde o dinheiro costuma ficar parado sem ninguem olhar' },
 ] as const
 
-export default async function Projetos({ searchParams }: { searchParams: Promise<{ wip?: string }> }) {
+export default async function Projetos({ searchParams }: { searchParams: Promise<{ wip?: string; spin?: string }> }) {
   await exigirSessao()
   const sp = await searchParams
 
@@ -20,6 +21,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
     where: { ativo: true },
     orderBy: { criadoEm: 'desc' },
     include: {
+      decisores: { orderBy: { criadoEm: 'asc' } },
       frentes: {
         where: { status: { in: ['planejada', 'aberta', 'fechada'] } },
         orderBy: { ordem: 'asc' },
@@ -186,6 +188,14 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
                     )
                   })}
                 </ul>
+
+                <Spin
+                  projetoId={p.id}
+                  estado={{ situacao: p.situacao, problema: p.problema, implicacao: p.implicacao, necessidade: p.necessidade }}
+                  propostaEnviadaEm={p.propostaEnviadaEm}
+                  decisores={p.decisores}
+                  travado={sp.spin === String(p.id)}
+                />
 
                 <form action={mudarFaseProjeto} className="flex gap-2 mt-3 items-center">
                   <input type="hidden" name="projetoId" value={p.id} />

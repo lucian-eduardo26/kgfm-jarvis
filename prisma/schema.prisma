@@ -102,8 +102,17 @@ model Projeto {
   fase          FaseProjeto @default(desenvolvimento)
   ativo         Boolean     @default(true)
   criadoEm      DateTime    @default(now()) @map("criado_em")
-  area          Area        @relation(fields: [areaId], references: [id])
-  frentes       Frente[]
+
+  // SPIN, na ordem. A trava da proposta olha implicacao e necessidade.
+  situacao          String?
+  problema          String?
+  implicacao        String?
+  necessidade       String?
+  propostaEnviadaEm DateTime? @map("proposta_enviada_em")
+
+  area      Area      @relation(fields: [areaId], references: [id])
+  frentes   Frente[]
+  decisores Decisor[]
 
   @@map("projetos")
 }
@@ -345,4 +354,62 @@ model Config {
   alteradoEm DateTime @default(now()) @updatedAt @map("alterado_em")
 
   @@map("config")
+}
+
+// ---------- SPIN e Carnegie ----------
+// Vieram da sugestao avaliada em 10/09/2026. O SPIN vira TRAVA: proposta sem
+// Implicacao e sem Necessidade admitidas e pedido de desconto, nao venda.
+// O perfil do decisor existe para a abordagem falar do problema DELE - Carnegie
+// aplicado, nao catalogo de esteiras.
+
+model Decisor {
+  id             Int      @id @default(autoincrement())
+  projetoId      Int      @map("projeto_id")
+  nome           String
+  cargo          String?
+  // O que dói para ELE, com as palavras dele. Nao o que a KGFM acha que dói.
+  oQueDoiParaEle String?  @map("o_que_doi_para_ele")
+  interesses     String?
+  historico      String?
+  criadoEm       DateTime @default(now()) @map("criado_em")
+  projeto        Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@index([projetoId])
+  @@map("decisores")
+}
+
+// O lastro tecnico. Existe para a IA nao inventar especificacao quando ajuda a
+// redigir - e para o que a KGFM ja sabe parar de morar so na cabeca do Lucian.
+model Conhecimento {
+  id           Int      @id @default(autoincrement())
+  titulo       String
+  categoria    String
+  conteudo     String
+  tags         String?
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  @@index([categoria])
+  @@map("conhecimento")
+}
+
+// ---------- caixa ----------
+// Uma linha so. Existe porque, com custo fixo e emprestimo, o numero que manda
+// no dia nao e o mostrador: e quantos dias de vida o caixa tem. Runway acima de
+// tudo, inclusive acima de estrategia bonita.
+model Caixa {
+  id                  Int      @id @default(1)
+  saldo               Float    @default(0)
+  custoFixoMensal     Float    @default(0) @map("custo_fixo_mensal")
+  parcelaEmprestimo   Float    @default(0) @map("parcela_emprestimo")
+  // Margem bruta media dos projetos, 0 a 1. Define o faturamento de equilibrio.
+  margemBruta         Float    @default(0.28) @map("margem_bruta")
+  // Abaixo deste valor, o projeto e "baixo ticket": nao pode consumir a hora
+  // do fundador. A auditoria da hora-fundador usa este limiar.
+  limiteBaixoTicket   Float    @default(100000) @map("limite_baixo_ticket")
+  // Teto de quanto da semana pode ir para baixo ticket, 0 a 1.
+  tetoHoraBaixoTicket Float    @default(0.2) @map("teto_hora_baixo_ticket")
+  atualizadoEm        DateTime @updatedAt @map("atualizado_em")
+
+  @@map("caixa")
 }

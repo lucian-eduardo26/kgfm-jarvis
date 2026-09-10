@@ -9,6 +9,7 @@
 // consegue conferir vale mais do que um palpite que ele nao consegue.
 
 import type { DadosDoPainel } from './painel'
+import { calcularRunway } from './caixa'
 
 export type FacaAgora = {
   titulo: string
@@ -18,6 +19,22 @@ export type FacaAgora = {
 } | null
 
 export function decidirAgora(d: DadosDoPainel): FacaAgora {
+  const runway = calcularRunway(d.caixa)
+
+  // COM CAIXA CURTO, A REGRA MUDA.
+  // Fluxo de trabalho e o criterio certo quando existe caixa. Abaixo de 30 dias
+  // o criterio passa a ser o que entra dinheiro mais rapido - e o cronometro
+  // rodando numa frente sem dinheiro atras deixa de ser "foco" e vira o
+  // problema. Nao adianta o painel ficar verde se a empresa fechar.
+  if (runway.configurado && runway.zona !== 'cinza' && runway.dias < 30 && !d.cronometro) {
+    return {
+      titulo: 'Caixa manda: o que fatura mais rapido',
+      porque: `${runway.frase} Antes de escolher pelo painel, escolha pelo prazo de recebimento: quem ja tem cadastro aprovado, quem compra com verba de gerente e nao de board, e o que pode virar pedido em semanas - nao em meses.`,
+      area: null,
+      frenteId: null,
+    }
+  }
+
   if (!d.temEstrategia) {
     return {
       titulo: 'Carregar a estrategia',

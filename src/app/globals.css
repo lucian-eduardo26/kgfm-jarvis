@@ -1,25 +1,35 @@
 @import 'tailwindcss';
 
 /*
-  Painel de instrumentos. Escuro de proposito: ponteiro se le melhor no escuro,
-  e o sistema e para olhar de relance, nao para ler.
+  PALETA DO JARVIS - quatro papeis, e nenhuma cor faz dois
 
-  Cor tem significado fixo e nunca e decoracao:
-  verde = em dia, ambar = atencao, vermelho = critico, cinza = fora do foco.
-  O laranja da KGFM (#FF3D00) e so marca e acao principal - nunca status.
+  --laranja  #FF3D00  a marca KGFM. Acao principal e o que o sistema pede.
+  --ciano    #22D3EE  estrutura e informacao. Frio, tecnico, complementar do
+                      laranja na roda de cor - por isso os dois brigam sem se
+                      misturar. Rotulo, escala, moldura, numero neutro.
+  verde/ambar/vermelho             ESTADO. So estado. Nunca decoracao.
+  --cinza                          fora do foco: nao e bom nem ruim, e ausente.
+
+  A regra que segura tudo: se uma cor aparecer em dois papeis, o painel para de
+  comunicar em dois segundos e vira quadro bonito.
 */
 
 :root {
-  --fundo: #0b0b0c;
-  --cartao: #17181a;
-  --cartao-alto: #1e1f22;
-  --borda: #2a2b2f;
-  --texto: #e8e8ea;
-  --fraco: #8a8b90;
+  --fundo: #08090b;
+  --cartao: #14161a;
+  --cartao-alto: #1b1e23;
+  --borda: #262a31;
+  --texto: #e8eaee;
+  --fraco: #7d8590;
+
   --laranja: #ff3d00;
-  --verde: #16a34a;
+  --laranja-fraco: rgba(255, 61, 0, 0.14);
+  --ciano: #22d3ee;
+  --ciano-fraco: rgba(34, 211, 238, 0.13);
+
+  --verde: #22c55e;
   --ambar: #f59e0b;
-  --vermelho: #dc2626;
+  --vermelho: #f43f5e;
   --cinza: #6b7280;
 }
 
@@ -28,109 +38,46 @@ body {
   background: var(--fundo);
   color: var(--texto);
   color-scheme: dark;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
-}
 
-.cartao {
-  background: var(--cartao);
-  border: 1px solid var(--borda);
-  border-radius: 14px;
-}
-
-.fraco {
-  color: var(--fraco);
-}
-
-.botao {
-  background: var(--laranja);
-  color: #fff;
-  border-radius: 12px;
-  font-weight: 600;
-  padding: 0.75rem 1rem;
-  min-height: 48px;
-  border: none;
-}
-
-.botao:disabled {
-  opacity: 0.45;
-}
-
-.botao-fantasma {
-  background: transparent;
-  color: var(--texto);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 0.6rem 0.9rem;
-  min-height: 44px;
-}
-
-.campo {
-  background: var(--cartao-alto);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  color: var(--texto);
-  padding: 0.75rem 0.9rem;
-  width: 100%;
-  min-height: 48px;
-}
-
-.campo::placeholder {
-  color: var(--fraco);
-}
-
-/* Nada de rolagem lateral em lugar nenhum. */
-html,
-body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-/* O buraco do dia: tempo sem registro. Listrado, para nao parecer dado. */
-.escuro {
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.06) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-}
-
-/* ---------- acabamento de cabine ----------
-   Futurista por densidade e luz, nunca por cor nova: o vocabulario continua
-   verde/ambar/vermelho/cinza, com o laranja da KGFM so como marca e acao. */
-
-body {
+  /* Grade de cabine em ciano quase invisivel, e o brilho da marca no alto. */
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    radial-gradient(ellipse 90% 45% at 50% -8%, rgba(255, 61, 0, 0.08), transparent 72%);
-  background-size: 48px 48px, 48px 48px, 100% 100%;
+    linear-gradient(rgba(34, 211, 238, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.028) 1px, transparent 1px),
+    radial-gradient(ellipse 70% 40% at 50% -10%, rgba(255, 61, 0, 0.1), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(34, 211, 238, 0.05), transparent 70%);
+  background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
   background-attachment: fixed;
 }
 
+/* ---------- moldura ---------- */
+
 .cartao {
   position: relative;
-  border-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 55%),
-    rgba(23, 24, 26, 0.72);
-  backdrop-filter: blur(6px);
+    linear-gradient(180deg, rgba(34, 211, 238, 0.03), transparent 55%),
+    rgba(20, 22, 26, 0.78);
+  backdrop-filter: blur(8px);
 }
 
-/* Cantos de HUD: so dois, em diagonal. Marca a moldura sem virar videogame. */
+/* Cantos de HUD em ciano: so dois, em diagonal. Marca a moldura sem virar
+   videogame - quatro cantos em toda tela cansa em uma semana. */
 .cartao::before,
 .cartao::after {
   content: '';
   position: absolute;
   width: 12px;
   height: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(34, 211, 238, 0.38);
   pointer-events: none;
 }
 
@@ -150,18 +97,19 @@ body {
   border-bottom-right-radius: 14px;
 }
 
-/* Rotulo de instrumento. */
+.fraco {
+  color: var(--fraco);
+}
+
+/* ---------- tipografia de instrumento ---------- */
+
 .rotulo {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--fraco);
-}
-
-/* O brilho vive so no arco do valor e no marcador - a escala fica seca. */
-.arco-vivo {
-  filter: drop-shadow(0 0 6px currentColor);
+  color: var(--ciano);
+  opacity: 0.85;
 }
 
 .numero {
@@ -176,21 +124,102 @@ body {
   letter-spacing: 0.06em;
 }
 
-.bloco-mostrador:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+/* Numero que nao carrega estado nenhum - hora, contagem, medida. Ciano. */
+.dado {
+  font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--ciano);
 }
+
+/* ---------- controles ---------- */
 
 .botao {
-  box-shadow: 0 0 22px rgba(255, 61, 0, 0.28);
+  background: var(--laranja);
+  color: #fff;
+  border-radius: 12px;
+  font-weight: 600;
   letter-spacing: 0.03em;
+  padding: 0.75rem 1rem;
+  min-height: 48px;
+  border: none;
+  box-shadow: 0 0 24px rgba(255, 61, 0, 0.3);
 }
 
-/* O anel externo gira devagar. Um sinal de que a cabine esta ligada - e a
-   unica animacao do sistema, para nao competir com o dado. */
+.botao:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+}
+
+.botao-fantasma {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  min-height: 44px;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.botao-fantasma:hover {
+  border-color: var(--ciano);
+  color: var(--ciano);
+}
+
+.campo {
+  background: var(--cartao-alto);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  color: var(--texto);
+  padding: 0.75rem 0.9rem;
+  width: 100%;
+  min-height: 48px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.campo::placeholder {
+  color: var(--fraco);
+}
+
+.campo:focus {
+  outline: none;
+  border-color: var(--ciano);
+  box-shadow: 0 0 0 3px var(--ciano-fraco);
+}
+
+/* ---------- o buraco do dia ---------- */
+
+/* Tempo sem registro. Listrado e sem cor: nao e um estado, e a ausencia de um. */
+.escuro {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.07) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* ---------- brilho ---------- */
+
+/* O brilho vive so onde ja existe significado: o arco do valor e o marcador. */
+.arco-vivo {
+  filter: drop-shadow(0 0 7px currentColor);
+}
+
+.bloco-mostrador {
+  transition: border-color 0.2s ease;
+}
+
+.bloco-mostrador:hover {
+  border-color: rgba(34, 211, 238, 0.45);
+}
+
+/* O anel externo gira devagar - sinal de cabine ligada, e a unica animacao do
+   sistema. Mais de uma competiria com o dado. */
 @media (prefers-reduced-motion: no-preference) {
   .anel {
     transform-origin: 60px 58px;
-    animation: girar 40s linear infinite;
+    animation: girar 44s linear infinite;
   }
 }
 

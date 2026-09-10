@@ -48,7 +48,7 @@ export type DadosDaSemana = {
   horasPorArea: HorasDaSemana[]
   objetivos: ObjetivoDesdobrado[]
   criticos: { titulo: string; texto: string; bloqueia: number }[]
-  frentesAbertas: { titulo: string; area: string; projeto: string | null; diasParada: number }[]
+  frentesAbertas: { titulo: string; area: string; projeto: string | null; diasParada: number; valor: number | null; spinIncompleto: boolean }[]
   pacotesPlanejados: { titulo: string; area: string; projeto: string | null }[]
 }
 
@@ -166,6 +166,8 @@ export async function montarSemana(agora: Date = new Date()): Promise<DadosDaSem
       area: f.area.nome,
       projeto: f.projeto?.nome ?? null,
       diasParada: diasParada(f.ultimoMovimentoEm),
+      valor: f.projeto?.valorEstimado ?? null,
+      spinIncompleto: Boolean(f.projeto && (!f.projeto.implicacao?.trim() || !f.projeto.necessidade?.trim())),
     })),
     pacotesPlanejados: planejadas.map((f) => ({
       titulo: f.titulo,
@@ -199,7 +201,11 @@ export function textoDaSemana(s: DadosDaSemana): string {
   l.push('', 'FRENTES ABERTAS:')
   if (s.frentesAbertas.length === 0) l.push('- nenhuma')
   for (const f of s.frentesAbertas) {
-    l.push(`- ${f.titulo} [${f.area}${f.projeto ? ' / ' + f.projeto : ''}] parada ha ${f.diasParada} dias uteis`)
+    l.push(
+      `- ${f.titulo} [${f.area}${f.projeto ? ' / ' + f.projeto : ''}] parada ha ${f.diasParada} dias uteis` +
+        `${f.valor ? ` - R$ ${f.valor.toLocaleString('pt-BR')} em jogo` : ''}` +
+        `${f.spinIncompleto ? ' - SPIN incompleto' : ''}`,
+    )
   }
 
   if (s.pacotesPlanejados.length > 0) {
