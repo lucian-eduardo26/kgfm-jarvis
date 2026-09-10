@@ -26,8 +26,21 @@ import { prisma } from './prisma'
 import { hojeSP } from './datas'
 import { textoParaIa } from './etapas'
 
-const MODELO = 'claude-sonnet-5'
-const PRECO = { entrada: 3, saida: 15 }
+// MODELO PEQUENO, decidido por medicao em 10/09/2026.
+//
+// Comparados na mesma frase real (Trava Clinker + Batoque do Logimat):
+//   sonnet  US$ 0,0098  6,1s
+//   haiku   US$ 0,0018  3,1s   <- 5x mais barato, 2x mais rapido
+//
+// E o pequeno acertou tudo: separou os dois projetos, marcou como JA FEITA a
+// conferencia da usinagem, deixou as pecas do Clinker pendentes. Organizar
+// ditado em JSON e extracao estruturada, nao raciocinio dificil - o modelo
+// grande estava sendo pago para fazer trabalho de modelo pequeno.
+//
+// Se algum dia a qualidade cair, e so voltar para 'claude-sonnet-5' aqui e
+// ajustar PRECO para { entrada: 3, saida: 15 }.
+const MODELO = 'claude-haiku-4-5-20251001'
+const PRECO = { entrada: 1, saida: 5 }
 
 export type PlanoDitado = {
   entendi: string
