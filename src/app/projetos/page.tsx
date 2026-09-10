@@ -35,7 +35,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
     : null
 
   return (
-    <Moldura titulo="Projetos e WBS">
+    <Moldura titulo="Projetos e WBS" atalhoAtivo="/projetos">
       {travada && (
         <section className="cartao p-4 mb-3" style={{ borderColor: 'var(--ambar)' }}>
           <p className="font-semibold" style={{ color: 'var(--ambar)' }}>

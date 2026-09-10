@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export default async function PaginaConversa() {
   await exigirSessao()
   return (
-    <Moldura titulo="Conversa">
+    <Moldura titulo="Conversa" atalhoAtivo="/conversa">
       <Conversa responderAcao={falarComJarvis} />
     </Moldura>
   )

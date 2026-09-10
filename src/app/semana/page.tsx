@@ -16,7 +16,7 @@ export default async function Semana() {
   ])
 
   return (
-    <Moldura titulo="A semana">
+    <Moldura titulo="A semana" atalhoAtivo="/semana">
       {/* Os numeros. Calculados aqui, nao pela IA - numero que muda sozinho
           nao serve para decidir. */}
       <section className="cartao p-4">

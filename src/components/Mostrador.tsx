@@ -1,13 +1,15 @@
-// O mostrador.
+// O mostrador - anel de percentual.
 //
-// Refeito em 10/09/2026. Saiu o anel de HUD com escala cheia de marcas, anel
-// pontilhado girando e brilho - aquilo era figurino, nao instrumento, e
-// competia com o proprio numero.
+// Terceira versao, e a direcao veio dos mockups que o Lucian mandou em
+// 10/09/2026: anel fechado com o numero grande no meio, no lugar do arco
+// aberto. E o instrumento que aparece nos dois - no painel do desktop e no
+// telefone.
 //
-// Ficou um arco fino de 180 graus, o numero grande em peso leve, e duas fendas
-// onde a zona muda. A regra: o arco mostra QUANTO, a cor mostra COMO ESTA, e
-// nada mais desenha nada. Instrumento bom e o que se le sem esforco no terceiro
-// mes de uso, nao o que impressiona no primeiro dia.
+// A REGRA DE COR, que os mockups nao tinham e sem a qual isto vira enfeite:
+// a MOLDURA e laranja (marca), mas o PREENCHIMENTO DO ANEL e estado -
+// verde, ambar ou vermelho. Se o anel tambem fosse laranja, os quatro
+// mostradores ficariam identicos e o painel pararia de comunicar em dois
+// segundos, que e a unica coisa que ele precisa fazer.
 
 import Link from 'next/link'
 import { COR_DA_ZONA, type Zona } from '@/lib/mostrador'
@@ -20,87 +22,81 @@ type Props = {
   frentes: number
   minutosHoje?: number
   href: string
+  compacto?: boolean
 }
 
-const CX = 60
-const CY = 52
-const R = 44
+const R = 42
+const C = 2 * Math.PI * R
 
-function ponto(grau: number, raio: number) {
-  const rad = (Math.PI * grau) / 180
-  return { x: CX + raio * Math.cos(rad), y: CY - raio * Math.sin(rad) }
-}
-
-const anguloDoValor = (v: number) => 180 - (Math.max(0, Math.min(100, v)) * 180) / 100
-
-function arco(de: number, ate: number, raio: number) {
-  const a = ponto(de, raio)
-  const b = ponto(ate, raio)
-  return `M ${a.x.toFixed(2)} ${a.y.toFixed(2)} A ${raio} ${raio} 0 0 1 ${b.x.toFixed(2)} ${b.y.toFixed(2)}`
-}
-
-export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, href }: Props) {
+export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, href, compacto }: Props) {
   const cor = COR_DA_ZONA[zona]
   const vazio = zona === 'cinza'
-  const fim = anguloDoValor(vazio ? 0 : indice)
+  const preenchido = vazio ? 0 : Math.max(0, Math.min(100, indice))
 
   return (
-    <Link href={href} className="cartao bloco-mostrador block p-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="rotulo">{nome}</span>
-        <span className="text-[11px] dado">
-          {frentes} {frentes === 1 ? 'frente' : 'frentes'}
-        </span>
+    <Link href={href} className="cartao bloco-mostrador block">
+      <div className="painel-cabeca">
+        <span className="rotulo text-[10px]">{nome}</span>
+        <span className="text-[10px] dado">{frentes} FR</span>
       </div>
 
-      <svg
-        viewBox="0 0 120 64"
-        className="w-full max-w-[168px] mx-auto mt-3"
-        role="img"
-        aria-label={`${nome}: ${indice} de 100`}
-      >
-        <path d={arco(180, 0, R)} stroke="var(--linha-forte)" strokeWidth="3" fill="none" strokeLinecap="round" />
-
-        {!vazio && indice > 0 && (
-          <path d={arco(180, fim, R)} stroke={cor} strokeWidth="3" fill="none" strokeLinecap="round" />
-        )}
-
-        {/* As duas fronteiras de zona, cortadas na cor da superficie. Elas
-            marcam onde a REGRA muda; quem diz o estado e o arco, nao elas. */}
-        {[40, 70].map((v) => {
-          const a = anguloDoValor(v)
-          const de = ponto(a, R - 5)
-          const ate = ponto(a, R + 5)
-          return (
-            <line key={v} x1={de.x} y1={de.y} x2={ate.x} y2={ate.y} stroke="var(--superficie)" strokeWidth="2.5" />
-          )
-        })}
-
-        <text
-          x={CX}
-          y={CY + 2}
-          textAnchor="middle"
-          fontSize="28"
-          fontWeight="350"
-          fill={vazio ? 'var(--cinza)' : 'var(--texto)'}
-          className="numero"
+      <div className={compacto ? 'p-2' : 'p-3'}>
+        <svg
+          viewBox="0 0 100 100"
+          className={`w-full mx-auto ${compacto ? 'max-w-[92px]' : 'max-w-[124px]'}`}
+          role="img"
+          aria-label={`${nome}: ${indice} de 100`}
         >
-          {vazio ? '--' : indice}
-        </text>
-      </svg>
+          {/* trilho */}
+          <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,.07)" strokeWidth="7" />
 
-      <p
-        className="text-[12px] leading-snug mt-1 min-h-[2.4em]"
-        style={{ color: zona === 'vermelho' ? 'var(--vermelho)' : 'var(--fraco)' }}
-      >
-        {legenda}
-      </p>
+          {/* o valor, comecando do topo e girando no sentido do relogio */}
+          {!vazio && preenchido > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={R}
+              fill="none"
+              stroke={cor}
+              style={{ color: cor }}
+              strokeWidth="7"
+              strokeLinecap="round"
+              strokeDasharray={`${(preenchido / 100) * C} ${C}`}
+              transform="rotate(-90 50 50)"
+              className="arco-vivo"
+            />
+          )}
 
-      {minutosHoje != null && (
-        <p className="text-[11px] dado mt-1.5" style={{ opacity: minutosHoje > 0 ? 1 : 0.5 }}>
-          {minutosHoje > 0 ? `${Math.round(minutosHoje)} min hoje` : 'sem registro hoje'}
-        </p>
-      )}
+          <text
+            x="50"
+            y="50"
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={compacto ? 24 : 26}
+            fontWeight="500"
+            fill={vazio ? 'var(--cinza)' : 'var(--texto)'}
+            className="numero"
+          >
+            {vazio ? '--' : `${indice}%`}
+          </text>
+        </svg>
+
+        {!compacto && (
+          <>
+            <p
+              className="text-[11px] leading-snug mt-2 min-h-[2.4em]"
+              style={{ color: zona === 'vermelho' ? 'var(--vermelho)' : 'var(--fraco)' }}
+            >
+              {legenda}
+            </p>
+            {minutosHoje != null && (
+              <p className="text-[10px] dado mt-1" style={{ opacity: minutosHoje > 0 ? 1 : 0.5 }}>
+                {minutosHoje > 0 ? `${Math.round(minutosHoje)} min hoje` : 'sem registro hoje'}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </Link>
   )
 }

@@ -4,7 +4,7 @@ import { montarPainel } from '@/lib/painel'
 import { decidirAgora } from '@/lib/agora'
 import { formatarHoras } from '@/lib/datas'
 import { temChave } from '@/lib/classificador'
-import { Moldura, Vazio } from '@/components/Moldura'
+import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { Mostrador } from '@/components/Mostrador'
 import { Captura } from '@/components/Captura'
 import { Ciclo } from '@/components/Ciclo'
@@ -40,7 +40,7 @@ export default async function Painel() {
   })
 
   return (
-    <Moldura titulo="Painel">
+    <Moldura titulo="Operational hub" atalhoAtivo="/painel">
       {/* Aviso de carga de teste. Trava com botao de liberar do lado. */}
       {d.temExemplo && (
         <div className="cartao p-3 mb-3 flex flex-wrap items-center justify-between gap-2" style={{ borderColor: 'var(--ambar)' }}>
@@ -133,8 +133,9 @@ export default async function Painel() {
 
       <div className="grid lg:grid-cols-2 gap-3">
         {/* Criticos */}
-        <section className="cartao p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide mb-3">Criticos</h2>
+        <section className="cartao">
+          <Cabeca titulo="criticos" direita={<span className="text-[10px] dado">{d.criticosGerais.length}</span>} />
+          <div className="painel-corpo">
           {d.criticosGerais.length === 0 ? (
             <p className="fraco text-sm">
               Nenhum. Nao e tela quebrada - e o estado que o sistema existe para produzir.
@@ -158,6 +159,7 @@ export default async function Painel() {
               ))}
             </ul>
           )}
+          </div>
         </section>
 
         {/* Tempo de hoje - o dash em tempo real */}

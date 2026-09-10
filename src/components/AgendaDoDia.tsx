@@ -60,12 +60,12 @@ export function AgendaDoDia({ a, hoje }: { a: Agenda; hoje: string }) {
         {a.frase}
       </p>
 
-      <form action={criarCompromisso} className="flex flex-wrap gap-2 mt-3">
+      <form action={criarCompromisso} className="grid grid-cols-[1fr_auto_auto_auto] gap-2 mt-3 items-center">
         <input type="hidden" name="data" value={hoje} />
-        <input name="titulo" placeholder="Reuniao com..." className="campo text-sm flex-1 min-w-[150px]" style={{ minHeight: 38 }} />
-        <input name="inicio" type="time" defaultValue="09:00" className="campo text-sm w-28" style={{ minHeight: 38 }} />
-        <input name="fim" type="time" defaultValue="10:00" className="campo text-sm w-28" style={{ minHeight: 38 }} />
-        <button className="botao-fantasma text-sm shrink-0" style={{ minHeight: 38 }}>
+        <input name="titulo" placeholder="Reuniao com..." className="campo text-sm" style={{ minHeight: 38 }} />
+        <input name="inicio" type="time" defaultValue="09:00" className="campo text-sm" style={{ minHeight: 38, width: 108 }} />
+        <input name="fim" type="time" defaultValue="10:00" className="campo text-sm" style={{ minHeight: 38, width: 108 }} />
+        <button className="botao-fantasma text-sm" style={{ minHeight: 38 }}>
           Marcar
         </button>
       </form>
