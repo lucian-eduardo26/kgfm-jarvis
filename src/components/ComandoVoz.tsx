@@ -81,7 +81,11 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
       </div>
 
       <div className="painel-corpo">
-        <div className="flex gap-2 items-start">
+        {/* No celular o campo fica sozinho na linha e os botões descem.
+            Com a letra em 16px (que é o que impede o telefone de dar zoom),
+            microfone + campo + botão na mesma linha deixavam uns 150px para
+            escrever, e a marca-d'água saía cortada no meio. */}
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 items-start">
           {escuta.disponivel && (
             <button
               type="button"
@@ -115,7 +119,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
             // e frase comprida quebra em duas linhas dentro de uma caixa de uma,
             // que corta o texto no meio. O cabeçalho do cartão já diz o resto.
             placeholder={escuta.ouvindo ? 'Pode falar. Toque para encerrar.' : 'Diga o que está fazendo'}
-            className="campo resize-none flex-1"
+            className="campo resize-none order-first w-full sm:order-none sm:w-auto sm:flex-1"
             style={{ minHeight: 48, maxHeight: 180 }}
           />
 
@@ -123,7 +127,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
             type="button"
             onClick={() => void enviar()}
             disabled={!noCampo.trim() || processando}
-            className="botao shrink-0"
+            className="botao shrink-0 flex-1 sm:flex-none"
           >
             {processando ? '...' : 'Enviar'}
           </button>

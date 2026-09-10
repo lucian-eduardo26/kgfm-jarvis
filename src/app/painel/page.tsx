@@ -18,6 +18,8 @@ import { AgendaDoDia } from '@/components/AgendaDoDia'
 import { Engrenagens } from '@/components/Engrenagens'
 import { LancarRetroativo } from '@/components/LancarRetroativo'
 import { hojeSP } from '@/lib/datas'
+import { carteiraDeProjetos } from '@/lib/projetos'
+import { BarraProjeto } from '@/components/BarraProjeto'
 import { vozDoDia } from '@/lib/resistencia'
 
 export const dynamic = 'force-dynamic'
@@ -30,6 +32,7 @@ export default async function Painel() {
   const horas = new Map(d.horasHoje.map((h) => [h.areaId, h.minutos]))
   const c = confrontar(d.minutosHoje)
 
+  const carteira = await carteiraDeProjetos()
   const agenda = d.agenda
   const tarefasAbertas = (
     await prisma.tarefa.findMany({
@@ -138,6 +141,26 @@ export default async function Painel() {
         ))}
       </section>
 
+      {/* A empresa acontecendo: uma barra por projeto, na mesma escala de
+          tempo. O vão entre o preenchido e o risco de hoje é o atraso. */}
+      {carteira.length > 0 && (
+        <section className="cartao mb-3">
+          <Cabeca
+            titulo="os projetos"
+            direita={
+              <Link href="/projetos" className="text-[10px] dado">
+                VER TODOS
+              </Link>
+            }
+          />
+          <div className="p-1.5">
+            {carteira.map((p) => (
+              <BarraProjeto key={p.id} p={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="grid lg:grid-cols-2 gap-3 mb-3">
         <Engrenagens e={d.engrenagens} />
         <AgendaDoDia a={agenda} hoje={hojeSP()} />
@@ -150,7 +173,7 @@ export default async function Painel() {
           <div className="painel-corpo">
           {d.criticosGerais.length === 0 ? (
             <p className="fraco text-sm">
-              Nenhum. Não e tela quebrada - e o estado que o sistema existe para produzir.
+              Nenhum. Não é tela quebrada - é o estado que o sistema existe para produzir.
             </p>
           ) : (
             <ul className="space-y-2">

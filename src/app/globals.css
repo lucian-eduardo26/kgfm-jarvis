@@ -656,3 +656,117 @@ select,
     font-size: 14px;
   }
 }
+
+/* ===========================================================================
+   GESTÃO À VISTA: as barras de projeto
+   ---------------------------------------------------------------------------
+   Uma barra por projeto, os segmentos são os pacotes da WBS, e a largura de
+   cada segmento são os dias que ele consome. O risco vertical é hoje.
+   O vão entre o preenchido e o risco É o atraso, sem precisar de número.
+   =========================================================================== */
+
+.linha-projeto {
+  display: block;
+  padding: 0.85rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.linha-projeto:hover {
+  background: var(--superficie-alta);
+  border-color: var(--linha);
+}
+
+.linha-projeto + .linha-projeto {
+  border-top: 1px solid var(--linha);
+  border-radius: 10px;
+}
+
+.chip-tipo {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fraco);
+  border: 1px solid var(--linha);
+  border-radius: 5px;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+}
+
+.barra-projeto {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--superficie-alta);
+}
+
+.barra-parte {
+  display: block;
+  min-width: 2px;
+  background: var(--linha-forte);
+  border-radius: 2px;
+}
+
+/* Feito é a única coisa que ganha a cor da marca aqui. */
+.barra-feita {
+  background: var(--laranja);
+}
+
+/* Estourou a previsão e ainda não fechou. */
+.barra-atrasada {
+  background: var(--vermelho);
+  opacity: 0.85;
+}
+
+/* Sem WBS não existe barra: tracejado diz "ainda não medido", e não "parado". */
+.barra-vazia {
+  border: 1px dashed var(--linha-forte);
+  background: transparent;
+}
+
+/* Hoje, dentro do prazo. Fica ACIMA dos segmentos, com um vinco escuro dos
+   dois lados para se destacar tanto do laranja quanto do cinza. */
+.barra-hoje {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--texto);
+  box-shadow: 0 0 0 1px rgba(10, 10, 11, 0.9);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* ---------- os pontinhos de tela, e o deslize ---------- */
+
+/* Sem eles ninguém descobre que dá para deslizar. Ficam logo abaixo do
+   cabeçalho, discretos, e somem no computador - lá existe o trilho. */
+.pontos-telas {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  padding: 0.45rem 0 0.1rem;
+}
+
+.ponto-tela {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--linha-forte);
+  transition: background 0.2s ease, width 0.2s ease;
+}
+
+.ponto-tela-aqui {
+  width: 16px;
+  background: var(--laranja);
+}
+
+@media (min-width: 1024px) {
+  .pontos-telas {
+    display: none;
+  }
+}

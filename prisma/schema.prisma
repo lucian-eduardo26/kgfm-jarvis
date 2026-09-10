@@ -91,6 +91,19 @@ enum FaseProjeto {
   entregue
 }
 
+// QUE CORRENTE DE TRABALHO o projeto e. Decide qual WBS se desdobra.
+//
+// Veio da descricao do Lucian por audio em 10/09/2026: o Batoque do Logimat e
+// peca usinada e nao tem concepcao tecnica nenhuma - tem fornecedor, pedido,
+// fabricacao e logistica. Forcar isso no mesmo molde de um sistema de
+// automacao produz pacote vazio que ninguem fecha, e etapa real que nao existe
+// em lugar nenhum. Entao sao dois eixos: TIPO diz que corrente, FASE diz ate
+// onde ela ja desenrolou. docs/modelos-de-projeto.md tem as duas escritas.
+enum TipoProjeto {
+  peca
+  sistema
+}
+
 // Rotulo e centro de custo. Quem tem ciclo de vida e a frente; a fase aqui diz
 // so em que ponto do funil o projeto esta, para as horas rolarem por fase.
 model Projeto {
@@ -100,8 +113,18 @@ model Projeto {
   areaId        Int         @map("area_id")
   valorEstimado Float?      @map("valor_estimado")
   fase          FaseProjeto @default(desenvolvimento)
+  tipo          TipoProjeto @default(peca)
   ativo         Boolean     @default(true)
   criadoEm      DateTime    @default(now()) @map("criado_em")
+
+  // O comeco da corrente. Sem esta data nao existe cronograma: as previsoes de
+  // todos os pacotes saem dela, somando os dias estimados um atras do outro.
+  inicioEm DateTime? @map("inicio_em")
+
+  // As respostas das condicoes do modelo, gravadas na criacao. Sao elas que
+  // fazem duas perguntas gerarem quatro correntes diferentes do mesmo molde.
+  materiaPrimaNossa Boolean @default(false) @map("materia_prima_nossa")
+  temRevestimento   Boolean @default(false) @map("tem_revestimento")
 
   // SPIN, na ordem. A trava da proposta olha implicacao e necessidade.
   situacao             String?
@@ -154,6 +177,11 @@ model Frente {
   motivoDescarte    String?        @map("motivo_descarte")
   ordem             Int            @default(0)
   pacote            String?
+  // Quanto tempo este pacote costuma levar. E o unico numero que o cronograma
+  // precisa: a corrente e sequencial, entao a soma dos dias na ordem da
+  // previsao de cada pacote e a data de entrega do projeto. Estimativa nasce
+  // do modelo e o Lucian corrige - por isso fica na frente e nao no codigo.
+  diasEstimados     Int?           @map("dias_estimados")
   // A etapa dentro da area (prospeccao, venda, pos-venda, compras, financeiro...).
   // Texto e nao enum de proposito: ele ja avisou que vai desmembrar producao
   // depois, e migrar enum e mais caro do que migrar texto. src/lib/etapas.ts.

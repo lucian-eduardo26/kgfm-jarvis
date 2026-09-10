@@ -605,3 +605,26 @@ export async function lancarRetroativo(form: FormData) {
   revalidatePath('/painel')
   revalidatePath('/frentes')
 }
+
+/**
+ * A data em que o projeto começou de VERDADE.
+ *
+ * Existe porque o script que criou a carteira não sabia essa data e usou hoje
+ * para todos. Enquanto ela estiver errada, todas as previsões do cronograma
+ * estão erradas junto - e é uma correção que só o Lucian pode fazer.
+ */
+export async function definirInicioDoProjeto(form: FormData) {
+  const id = Number(form.get('projetoId'))
+  const texto = String(form.get('inicio') ?? '').trim()
+  if (!id || !texto) return
+
+  // O campo de data devolve "2026-09-10". Sem hora, o navegador assume UTC e a
+  // data pode voltar um dia em São Paulo; o meio-dia evita isso.
+  const inicio = new Date(`${texto}T12:00:00`)
+  if (Number.isNaN(inicio.getTime())) return
+
+  await prisma.projeto.update({ where: { id }, data: { inicioEm: inicio } })
+  revalidatePath(`/projetos/${id}`)
+  revalidatePath('/projetos')
+  revalidatePath('/painel')
+}

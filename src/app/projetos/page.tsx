@@ -1,7 +1,9 @@
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { formatarHoras } from '@/lib/datas'
-import { Moldura, Vazio } from '@/components/Moldura'
+import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
+import { carteiraDeProjetos } from '@/lib/projetos'
+import { BarraProjeto } from '@/components/BarraProjeto'
 import { criarProjetoComWbs, ativarPacote, mudarFaseProjeto } from '../acoes'
 import { Spin } from '@/components/Spin'
 import { LinhaDoTempo } from '@/components/LinhaDoTempo'
@@ -10,8 +12,8 @@ import { montarLinhaDoTempo } from '@/lib/linhaDoTempo'
 export const dynamic = 'force-dynamic'
 
 const FASES = [
-  { chave: 'desenvolvimento', nome: 'Desenvolvimento', ajuda: 'antes de fechar - ainda e aposta, e custo de venda' },
-  { chave: 'fechado', nome: 'Fechado', ajuda: 'virou obrigacao, com cliente contando os dias' },
+  { chave: 'desenvolvimento', nome: 'Desenvolvimento', ajuda: 'antes de fechar - ainda é aposta, e custo de venda' },
+  { chave: 'fechado', nome: 'Fechado', ajuda: 'virou obrigação, com cliente contando os dias' },
   { chave: 'entregue', nome: 'Entregue', ajuda: 'onde o dinheiro costuma ficar parado sem ninguém olhar' },
 ] as const
 
@@ -19,6 +21,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
   await exigirSessao()
   const sp = await searchParams
 
+  const carteira = await carteiraDeProjetos()
   const projetos = await prisma.projeto.findMany({
     where: { ativo: true },
     orderBy: { criadoEm: 'desc' },
@@ -49,8 +52,8 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
             {travada.area.nome} já está no limite de {travada.area.limiteWip} frentes abertas.
           </p>
           <p className="fraco text-sm mt-1">
-            Ativar &quot;{travada.titulo}&quot; agora significa mais uma coisa aberta na mesma cabeca.
-            O certo e fechar uma antes - mas a decisão e sua.
+            Ativar &quot;{travada.titulo}&quot; agora significa mais uma coisa aberta na mesma cabeça.
+            O certo é fechar uma antes - mas a decisão é sua.
           </p>
           <form action={ativarPacote} className="mt-3 flex gap-2">
             <input type="hidden" name="frenteId" value={travada.id} />
@@ -99,6 +102,22 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
           Plano não consome limite de WIP; só o que você ativa é que conta.
         </p>
       </form>
+
+      {/* A carteira inteira numa escala de tempo só. Vem antes da WBS porque
+          a pergunta "como está a empresa" é anterior a "o que tem no projeto". */}
+      {carteira.length > 0 && (
+        <section className="cartao mb-3">
+          <Cabeca
+            titulo="a carteira"
+            direita={<span className="text-[10px] dado">{carteira.length} PROJETOS</span>}
+          />
+          <div className="p-1.5">
+            {carteira.map((p) => (
+              <BarraProjeto key={p.id} p={p} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {projetos.length === 0 ? (
         <Vazio
