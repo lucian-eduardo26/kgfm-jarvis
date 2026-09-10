@@ -15,7 +15,8 @@
     "caixa": "tsx scripts/caixa-inicial.ts",
     "postinstall": "prisma generate",
     "icone": "node scripts/gerar-icone.mjs",
-    "jarvis": "tsx scripts/projeto-jarvis.ts"
+    "jarvis": "tsx scripts/projeto-jarvis.ts",
+    "acentuar-banco": "tsx scripts/acentuar-banco.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
