@@ -15,6 +15,7 @@ import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
 import { podeMandarProposta } from '@/lib/spin'
+import { garantirFrenteAberta } from '@/lib/abrirFrente'
 
 export async function entrar(form: FormData) {
   const senha = String(form.get('senha') ?? '')
@@ -158,9 +159,12 @@ export async function iniciarCronometro(form: FormData) {
     where: { encerradoEm: null },
     data: { encerradoEm: agora, encerradoPor: 'troca' },
   })
-  await prisma.apontamento.create({ data: { tarefaId, iniciadoEm: agora } })
+  await prisma.apontamento.create({ data: { tarefaId, iniciadoEm: agora, blocoDesde: agora } })
   const t = await prisma.tarefa.findUnique({ where: { id: tarefaId } })
-  if (t) await registrarMovimento(t.frenteId, 'cronometro', t.titulo)
+  if (t) {
+    await garantirFrenteAberta(t.frenteId)
+    await registrarMovimento(t.frenteId, 'cronometro', t.titulo)
+  }
   revalidatePath('/painel')
   revalidatePath('/frentes')
 }
@@ -501,5 +505,63 @@ export async function criarCompromisso(form: FormData) {
 
 export async function apagarCompromisso(form: FormData) {
   await prisma.compromisso.delete({ where: { id: Number(form.get('id')) } })
+  revalidatePath('/painel')
+}
+
+/** Mais um bloco na mesma tarefa: reinicia o bloco sem parar o cronometro. */
+export async function continuarBloco(form: FormData) {
+  const id = Number(form.get('apontamentoId'))
+  await prisma.apontamento.update({
+    where: { id },
+    data: { blocoDesde: new Date(), blocosFeitos: { increment: 1 } },
+  })
+  revalidatePath('/painel')
+}
+
+/**
+ * Descansar. O cronometro PARA - descanso nao e trabalho e nao pode entrar na
+ * conta de horas. A tarefa fica guardada para o sistema saber para onde voltar.
+ */
+export async function comecarDescanso(form: FormData) {
+  const minutos = Number(form.get('minutos')) || 5
+  const tarefaId = form.get('tarefaId') ? Number(form.get('tarefaId')) : null
+  const agora = new Date()
+
+  const abertos = await prisma.apontamento.findMany({ where: { encerradoEm: null }, include: { tarefa: true } })
+  await prisma.apontamento.updateMany({
+    where: { encerradoEm: null },
+    data: { encerradoEm: agora, encerradoPor: 'usuario' },
+  })
+  for (const a of abertos) {
+    await prisma.movimento.create({
+      data: { frenteId: a.tarefa.frenteId, tipo: 'bloco-fechado', descricao: a.tarefa.titulo },
+    })
+  }
+
+  await prisma.descanso.updateMany({ where: { fim: null }, data: { fim: agora } })
+  await prisma.descanso.create({ data: { minutos, tarefaId, inicio: agora } })
+  revalidatePath('/painel')
+}
+
+/** Voltar do descanso, retomando a mesma tarefa se houver. */
+export async function encerrarDescanso() {
+  const agora = new Date()
+  const atual = await prisma.descanso.findFirst({ where: { fim: null }, orderBy: { inicio: 'desc' } })
+  await prisma.descanso.updateMany({ where: { fim: null }, data: { fim: agora } })
+
+  if (atual?.tarefaId) {
+    const t = await prisma.tarefa.findUnique({ where: { id: atual.tarefaId } })
+    if (t && t.status === 'aberta') {
+      await prisma.apontamento.updateMany({
+        where: { encerradoEm: null },
+        data: { encerradoEm: agora, encerradoPor: 'troca' },
+      })
+      await prisma.apontamento.create({
+        data: { tarefaId: atual.tarefaId, iniciadoEm: agora, blocoDesde: agora },
+      })
+      await garantirFrenteAberta(t.frenteId)
+      await prisma.movimento.create({ data: { frenteId: t.frenteId, tipo: 'cronometro', descricao: t.titulo } })
+    }
+  }
   revalidatePath('/painel')
 }

@@ -22,6 +22,10 @@ export const CAMPOS: CampoConfig[] = [
   { chave: 'multiplicadorBloqueio', rotulo: 'Multiplicador de bloqueio', explicacao: 'Quanto pesa mais um critico numa frente que trava outras.', min: 1, max: 5, passo: 1 },
   { chave: 'diasAguardandoTerceiro', rotulo: 'Dias esperando o outro', explicacao: 'Dias uteis sem retorno ate virar critico de cobranca. Antes disso a bola nao e sua.', min: 1, max: 30, passo: 1 },
   { chave: 'diasCompromissoProximo', rotulo: 'Compromisso proximo', explicacao: 'Dias uteis de antecedencia para cobrar preparo de compromisso.', min: 0, max: 10, passo: 1 },
+  { chave: 'minutosBloco', rotulo: 'Bloco de trabalho (min)', explicacao: 'Quanto dura um bloco antes do sistema sugerir pausa. Sugestao, nunca imposicao.', min: 10, max: 120, passo: 5 },
+  { chave: 'minutosDescanso', rotulo: 'Descanso curto (min)', explicacao: 'A pausa entre blocos. Nao conta como trabalho.', min: 1, max: 30, passo: 1 },
+  { chave: 'minutosDescansoLongo', rotulo: 'Descanso longo (min)', explicacao: 'A pausa maior, depois de alguns blocos seguidos.', min: 5, max: 60, passo: 5 },
+  { chave: 'blocosAteDescansoLongo', rotulo: 'Blocos ate o descanso longo', explicacao: 'Quantos blocos seguidos antes da pausa maior.', min: 2, max: 8, passo: 1 },
   { chave: 'autoEncerrarHoras', rotulo: 'Auto-encerrar cronometro', explicacao: 'Horas ate o cronometro esquecido se encerrar sozinho e pedir revisao.', min: 1, max: 12, passo: 1 },
 ]
 

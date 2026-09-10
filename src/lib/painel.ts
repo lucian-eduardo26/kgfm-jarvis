@@ -16,6 +16,8 @@ export type CronometroCorrente = {
   areaNome: string
   areaChave: string
   iniciadoEm: Date
+  blocoDesde: Date
+  blocosFeitos: number
 } | null
 
 export type HorasDaArea = { areaId: number; minutos: number }
@@ -32,6 +34,8 @@ export type DadosDoPainel = {
   temExemplo: boolean
   caixa: EstadoCaixa | null
   agenda: Agenda
+  descanso: { id: number; inicio: Date; minutos: number; tarefaTitulo: string | null } | null
+  emCompromisso: boolean
 }
 
 /**
@@ -53,7 +57,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
   const periodoMes = mesSP(agora)
   const { inicio, fim } = limitesDoDia(agora)
 
-  const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos, caixa, agendaHoje] =
+  const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos, caixa, descansoAberto, agendaHoje] =
     await Promise.all([
       prisma.area.findMany({ orderBy: { ordem: 'asc' } }),
       prisma.frente.findMany({ where: { status: 'aberta' } }),
@@ -79,6 +83,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
       prisma.estrategia.count(),
       prisma.frente.count({ where: { titulo: { contains: '[exemplo]' } } }),
       prisma.caixa.findUnique({ where: { id: 1 } }),
+      prisma.descanso.findFirst({ where: { fim: null }, orderBy: { inicio: 'desc' } }),
       prisma.compromisso.findMany({
         where: { inicio: { gte: inicio, lt: fim } },
         select: { id: true, titulo: true, inicio: true, fim: true, local: true },
@@ -139,6 +144,11 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
     minutosHoje += min
   }
 
+  const agendaMontada = montarAgenda(agendaHoje, agora)
+  const tarefaDoDescanso = descansoAberto?.tarefaId
+    ? await prisma.tarefa.findUnique({ where: { id: descansoAberto.tarefaId } })
+    : null
+
   const cronometro: CronometroCorrente = aberto
     ? {
         apontamentoId: aberto.id,
@@ -149,6 +159,8 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
         areaNome: aberto.tarefa.frente.area.nome,
         areaChave: aberto.tarefa.frente.area.chave,
         iniciadoEm: aberto.iniciadoEm,
+        blocoDesde: aberto.blocoDesde ?? aberto.iniciadoEm,
+        blocosFeitos: aberto.blocosFeitos,
       }
     : null
 
@@ -167,6 +179,17 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
     temEstrategia: estrategias > 0,
     temExemplo: exemplos > 0,
     caixa,
-    agenda: montarAgenda(agendaHoje, agora),
+    agenda: agendaMontada,
+    descanso: descansoAberto
+      ? {
+          id: descansoAberto.id,
+          inicio: descansoAberto.inicio,
+          minutos: descansoAberto.minutos,
+          tarefaTitulo: tarefaDoDescanso?.titulo ?? null,
+        }
+      : null,
+    // Em compromisso agora: o ciclo fica em silencio. Alarme no meio de uma
+    // visita a cliente e o jeito mais rapido de o sistema ser desinstalado.
+    emCompromisso: agendaMontada.compromissos.some((k) => k.inicio <= agora && k.fim > agora),
   }
 }

@@ -7,11 +7,12 @@ import { temChave } from '@/lib/classificador'
 import { Moldura, Vazio } from '@/components/Moldura'
 import { Mostrador } from '@/components/Mostrador'
 import { Captura } from '@/components/Captura'
-import { Cronometro } from '@/components/Cronometro'
+import { Ciclo } from '@/components/Ciclo'
 import { COR_DA_ZONA } from '@/lib/mostrador'
-import { limparExemplo, comandoDeVoz } from '../acoes'
+import { limparExemplo, comandoDeVoz, continuarBloco, comecarDescanso, encerrarDescanso, pararCronometro } from '../acoes'
 import { ComandoVoz } from '@/components/ComandoVoz'
 import { confrontar } from '@/lib/expediente'
+import { lerConfig } from '@/lib/configuracao'
 import { AgendaDoDia } from '@/components/AgendaDoDia'
 import { hojeSP } from '@/lib/datas'
 import { vozDoDia } from '@/lib/resistencia'
@@ -21,6 +22,7 @@ export const dynamic = 'force-dynamic'
 export default async function Painel() {
   await exigirSessao()
   const d = await montarPainel()
+  const cfg = await lerConfig()
   const agora = decidirAgora(d)
   const horas = new Map(d.horasHoje.map((h) => [h.areaId, h.minutos]))
   const c = confrontar(d.minutosHoje)
@@ -75,13 +77,36 @@ export default async function Painel() {
         <ComandoVoz acao={comandoDeVoz} />
       </div>
 
-      {d.cronometro && (
+      {(d.cronometro || d.descanso) && (
         <div className="mb-3">
-          <Cronometro
-            iniciadoEm={d.cronometro.iniciadoEm.toISOString()}
-            tarefa={d.cronometro.tarefaTitulo}
-            frente={d.cronometro.frenteTitulo}
-            area={d.cronometro.areaNome}
+          <Ciclo
+            cronometro={
+              d.cronometro
+                ? {
+                    apontamentoId: d.cronometro.apontamentoId,
+                    tarefaId: d.cronometro.tarefaId,
+                    tarefaTitulo: d.cronometro.tarefaTitulo,
+                    frenteTitulo: d.cronometro.frenteTitulo,
+                    areaNome: d.cronometro.areaNome,
+                    iniciadoEm: d.cronometro.iniciadoEm.toISOString(),
+                    blocoDesde: d.cronometro.blocoDesde.toISOString(),
+                    blocosFeitos: d.cronometro.blocosFeitos,
+                  }
+                : null
+            }
+            descanso={
+              d.descanso
+                ? { ...d.descanso, inicio: d.descanso.inicio.toISOString() }
+                : null
+            }
+            emCompromisso={d.emCompromisso}
+            ciclo={{
+              minutosBloco: cfg.minutosBloco,
+              minutosDescanso: cfg.minutosDescanso,
+              minutosDescansoLongo: cfg.minutosDescansoLongo,
+              blocosAteDescansoLongo: cfg.blocosAteDescansoLongo,
+            }}
+            acoes={{ continuarBloco, comecarDescanso, encerrarDescanso, pararCronometro }}
           />
         </div>
       )}

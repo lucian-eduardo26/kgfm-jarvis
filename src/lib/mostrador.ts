@@ -14,6 +14,10 @@ export type ConfigMostrador = {
   diasAguardandoTerceiro: number
   diasCompromissoProximo: number
   autoEncerrarHoras: number
+  minutosBloco: number
+  minutosDescanso: number
+  minutosDescansoLongo: number
+  blocosAteDescansoLongo: number
 }
 
 // Os padroes da especificacao. A pagina de configuracao sobrescreve, e grava a
@@ -28,6 +32,13 @@ export const CONFIG_PADRAO: ConfigMostrador = {
   diasAguardandoTerceiro: 5,
   diasCompromissoProximo: 2,
   autoEncerrarHoras: 3,
+  // O ciclo de trabalho. 25/5 e o Pomodoro classico, mas aqui e SUGESTAO:
+  // o sistema avisa que o bloco encheu e oferece continuar, descansar ou trocar.
+  // Bloco imposto vira alarme ignorado em duas semanas.
+  minutosBloco: 25,
+  minutosDescanso: 5,
+  minutosDescansoLongo: 15,
+  blocosAteDescansoLongo: 4,
 }
 
 // Os quatro setores. Proposta parada e receita nao realizada, e prospeccao mora

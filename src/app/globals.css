@@ -53,13 +53,22 @@
   --raio: 12px;
 }
 
-html,
+/*
+  ROLAGEM: overflow-x so no body, e com `clip` em vez de `hidden`.
+  Com `hidden` nos DOIS (html e body) o navegador cria dois conteineres de
+  rolagem concorrentes, e a roda do mouse cai no errado - a pagina simplesmente
+  nao desce. `clip` corta o transbordo lateral SEM virar conteiner de rolagem.
+*/
+html {
+  background: var(--fundo);
+  color-scheme: dark;
+}
+
 body {
   background: var(--fundo);
   color: var(--texto);
-  color-scheme: dark;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {

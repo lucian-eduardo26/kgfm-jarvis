@@ -219,6 +219,10 @@ model Apontamento {
   encerradoEm  DateTime?     @map("encerrado_em")
   encerradoPor EncerradoPor? @map("encerrado_por")
   revisar      Boolean       @default(false)
+  // Quando o BLOCO atual comecou. Continuar trabalhando na mesma tarefa reinicia
+  // o bloco sem parar o cronometro - por isso e uma data separada de iniciadoEm.
+  blocoDesde   DateTime?     @map("bloco_desde")
+  blocosFeitos Int           @default(0) @map("blocos_feitos")
   tarefa       Tarefa        @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
 
   @@index([iniciadoEm])
@@ -437,4 +441,19 @@ model Compromisso {
 
   @@index([inicio])
   @@map("compromissos")
+}
+
+// O descanso entre blocos. Nao e apontamento porque NAO E TRABALHO - se
+// entrasse como apontamento, o painel diria que ele produziu enquanto tomava
+// cafe, e o numero de horas perderia o sentido.
+model Descanso {
+  id       Int       @id @default(autoincrement())
+  inicio   DateTime  @default(now())
+  fim      DateTime?
+  minutos  Int
+  // A tarefa para a qual voltar quando o descanso acabar.
+  tarefaId Int?      @map("tarefa_id")
+
+  @@index([inicio])
+  @@map("descansos")
 }

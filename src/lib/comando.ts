@@ -25,6 +25,7 @@ import { decidirAgora } from './agora'
 import { montarEstado } from './conversa'
 import { diasUteisEntre } from './datas'
 import { casar, lerIntencao, tituloDoFalado, type AlvoPossivel } from './casar'
+import { garantirFrenteAberta } from './abrirFrente'
 
 const MODELO = 'claude-sonnet-5'
 const PRECO = { entrada: 3, saida: 15 }
@@ -175,7 +176,8 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     where: { encerradoEm: null },
     data: { encerradoEm: agora, encerradoPor: 'troca' },
   })
-  await prisma.apontamento.create({ data: { tarefaId, iniciadoEm: agora } })
+  await prisma.apontamento.create({ data: { tarefaId, iniciadoEm: agora, blocoDesde: agora } })
+  await garantirFrenteAberta(frente.id)
   await prisma.movimento.create({ data: { frenteId: frente.id, tipo: 'cronometro' } })
 
   const paradaHa = diasUteisEntre(frente.ultimoMovimentoEm, agora)
