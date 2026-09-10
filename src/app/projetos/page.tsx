@@ -4,6 +4,8 @@ import { formatarHoras } from '@/lib/datas'
 import { Moldura, Vazio } from '@/components/Moldura'
 import { criarProjetoComWbs, ativarPacote, mudarFaseProjeto } from '../acoes'
 import { Spin } from '@/components/Spin'
+import { LinhaDoTempo } from '@/components/LinhaDoTempo'
+import { montarLinhaDoTempo } from '@/lib/linhaDoTempo'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +27,12 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
       frentes: {
         where: { status: { in: ['planejada', 'aberta', 'fechada'] } },
         orderBy: { ordem: 'asc' },
-        include: { area: true, tarefas: { include: { apontamentos: true } } },
+        include: {
+          area: true,
+          tarefas: { include: { apontamentos: true } },
+          movimentos: { orderBy: { em: 'desc' }, take: 60 },
+          itens: { where: { venceEm: { not: null } }, select: { conteudo: true, venceEm: true } },
+        },
       },
     },
   })
@@ -196,6 +203,8 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
                     )
                   })}
                 </ul>
+
+                <LinhaDoTempo r={montarLinhaDoTempo({ frentes: p.frentes })} />
 
                 <Spin
                   projetoId={p.id}
