@@ -6,6 +6,7 @@ import { calcularArea, type FrenteParaCalculo, type ResultadoArea } from './most
 import { mesSP, limitesDoDia } from './datas'
 import type { EstadoCaixa } from './caixa'
 import { montarAgenda, type Agenda } from './agenda'
+import { montarEngrenagens, type Engrenagens } from './engrenagens'
 
 export type CronometroCorrente = {
   apontamentoId: number
@@ -36,6 +37,7 @@ export type DadosDoPainel = {
   agenda: Agenda
   descanso: { id: number; inicio: Date; minutos: number; tarefaTitulo: string | null } | null
   emCompromisso: boolean
+  engrenagens: Engrenagens
 }
 
 /**
@@ -60,7 +62,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
   const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos, caixa, descansoAberto, agendaHoje] =
     await Promise.all([
       prisma.area.findMany({ orderBy: { ordem: 'asc' } }),
-      prisma.frente.findMany({ where: { status: 'aberta' } }),
+      prisma.frente.findMany({ where: { status: 'aberta' }, include: { area: true, projeto: true } }),
       prisma.objetivo.findMany({
         where: { horizonte: 'mes', periodo: periodoMes },
         include: { medicoes: true },
@@ -191,5 +193,21 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
     // Em compromisso agora: o ciclo fica em silencio. Alarme no meio de uma
     // visita a cliente e o jeito mais rapido de o sistema ser desinstalado.
     emCompromisso: agendaMontada.compromissos.some((k) => k.inicio <= agora && k.fim > agora),
+    // As duas contagens que nao se substituem: a hora dele (exclusiva, acima)
+    // e o que gira em paralelo sem consumir hora nenhuma.
+    engrenagens: montarEngrenagens(
+      frentes.map((f) => ({
+        id: f.id,
+        titulo: f.titulo,
+        area: f.area.nome,
+        projeto: f.projeto?.nome ?? null,
+        aguardandoQuem: f.aguardandoQuem,
+        aguardandoDesde: f.aguardandoDesde,
+        ultimoMovimentoEm: f.ultimoMovimentoEm,
+        diasParaCritico: f.area.diasParaCritico,
+      })),
+      Boolean(aberto),
+      agora,
+    ),
   }
 }

@@ -14,7 +14,8 @@
     "rascunho": "tsx scripts/estrategia-rascunho.ts",
     "caixa": "tsx scripts/caixa-inicial.ts",
     "postinstall": "prisma generate",
-    "icone": "node scripts/gerar-icone.mjs"
+    "icone": "node scripts/gerar-icone.mjs",
+    "jarvis": "tsx scripts/projeto-jarvis.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

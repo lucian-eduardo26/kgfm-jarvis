@@ -15,6 +15,7 @@ import { confrontar } from '@/lib/expediente'
 import { lerConfig } from '@/lib/configuracao'
 import { prisma } from '@/lib/prisma'
 import { AgendaDoDia } from '@/components/AgendaDoDia'
+import { Engrenagens } from '@/components/Engrenagens'
 import { LancarRetroativo } from '@/components/LancarRetroativo'
 import { hojeSP } from '@/lib/datas'
 import { vozDoDia } from '@/lib/resistencia'
@@ -137,7 +138,8 @@ export default async function Painel() {
         ))}
       </section>
 
-      <div className="mb-3">
+      <div className="grid lg:grid-cols-2 gap-3 mb-3">
+        <Engrenagens e={d.engrenagens} />
         <AgendaDoDia a={agenda} hoje={hojeSP()} />
       </div>
 
