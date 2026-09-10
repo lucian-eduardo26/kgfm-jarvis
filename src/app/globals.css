@@ -1,0 +1,201 @@
+@import 'tailwindcss';
+
+/*
+  Painel de instrumentos. Escuro de proposito: ponteiro se le melhor no escuro,
+  e o sistema e para olhar de relance, nao para ler.
+
+  Cor tem significado fixo e nunca e decoracao:
+  verde = em dia, ambar = atencao, vermelho = critico, cinza = fora do foco.
+  O laranja da KGFM (#FF3D00) e so marca e acao principal - nunca status.
+*/
+
+:root {
+  --fundo: #0b0b0c;
+  --cartao: #17181a;
+  --cartao-alto: #1e1f22;
+  --borda: #2a2b2f;
+  --texto: #e8e8ea;
+  --fraco: #8a8b90;
+  --laranja: #ff3d00;
+  --verde: #16a34a;
+  --ambar: #f59e0b;
+  --vermelho: #dc2626;
+  --cinza: #6b7280;
+}
+
+html,
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  color-scheme: dark;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+.cartao {
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+}
+
+.fraco {
+  color: var(--fraco);
+}
+
+.botao {
+  background: var(--laranja);
+  color: #fff;
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  min-height: 48px;
+  border: none;
+}
+
+.botao:disabled {
+  opacity: 0.45;
+}
+
+.botao-fantasma {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  min-height: 44px;
+}
+
+.campo {
+  background: var(--cartao-alto);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  color: var(--texto);
+  padding: 0.75rem 0.9rem;
+  width: 100%;
+  min-height: 48px;
+}
+
+.campo::placeholder {
+  color: var(--fraco);
+}
+
+/* Nada de rolagem lateral em lugar nenhum. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* O buraco do dia: tempo sem registro. Listrado, para nao parecer dado. */
+.escuro {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.06) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* ---------- acabamento de cabine ----------
+   Futurista por densidade e luz, nunca por cor nova: o vocabulario continua
+   verde/ambar/vermelho/cinza, com o laranja da KGFM so como marca e acao. */
+
+body {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    radial-gradient(ellipse 90% 45% at 50% -8%, rgba(255, 61, 0, 0.08), transparent 72%);
+  background-size: 48px 48px, 48px 48px, 100% 100%;
+  background-attachment: fixed;
+}
+
+.cartao {
+  position: relative;
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 55%),
+    rgba(23, 24, 26, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+/* Cantos de HUD: so dois, em diagonal. Marca a moldura sem virar videogame. */
+.cartao::before,
+.cartao::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+.cartao::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 14px;
+}
+
+.cartao::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 14px;
+}
+
+/* Rotulo de instrumento. */
+.rotulo {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fraco);
+}
+
+/* O brilho vive so no arco do valor e no marcador - a escala fica seca. */
+.arco-vivo {
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.numero {
+  font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.font-mono {
+  font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.bloco-mostrador:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.botao {
+  box-shadow: 0 0 22px rgba(255, 61, 0, 0.28);
+  letter-spacing: 0.03em;
+}
+
+/* O anel externo gira devagar. Um sinal de que a cabine esta ligada - e a
+   unica animacao do sistema, para nao competir com o dado. */
+@media (prefers-reduced-motion: no-preference) {
+  .anel {
+    transform-origin: 60px 58px;
+    animation: girar 40s linear infinite;
+  }
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,345 @@
+// Jarvis KGFM - modelo fechado em 10/09/2026.
+// Justificativa de cada tabela em CLAUDE.md, secao 8.
+// Descarte NAO tem tabela: e estado com motivo, mora em item e em frente.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------- estrategia ----------
+
+enum Horizonte {
+  cinco_anos
+  dois_anos
+  ano
+  mes
+}
+
+model Estrategia {
+  id                 Int        @id @default(autoincrement())
+  horizonte          Horizonte
+  diagnostico        String
+  politicaNorteadora String     @map("politica_norteadora")
+  acoes              String
+  periodo            String
+  criadaEm           DateTime   @default(now()) @map("criada_em")
+  objetivos          Objetivo[]
+
+  @@map("estrategias")
+}
+
+model Objetivo {
+  id           Int         @id @default(autoincrement())
+  horizonte    Horizonte
+  descricao    String
+  metrica      String?
+  alvo         Float?
+  periodo      String
+  estrategiaId Int?        @map("estrategia_id")
+  areaId       Int?        @map("area_id")
+  criadoEm     DateTime    @default(now()) @map("criado_em")
+  estrategia   Estrategia? @relation(fields: [estrategiaId], references: [id])
+  area         Area?       @relation(fields: [areaId], references: [id])
+  medicoes     Medicao[]
+  frentes      Frente[]
+  itens        Item[]
+
+  @@index([horizonte, periodo])
+  @@map("objetivos")
+}
+
+// O realizado da aderencia, com historia. Numero que sobrescreve nao tem historia.
+model Medicao {
+  id         Int      @id @default(autoincrement())
+  objetivoId Int      @map("objetivo_id")
+  valor      Float
+  observacao String?
+  em         DateTime @default(now())
+  objetivo   Objetivo @relation(fields: [objetivoId], references: [id], onDelete: Cascade)
+
+  @@index([objetivoId, em])
+  @@map("medicoes")
+}
+
+// ---------- areas e projetos ----------
+
+model Area {
+  id              Int        @id @default(autoincrement())
+  nome            String     @unique
+  chave           String     @unique
+  limiteWip       Int        @default(2) @map("limite_wip")
+  diasParaCritico Int        @map("dias_para_critico")
+  metaHorasSemana Float?     @map("meta_horas_semana")
+  ordem           Int        @default(0)
+  projetos        Projeto[]
+  frentes         Frente[]
+  objetivos       Objetivo[]
+  itens           Item[]
+
+  @@map("areas")
+}
+
+enum FaseProjeto {
+  desenvolvimento
+  fechado
+  entregue
+}
+
+// Rotulo e centro de custo. Quem tem ciclo de vida e a frente; a fase aqui diz
+// so em que ponto do funil o projeto esta, para as horas rolarem por fase.
+model Projeto {
+  id            Int         @id @default(autoincrement())
+  nome          String
+  cliente       String?
+  areaId        Int         @map("area_id")
+  valorEstimado Float?      @map("valor_estimado")
+  fase          FaseProjeto @default(desenvolvimento)
+  ativo         Boolean     @default(true)
+  criadoEm      DateTime    @default(now()) @map("criado_em")
+  area          Area        @relation(fields: [areaId], references: [id])
+  frentes       Frente[]
+
+  @@map("projetos")
+}
+
+// ---------- frentes ----------
+
+enum StatusFrente {
+  aberta
+  fechada
+  arquivada
+  descartada
+}
+
+enum AguardandoQuem {
+  eu
+  cliente
+  terceiro
+}
+
+model Frente {
+  id                Int            @id @default(autoincrement())
+  titulo            String
+  areaId            Int            @map("area_id")
+  projetoId         Int?           @map("projeto_id")
+  objetivoId        Int?           @map("objetivo_id")
+  status            StatusFrente   @default(aberta)
+  abertaEm          DateTime       @default(now()) @map("aberta_em")
+  ultimoMovimentoEm DateTime       @default(now()) @map("ultimo_movimento_em")
+  aguardandoQuem    AguardandoQuem @default(eu) @map("aguardando_quem")
+  aguardandoDesde   DateTime?      @map("aguardando_desde")
+  fechadaEm         DateTime?      @map("fechada_em")
+  descartadaEm      DateTime?      @map("descartada_em")
+  motivoDescarte    String?        @map("motivo_descarte")
+
+  area              Area           @relation(fields: [areaId], references: [id])
+  projeto           Projeto?       @relation(fields: [projetoId], references: [id])
+  objetivo          Objetivo?      @relation(fields: [objetivoId], references: [id])
+  tarefas           Tarefa[]
+  movimentos        Movimento[]
+  itens             Item[]
+  recomendacoes     Recomendacao[]
+  bloqueiaEstas     Bloqueio[]     @relation("bloqueadora")
+  bloqueadaPorEstas Bloqueio[]     @relation("bloqueada")
+
+  @@index([areaId, status])
+  @@map("frentes")
+}
+
+// Uma frente trava varias. Campo unico nao sustenta priorizacao por restricao.
+model Bloqueio {
+  id                  Int      @id @default(autoincrement())
+  frenteBloqueadoraId Int      @map("frente_bloqueadora_id")
+  frenteBloqueadaId   Int      @map("frente_bloqueada_id")
+  criadoEm            DateTime @default(now()) @map("criado_em")
+  bloqueadora         Frente   @relation("bloqueadora", fields: [frenteBloqueadoraId], references: [id], onDelete: Cascade)
+  bloqueada           Frente   @relation("bloqueada", fields: [frenteBloqueadaId], references: [id], onDelete: Cascade)
+
+  @@unique([frenteBloqueadoraId, frenteBloqueadaId])
+  @@map("bloqueios")
+}
+
+// ---------- tarefas e cronometro ----------
+
+enum StatusTarefa {
+  aberta
+  feita
+  descartada
+}
+
+model Tarefa {
+  id            Int           @id @default(autoincrement())
+  frenteId      Int           @map("frente_id")
+  titulo        String
+  estimativaMin Int?          @map("estimativa_min")
+  status        StatusTarefa  @default(aberta)
+  criadaEm      DateTime      @default(now()) @map("criada_em")
+  concluidaEm   DateTime?     @map("concluida_em")
+  frente        Frente        @relation(fields: [frenteId], references: [id], onDelete: Cascade)
+  apontamentos  Apontamento[]
+
+  @@index([frenteId, status])
+  @@map("tarefas")
+}
+
+enum EncerradoPor {
+  usuario
+  troca
+  automatico
+}
+
+// O cronometro. Regra: so um apontamento aberto no sistema inteiro.
+model Apontamento {
+  id           Int           @id @default(autoincrement())
+  tarefaId     Int           @map("tarefa_id")
+  iniciadoEm   DateTime      @default(now()) @map("iniciado_em")
+  encerradoEm  DateTime?     @map("encerrado_em")
+  encerradoPor EncerradoPor? @map("encerrado_por")
+  revisar      Boolean       @default(false)
+  tarefa       Tarefa        @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+
+  @@index([iniciadoEm])
+  @@index([encerradoEm])
+  @@map("apontamentos")
+}
+
+// Sem esta tabela a revisao trimestral nao tem dado, so a ultima data.
+model Movimento {
+  id        Int      @id @default(autoincrement())
+  frenteId  Int      @map("frente_id")
+  tipo      String
+  descricao String?
+  em        DateTime @default(now())
+  frente    Frente   @relation(fields: [frenteId], references: [id], onDelete: Cascade)
+
+  @@index([frenteId, em])
+  @@map("movimentos")
+}
+
+// ---------- captura ----------
+
+enum TipoItem {
+  tarefa
+  insight
+  compromisso
+  oportunidade
+  indefinido
+}
+
+enum OrigemItem {
+  texto
+  voz
+  imagem
+}
+
+enum StatusItem {
+  novo
+  classificado
+  vinculado
+  descartado
+}
+
+model Item {
+  id                     Int        @id @default(autoincrement())
+  tipo                   TipoItem   @default(indefinido)
+  conteudo               String
+  conteudoBruto          String     @map("conteudo_bruto")
+  origem                 OrigemItem @default(texto)
+  status                 StatusItem @default(novo)
+  areaId                 Int?       @map("area_id")
+  frenteId               Int?       @map("frente_id")
+  objetivoId             Int?       @map("objetivo_id")
+  venceEm                DateTime?  @map("vence_em")
+  confiancaClassificacao Float?     @map("confianca_classificacao")
+  corrigidoPeloUsuario   Boolean    @default(false) @map("corrigido_pelo_usuario")
+  criadoEm               DateTime   @default(now()) @map("criado_em")
+  processadoEm           DateTime?  @map("processado_em")
+  descartadoEm           DateTime?  @map("descartado_em")
+  motivoDescarte         String?    @map("motivo_descarte")
+
+  area     Area?     @relation(fields: [areaId], references: [id])
+  frente   Frente?   @relation(fields: [frenteId], references: [id])
+  objetivo Objetivo? @relation(fields: [objetivoId], references: [id])
+
+  @@index([status, criadoEm])
+  @@map("itens")
+}
+
+// ---------- cerebro ----------
+
+enum DesfechoRecomendacao {
+  pendente
+  seguida
+  ignorada
+}
+
+// Sem registrar o que foi recomendado, nao ha como saber se o cerebro acerta.
+model Recomendacao {
+  id        Int                  @id @default(autoincrement())
+  frenteId  Int?                 @map("frente_id")
+  argumento String
+  geradaEm  DateTime             @default(now()) @map("gerada_em")
+  desfecho  DesfechoRecomendacao @default(pendente)
+  frente    Frente?              @relation(fields: [frenteId], references: [id])
+
+  @@index([geradaEm])
+  @@map("recomendacoes")
+}
+
+model Sintese {
+  id            Int      @id @default(autoincrement())
+  tipo          String
+  periodoInicio DateTime @map("periodo_inicio")
+  periodoFim    DateTime @map("periodo_fim")
+  texto         String
+  geradaEm      DateTime @default(now()) @map("gerada_em")
+
+  @@index([tipo, periodoFim])
+  @@map("sinteses")
+}
+
+// O grafico esta no BACKLOG, mas historico nao se recupera: grava desde o dia 1.
+model SnapshotDiario {
+  id        Int      @id @default(autoincrement())
+  data      DateTime @db.Date
+  areaId    Int      @map("area_id")
+  indice    Float
+  movimento Float
+  criticos  Float
+  aderencia Float?
+  frentes   Int
+  horas     Float    @default(0)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@unique([data, areaId])
+  @@map("snapshots_diarios")
+}
+
+// A conta da API sobe aqui antes de subir na fatura.
+model ChamadaIa {
+  id            Int      @id @default(autoincrement())
+  modelo        String
+  finalidade    String
+  tokensEntrada Int      @map("tokens_entrada")
+  tokensSaida   Int      @map("tokens_saida")
+  custoEstimado Float    @map("custo_estimado")
+  em            DateTime @default(now())
+
+  @@index([em])
+  @@map("chamadas_ia")
+}
+
+// Pesos do mostrador e limiares. Toda mudanca guarda a data.
+model Config {
+  chave      String   @id
+  valor      String
+  alteradoEm DateTime @default(now()) @updatedAt @map("alterado_em")
+
+  @@map("config")
+}
