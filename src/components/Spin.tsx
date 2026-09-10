@@ -28,11 +28,11 @@ export function Spin({
   const pct = completude(estado)
 
   return (
-    <div className="mt-4 pt-3 border-t border-[var(--borda)]">
+    <div className="mt-4 pt-3 border-t border-[var(--linha)]">
       <div className="flex items-center justify-between gap-3 mb-2">
         <p className="rotulo">qualificacao spin</p>
         <div className="flex items-center gap-2">
-          <div className="w-24 h-1.5 rounded-full bg-[var(--cartao-alto)] overflow-hidden">
+          <div className="w-24 h-1.5 rounded-full bg-[var(--superficie-alta)] overflow-hidden">
             <div
               className="h-full"
               style={{ width: `${pct}%`, background: v.liberado ? 'var(--verde)' : 'var(--ambar)' }}

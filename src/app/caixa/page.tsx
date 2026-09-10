@@ -69,11 +69,11 @@ export default async function Caixa() {
         {/* A auditoria da hora-fundador */}
         <section className="cartao p-4">
           <p className="rotulo mb-2">a sua hora, esta semana</p>
-          <div className="h-3 rounded-full overflow-hidden flex bg-[var(--cartao-alto)] mb-2">
+          <div className="h-3 rounded-full overflow-hidden flex bg-[var(--superficie-alta)] mb-2">
             <div
               style={{
                 width: `${a.minutosAltoTicket + a.minutosBaixoTicket > 0 ? (a.minutosAltoTicket / (a.minutosAltoTicket + a.minutosBaixoTicket)) * 100 : 0}%`,
-                background: 'var(--ciano)',
+                background: 'var(--texto-medio)',
               }}
               title={`Alto ticket: ${formatarHoras(a.minutosAltoTicket)}`}
             />
@@ -119,7 +119,7 @@ export default async function Caixa() {
           </ul>
           {/* O que entra em 90 dias, com PRAZO DE RECEBIMENTO. Valor sem data
               nao paga folha - foi a correcao que faltava nos dois planos. */}
-          <div className="mt-3 pt-3 border-t border-[var(--borda)]">
+          <div className="mt-3 pt-3 border-t border-[var(--linha)]">
             <p className="rotulo mb-2">o que entra em 90 dias</p>
             <ul className="text-sm space-y-1">
               <li className="flex justify-between">

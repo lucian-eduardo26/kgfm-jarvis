@@ -163,10 +163,10 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
                   {p.frentes.map((f) => {
                     const feitas = f.tarefas.filter((t) => t.status === 'feita').length
                     return (
-                      <li key={f.id} className="flex flex-wrap items-center gap-2 text-sm border-t border-[var(--borda)] pt-1.5">
+                      <li key={f.id} className="flex flex-wrap items-center gap-2 text-sm border-t border-[var(--linha)] pt-1.5">
                         <span
                           className="text-[10px] font-mono px-1.5 py-0.5 rounded"
-                          style={{ background: 'var(--cartao-alto)', color: 'var(--fraco)' }}
+                          style={{ background: 'var(--superficie-alta)', color: 'var(--fraco)' }}
                         >
                           {f.area.nome.slice(0, 3).toUpperCase()}
                         </span>
@@ -186,7 +186,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
                             className="text-[10px] font-mono px-2 py-1 rounded"
                             style={{
                               color: f.status === 'aberta' ? 'var(--verde)' : 'var(--fraco)',
-                              background: 'var(--cartao-alto)',
+                              background: 'var(--superficie-alta)',
                             }}
                           >
                             {f.status === 'aberta' ? 'ATIVO' : 'FECHADO'}

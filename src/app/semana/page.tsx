@@ -30,14 +30,14 @@ export default async function Semana() {
           </p>
         </div>
 
-        <div className="h-3 rounded-full overflow-hidden flex bg-[var(--cartao-alto)] mt-3">
-          {s.horasPorArea.map((h) => (
+        <div className="h-3 rounded-full overflow-hidden flex bg-[var(--superficie-alta)] mt-3">
+          {s.horasPorArea.map((h, i) => (
             <div
               key={h.area}
               style={{
                 width: `${(h.minutos / Math.max(s.minutosExpedienteDecorrido, s.minutosApontados, 1)) * 100}%`,
-                background: 'var(--verde)',
-                opacity: 0.85,
+                background: 'var(--texto-medio)',
+                opacity: 1 - i * 0.2,
               }}
               title={`${h.area}: ${formatarHoras(h.minutos)}`}
             />

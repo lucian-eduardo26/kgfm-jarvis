@@ -5,6 +5,7 @@ import { lerConfig } from './configuracao'
 import { calcularArea, type FrenteParaCalculo, type ResultadoArea } from './mostrador'
 import { mesSP, limitesDoDia } from './datas'
 import type { EstadoCaixa } from './caixa'
+import { montarAgenda, type Agenda } from './agenda'
 
 export type CronometroCorrente = {
   apontamentoId: number
@@ -30,6 +31,7 @@ export type DadosDoPainel = {
   temEstrategia: boolean
   temExemplo: boolean
   caixa: EstadoCaixa | null
+  agenda: Agenda
 }
 
 /**
@@ -51,7 +53,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
   const periodoMes = mesSP(agora)
   const { inicio, fim } = limitesDoDia(agora)
 
-  const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos, caixa] =
+  const [areas, frentes, objetivos, bloqueios, compromissos, aberto, apontamentosHoje, itensNovos, estrategias, exemplos, caixa, agendaHoje] =
     await Promise.all([
       prisma.area.findMany({ orderBy: { ordem: 'asc' } }),
       prisma.frente.findMany({ where: { status: 'aberta' } }),
@@ -77,6 +79,10 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
       prisma.estrategia.count(),
       prisma.frente.count({ where: { titulo: { contains: '[exemplo]' } } }),
       prisma.caixa.findUnique({ where: { id: 1 } }),
+      prisma.compromisso.findMany({
+        where: { inicio: { gte: inicio, lt: fim } },
+        select: { id: true, titulo: true, inicio: true, fim: true, local: true },
+      }),
     ])
 
   const bloqueiaPorFrente = new Map(bloqueios.map((b) => [b.frenteBloqueadoraId, b._count._all]))
@@ -161,5 +167,6 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
     temEstrategia: estrategias > 0,
     temExemplo: exemplos > 0,
     caixa,
+    agenda: montarAgenda(agendaHoje, agora),
   }
 }

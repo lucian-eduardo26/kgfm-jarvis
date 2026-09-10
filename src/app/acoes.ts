@@ -476,3 +476,30 @@ export async function salvarCaixa(form: FormData) {
   revalidatePath('/caixa')
   revalidatePath('/painel')
 }
+
+/**
+ * Marcar compromisso. A hora vem como "14:30" e a data como "2026-09-10";
+ * junto as duas no fuso de Sao Paulo, senao a Vercel (que roda em UTC) marca
+ * a reuniao tres horas fora do lugar.
+ */
+export async function criarCompromisso(form: FormData) {
+  const titulo = String(form.get('titulo') ?? '').trim()
+  const data = String(form.get('data') ?? '')
+  const hIni = String(form.get('inicio') ?? '')
+  const hFim = String(form.get('fim') ?? '')
+  if (!titulo || !data || !hIni || !hFim) return
+
+  const inicio = new Date(`${data}T${hIni}:00-03:00`)
+  const fim = new Date(`${data}T${hFim}:00-03:00`)
+  if (!(fim > inicio)) return
+
+  await prisma.compromisso.create({
+    data: { titulo, inicio, fim, local: String(form.get('local') ?? '') || null },
+  })
+  revalidatePath('/painel')
+}
+
+export async function apagarCompromisso(form: FormData) {
+  await prisma.compromisso.delete({ where: { id: Number(form.get('id')) } })
+  revalidatePath('/painel')
+}

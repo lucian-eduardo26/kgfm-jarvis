@@ -418,3 +418,23 @@ model Caixa {
 
   @@map("caixa")
 }
+
+// ---------- agenda ----------
+// Compromisso e hora COMPROMETIDA: reuniao, visita, viagem. E o oposto de
+// tarefa - tarefa voce escolhe quando fazer, compromisso ja escolheu por voce.
+// O painel usa isto para calcular as janelas que sobram, e e nessas janelas que
+// cabe trabalho profundo. Sem agenda, o sistema recomenda bloco de duas horas
+// num dia que tem tres reunioes.
+model Compromisso {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  inicio    DateTime
+  fim       DateTime
+  local     String?
+  frenteId  Int?     @map("frente_id")
+  projetoId Int?     @map("projeto_id")
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@index([inicio])
+  @@map("compromissos")
+}

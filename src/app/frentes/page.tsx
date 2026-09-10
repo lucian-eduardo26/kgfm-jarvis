@@ -144,7 +144,7 @@ export default async function Frentes({
                           <button
                             className="w-9 h-9 grid place-items-center rounded-lg border shrink-0"
                             style={{
-                              borderColor: rodando ? 'var(--laranja)' : 'var(--borda)',
+                              borderColor: rodando ? 'var(--laranja)' : 'var(--linha)',
                               color: rodando ? 'var(--laranja)' : 'inherit',
                             }}
                             aria-label={rodando ? 'Parar' : 'Comecar'}

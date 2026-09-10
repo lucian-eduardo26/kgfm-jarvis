@@ -1,8 +1,13 @@
-// O mostrador. Anel de HUD, nao ponteiro de turbina: traco fino, marcas de
-// escala, brilho na cor da zona e o numero no meio.
+// O mostrador.
 //
-// A cor continua sendo a unica portadora de significado - verde/ambar/vermelho/
-// cinza. O acabamento futurista e so densidade e luz, nunca cor nova.
+// Refeito em 10/09/2026. Saiu o anel de HUD com escala cheia de marcas, anel
+// pontilhado girando e brilho - aquilo era figurino, nao instrumento, e
+// competia com o proprio numero.
+//
+// Ficou um arco fino de 180 graus, o numero grande em peso leve, e duas fendas
+// onde a zona muda. A regra: o arco mostra QUANTO, a cor mostra COMO ESTA, e
+// nada mais desenha nada. Instrumento bom e o que se le sem esforco no terceiro
+// mes de uso, nao o que impressiona no primeiro dia.
 
 import Link from 'next/link'
 import { COR_DA_ZONA, type Zona } from '@/lib/mostrador'
@@ -17,124 +22,83 @@ type Props = {
   href: string
 }
 
-// Arco de 240 graus: comeca em 210 (baixo-esquerda) e acaba em -30 (baixo-direita).
-const DE = 210
-const ATE = -30
 const CX = 60
-const CY = 58
-const R = 42
+const CY = 52
+const R = 44
 
-function ponto(anguloGraus: number, raio: number) {
-  const rad = (Math.PI * anguloGraus) / 180
+function ponto(grau: number, raio: number) {
+  const rad = (Math.PI * grau) / 180
   return { x: CX + raio * Math.cos(rad), y: CY - raio * Math.sin(rad) }
 }
 
-function anguloDoValor(v: number) {
-  return DE - (Math.max(0, Math.min(100, v)) * (DE - ATE)) / 100
-}
+const anguloDoValor = (v: number) => 180 - (Math.max(0, Math.min(100, v)) * 180) / 100
 
-function arco(deGraus: number, ateGraus: number, raio: number) {
-  const a = ponto(deGraus, raio)
-  const b = ponto(ateGraus, raio)
-  const grande = Math.abs(deGraus - ateGraus) > 180 ? 1 : 0
-  return `M ${a.x.toFixed(2)} ${a.y.toFixed(2)} A ${raio} ${raio} 0 ${grande} 1 ${b.x.toFixed(2)} ${b.y.toFixed(2)}`
+function arco(de: number, ate: number, raio: number) {
+  const a = ponto(de, raio)
+  const b = ponto(ate, raio)
+  return `M ${a.x.toFixed(2)} ${a.y.toFixed(2)} A ${raio} ${raio} 0 0 1 ${b.x.toFixed(2)} ${b.y.toFixed(2)}`
 }
 
 export function Mostrador({ nome, indice, zona, legenda, frentes, minutosHoje, href }: Props) {
   const cor = COR_DA_ZONA[zona]
   const vazio = zona === 'cinza'
-  const anguloAtual = anguloDoValor(vazio ? 0 : indice)
-  const marcador = ponto(anguloAtual, R)
+  const fim = anguloDoValor(vazio ? 0 : indice)
 
   return (
-    <Link href={href} className="cartao bloco-mostrador block p-3 sm:p-4">
+    <Link href={href} className="cartao bloco-mostrador block p-4">
       <div className="flex items-baseline justify-between gap-2">
         <span className="rotulo">{nome}</span>
-        <span className="text-[10px] dado">{String(frentes).padStart(2, '0')} FR</span>
+        <span className="text-[11px] dado">
+          {frentes} {frentes === 1 ? 'frente' : 'frentes'}
+        </span>
       </div>
 
-      <svg viewBox="0 0 120 96" className="w-full max-w-[188px] mx-auto" role="img" aria-label={`${nome}: ${indice} de 100`}>
-        {/* trilho */}
-        <path d={arco(DE, ATE, R)} stroke="rgba(34,211,238,.13)" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <svg
+        viewBox="0 0 120 64"
+        className="w-full max-w-[168px] mx-auto mt-3"
+        role="img"
+        aria-label={`${nome}: ${indice} de 100`}
+      >
+        <path d={arco(180, 0, R)} stroke="var(--linha-forte)" strokeWidth="3" fill="none" strokeLinecap="round" />
 
-        {/* escala: 11 marcas, e as tres da zona um pouco mais longas */}
-        {Array.from({ length: 11 }, (_, i) => {
-          const v = i * 10
+        {!vazio && indice > 0 && (
+          <path d={arco(180, fim, R)} stroke={cor} strokeWidth="3" fill="none" strokeLinecap="round" />
+        )}
+
+        {/* As duas fronteiras de zona, cortadas na cor da superficie. Elas
+            marcam onde a REGRA muda; quem diz o estado e o arco, nao elas. */}
+        {[40, 70].map((v) => {
           const a = anguloDoValor(v)
-          const limite = v === 40 || v === 70
-          const de = ponto(a, R + (limite ? 4 : 3))
-          const ate = ponto(a, R + (limite ? 8 : 6))
-          // So os dois limites de zona sao coloridos. O resto e escala seca:
-          // dez marcas coloridas viram confete e param de significar.
-          const corMarca = limite ? (v === 40 ? COR_DA_ZONA.ambar : COR_DA_ZONA.verde) : "var(--ciano)"
+          const de = ponto(a, R - 5)
+          const ate = ponto(a, R + 5)
           return (
-            <line
-              key={v}
-              x1={de.x}
-              y1={de.y}
-              x2={ate.x}
-              y2={ate.y}
-              stroke={corMarca}
-              strokeWidth={limite ? 1.4 : 0.9}
-              opacity={limite ? 0.9 : 0.3}
-              strokeLinecap="round"
-            />
+            <line key={v} x1={de.x} y1={de.y} x2={ate.x} y2={ate.y} stroke="var(--superficie)" strokeWidth="2.5" />
           )
         })}
 
-        {/* o valor */}
-        {!vazio && (
-          <>
-            <path
-              d={arco(DE, anguloAtual, R)}
-              stroke={cor}
-              style={{ color: cor }}
-              strokeWidth="3"
-              fill="none"
-              strokeLinecap="round"
-              className="arco-vivo"
-            />
-            <circle cx={marcador.x} cy={marcador.y} r="3" fill={cor} style={{ color: cor }} className="arco-vivo" />
-          </>
-        )}
-
-        {/* anel externo pontilhado - o detalhe de cabine */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={R + 13}
-          fill="none"
-          stroke="rgba(34,211,238,.22)"
-          strokeWidth="0.6"
-          strokeDasharray="1.5 5"
-          className="anel"
-        />
-
         <text
           x={CX}
-          y={CY + 6}
+          y={CY + 2}
           textAnchor="middle"
-          fontSize="26"
-          fontWeight="300"
-          fill={vazio ? 'var(--cinza)' : cor}
+          fontSize="28"
+          fontWeight="350"
+          fill={vazio ? 'var(--cinza)' : 'var(--texto)'}
           className="numero"
         >
           {vazio ? '--' : indice}
         </text>
-        <text x={CX} y={CY + 20} textAnchor="middle" fontSize="6.5" fill="var(--ciano)" opacity="0.7" letterSpacing="2">
-          INDICE
-        </text>
       </svg>
 
       <p
-        className="text-[11px] leading-snug min-h-[2.2em]"
+        className="text-[12px] leading-snug mt-1 min-h-[2.4em]"
         style={{ color: zona === 'vermelho' ? 'var(--vermelho)' : 'var(--fraco)' }}
       >
         {legenda}
       </p>
+
       {minutosHoje != null && (
-        <p className="text-[10px] dado mt-1" style={{ opacity: minutosHoje > 0 ? 1 : 0.45 }}>
-          {minutosHoje > 0 ? `${Math.round(minutosHoje)} MIN HOJE` : 'SEM REGISTRO HOJE'}
+        <p className="text-[11px] dado mt-1.5" style={{ opacity: minutosHoje > 0 ? 1 : 0.5 }}>
+          {minutosHoje > 0 ? `${Math.round(minutosHoje)} min hoje` : 'sem registro hoje'}
         </p>
       )}
     </Link>

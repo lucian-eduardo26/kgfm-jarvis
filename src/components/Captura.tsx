@@ -71,7 +71,7 @@ export function Captura({ flutuante = false }: { flutuante?: boolean }) {
   }
 
   return (
-    <div className={flutuante ? 'fixed bottom-0 left-0 right-0 z-40 bg-[var(--fundo)]/95 backdrop-blur px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 border-t border-[var(--borda)]' : ''}>
+    <div className={flutuante ? 'fixed bottom-0 left-0 right-0 z-40 bg-[var(--fundo)]/95 backdrop-blur px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 border-t border-[var(--linha)]' : ''}>
       <div className="mx-auto w-full max-w-[1400px] flex gap-2 items-end">
         <textarea
           ref={campo}

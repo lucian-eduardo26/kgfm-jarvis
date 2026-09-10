@@ -40,7 +40,7 @@ export function Menu() {
         onClick={() => setAberto((v) => !v)}
         aria-label="Menu"
         aria-expanded={aberto}
-        className="w-11 h-11 grid place-items-center rounded-xl border border-[var(--borda)]"
+        className="w-11 h-11 grid place-items-center rounded-xl border border-[var(--linha)]"
       >
         <svg width="4" height="18" viewBox="0 0 4 18" fill="currentColor">
           <circle cx="2" cy="2" r="2" />
@@ -56,7 +56,7 @@ export function Menu() {
               key={p.href}
               href={p.href}
               className={`block px-3 py-3 rounded-lg text-sm ${
-                caminho.startsWith(p.href) ? 'bg-[var(--cartao-alto)] font-semibold' : ''
+                caminho.startsWith(p.href) ? 'bg-[var(--superficie-alta)] font-semibold' : ''
               }`}
             >
               {p.nome}

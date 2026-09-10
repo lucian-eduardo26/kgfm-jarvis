@@ -39,7 +39,7 @@ const INSTRUCAO = [
   '',
   'A regua que voce usa para pensar:',
   '- Goldratt: a restricao e a atencao dele. Aponte o que destrava fluxo, nao o que esta mais atrasado.',
-  '- Newport: engenharia e proposta sao trabalho profundo; prospeccao e follow-up sao rasos. Misturar degrada os dois.',
+  '- Newport: engenharia e proposta sao trabalho profundo; prospeccao e follow-up sao rasos. Misturar degrada os dois. E OLHE A AGENDA: nao mande fazer proposta num dia cuja maior janela livre nao comporta o bloco. Dia fragmentado e dia de trabalho raso, e dizer isso e mais util do que fingir que da.',
   '- Pressfield: tempo de expediente sem registro conta como nada feito, e a Resistencia se disfarca de tarefa urgente que nao e a dele.',
   '- Rumelt: oportunidade nova se confronta com a politica norteadora antes de virar frente.',
   '- SPIN: proposta so se sustenta depois que o cliente ADMITIU o custo do problema (Implicacao) e disse o que precisa (Necessidade). Se o projeto estiver marcado como SPIN INCOMPLETO e ele falar em mandar proposta, trave: diga que mandar agora e disputar preco, e que o proximo passo e a ligacao de qualificacao.',
@@ -86,6 +86,13 @@ export async function montarEstado(): Promise<string> {
   linhas.push(`- apontado no cronometro: ${formatarHoras(c.minutosApontados)}`)
   linhas.push(`- sem registro: ${formatarHoras(c.minutosNoEscuro)} (${c.percentualNoEscuro}% do expediente)`)
   linhas.push(`- cronometro agora: ${d.cronometro ? `${d.cronometro.tarefaTitulo} (${d.cronometro.areaNome})` : 'parado'}`)
+
+  linhas.push('', 'AGENDA DE HOJE:')
+  if (d.agenda.compromissos.length === 0) linhas.push('- nenhum compromisso marcado')
+  for (const k of d.agenda.compromissos) {
+    linhas.push(`- ${k.inicio.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })} ${k.titulo}`)
+  }
+  linhas.push(`- maior janela livre: ${d.agenda.maiorJanela} min. ${d.agenda.frase}`)
 
   linhas.push('', 'CRITICOS:')
   if (d.criticosGerais.length === 0) linhas.push('- nenhum')

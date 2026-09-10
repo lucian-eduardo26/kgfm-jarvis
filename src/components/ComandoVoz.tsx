@@ -115,11 +115,11 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
                 rec.current?.start()
               }
             }}
-            className="shrink-0 w-14 h-14 rounded-full grid place-items-center border-2 transition"
+            className="shrink-0 w-12 h-12 rounded-full grid place-items-center border transition"
             style={{
-              borderColor: ouvindo ? 'var(--laranja)' : 'var(--borda)',
+              borderColor: ouvindo ? 'var(--laranja)' : 'var(--linha)',
               color: ouvindo ? 'var(--laranja)' : 'var(--texto)',
-              boxShadow: ouvindo ? '0 0 26px rgba(255,61,0,.45)' : 'none',
+              boxShadow: ouvindo ? '0 0 0 4px rgba(255,61,0,.14)' : 'none',
             }}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -147,7 +147,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
       </div>
 
       {r && (
-        <div className="mt-3 pt-3 border-t border-[var(--borda)]">
+        <div className="mt-3 pt-3 border-t border-[var(--linha)]">
           <p className="text-sm">{r.resposta}</p>
 
           {r.acao === 'iniciar' && r.ok && (
