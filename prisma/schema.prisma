@@ -154,6 +154,10 @@ model Frente {
   motivoDescarte    String?        @map("motivo_descarte")
   ordem             Int            @default(0)
   pacote            String?
+  // A etapa dentro da area (prospeccao, venda, pos-venda, compras, financeiro...).
+  // Texto e nao enum de proposito: ele ja avisou que vai desmembrar producao
+  // depois, e migrar enum e mais caro do que migrar texto. src/lib/etapas.ts.
+  etapa             String?
 
   area              Area           @relation(fields: [areaId], references: [id])
   projeto           Projeto?       @relation(fields: [projetoId], references: [id])

@@ -24,6 +24,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from './prisma'
 import { hojeSP } from './datas'
+import { textoParaIa } from './etapas'
 
 const MODELO = 'claude-sonnet-5'
 const PRECO = { entrada: 3, saida: 15 }
@@ -33,6 +34,7 @@ export type PlanoDitado = {
   frentes: {
     titulo: string
     area: string
+    etapa?: string | null
     projeto?: string | null
     cliente?: string | null
     tarefas: { titulo: string; venceEm?: string | null; feita?: boolean; minutos?: number | null }[]
@@ -53,6 +55,7 @@ Responda SO com JSON, sem texto em volta:
     {
       "titulo": "nome curto do assunto",
       "area": "comercial|engenharia|producao|adm",
+      "etapa": "a etapa dentro da area, da lista abaixo",
       "projeto": "nome do projeto, se ele citou" ou null,
       "cliente": "nome do cliente, se ele citou" ou null,
       "tarefas": [ { "titulo": "acao concreta", "venceEm": "AAAA-MM-DD" ou null, "feita": true se ele disse que JA foi feita, "minutos": quanto durou se ele disse, ou null } ]
@@ -63,6 +66,9 @@ Responda SO com JSON, sem texto em volta:
   "tarefaExistenteId": numero da tarefa que JA EXISTE e que ele esta comecando agora, ou null
 }
 
+ETAPAS DENTRO DE CADA AREA (escolha uma, sempre):
+{{ETAPAS}}
+
 COMO DECIDIR A AREA:
 - producao: buscar, coletar, transportar, usinagem, tratamento, banho, galvanica, fabricacao, montagem, conferencia de qualidade, embalagem, motoboy, fornecedor de peca.
 - engenharia: projeto, detalhamento, layout, dimensionamento, lista de materiais, desenho.
@@ -71,7 +77,7 @@ COMO DECIDIR A AREA:
 
 REGRAS QUE NAO SE QUEBRAM:
 - TODO trabalho de producao e engenharia PERTENCE A UM PROJETO. Se ele citar o
-  nome ("batoque do Lojimate", "trava do Clinker"), use como projeto. Se falar de
+  nome ("batoque do Logimat", "trava do Clinker"), use como projeto. Se falar de
   peca, usinagem, banho ou entrega sem dizer o projeto, use o projeto que ja
   existe com essa peca; se nao existir nenhum, crie com o nome da peca. Projeto e
   a espinha: e por ele que as horas se somam no fim.
@@ -132,7 +138,7 @@ export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDi
     // 1200 cortava o JSON no meio numa cadeia de logistica com varias tarefas,
     // e o parse falhava sem dizer por que. Plano longo precisa de espaco.
     max_tokens: 4000,
-    system: `${INSTRUCAO}\n\n${contexto}`,
+    system: `${INSTRUCAO.replace('{{ETAPAS}}', textoParaIa())}\n\n${contexto}`,
     messages: [{ role: 'user', content: texto }],
   })
 
@@ -188,7 +194,7 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
     })
     if (!frente) {
       frente = await prisma.frente.create({
-        data: { titulo: f.titulo, areaId: area.id, projetoId, status: 'aberta' },
+        data: { titulo: f.titulo, areaId: area.id, projetoId, status: 'aberta', etapa: f.etapa ?? null },
       })
       await prisma.movimento.create({ data: { frenteId: frente.id, tipo: 'abertura', descricao: 'ditada por voz' } })
       linhas.push(`frente: ${f.titulo} [${area.nome}]`)

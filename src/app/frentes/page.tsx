@@ -2,6 +2,7 @@ import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { lerConfig } from '@/lib/configuracao'
 import { criticosDaFrente } from '@/lib/mostrador'
+import { nomeDaEtapa } from '@/lib/etapas'
 import { diasUteisEntre, formatarHoras } from '@/lib/datas'
 import { Moldura, Vazio } from '@/components/Moldura'
 import { Captura } from '@/components/Captura'
@@ -115,6 +116,7 @@ export default async function Frentes({
                     <p className="font-semibold leading-tight">{f.titulo}</p>
                     <p className="text-xs fraco mt-0.5">
                       {f.area.nome}
+                      {f.etapa ? ` · ${nomeDaEtapa(f.area.chave, f.etapa)}` : ''}
                       {f.projeto ? ` · ${f.projeto.nome}` : ''} ·{' '}
                       {parada === 0 ? 'movida hoje' : `parada ha ${parada} dias uteis`}
                     </p>
