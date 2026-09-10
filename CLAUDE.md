@@ -346,3 +346,45 @@ por apontamento -> tarefa -> frente -> projeto.
 `DATABASE_URL`, `DIRECT_URL`, `APP_PASSWORD_HASH` e `ANTHROPIC_API_KEY`.
 Variavel nova na Vercel so vale para deploys feitos DEPOIS dela: ao mexer numa,
 e obrigatorio redeploy.
+
+## Como o sistema escreve (e como eu escrevo)
+
+Cobrado pelo Lucian em 10/09/2026, e vale para os dois projetos: o Jarvis e
+o CRM de prospecção, incluindo a skill de prospecção.
+
+**Acentuação completa do português, sempre.** Agudo, circunflexo, til e
+cedilha, pela regra da língua. Não é estilo, é ortografia. Vale no texto da
+tela, no rótulo, na mensagem que o sistema fala, no comentário de código e
+na resposta do chat. Texto sem acento parece rascunho, e rascunho não sai
+da empresa dele.
+
+**A exceção que existe para o código não valer errado:** IDENTIFICADOR
+nunca leva acento. Variável, chave de objeto, propriedade, import, nome de
+arquivo, valor de enum gravado no banco. Já quebrou o build três vezes:
+`prisma.área`, `import './configuração'`, `'America/São_Paulo'`,
+`let índice`. O que aparece na tela leva acento; o que o computador lê, não.
+
+**Duas armadilhas que nenhuma varredura automática resolve:**
+- `esta` demonstrativo NÃO leva acento ("a esta altura do mês", "esta
+  semana"); `está` do verbo estar leva.
+- `e` de ligação nunca leva acento; `é` do verbo ser sempre leva. Sem o
+  acento os dois se escrevem igual, então só a leitura da frase decide.
+  Trocar em massa erra nos dois sentidos - já produziu "diga isso é siga".
+
+**Nunca travessão. Sempre hífen.** Em qualquer texto, sem exceção.
+
+Cuidado ao varrer travessão em massa: no CRM, `scripts/teste-mensagens.mjs`
+monta a própria regra com `String.fromCharCode(8212)` justamente porque uma
+varredura já trocou o travessão que estava DENTRO do verificador.
+
+## A checagem rapida
+
+`GET /api/saude` responde, sem pedir login e sem vazar nada:
+
+```json
+{ "banco_conectado": true, "chave_ia_configurada": true }
+```
+
+Serve para saber se um redeploy da Vercel pegou a variavel de ambiente nova
+sem ter que entrar no sistema e tentar ditar alguma coisa. So booleano: nunca
+o valor da chave, nem um pedaco dele.
