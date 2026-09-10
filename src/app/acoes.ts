@@ -565,3 +565,43 @@ export async function encerrarDescanso() {
   }
   revalidatePath('/painel')
 }
+
+/**
+ * LANCAMENTO RETROATIVO - consertar o que ficou sem registro.
+ *
+ * Existe porque o buraco do dia nao e ociosidade por definicao: pode ser
+ * trabalho que ele esqueceu de apontar. Sem este botao, erro de lancamento
+ * virava prejuizo no fechamento da semana, e o numero perdia a autoridade.
+ *
+ * O apontamento nasce JA FECHADO e marcado como revisar - fica claro no
+ * historico que aquilo foi lembrado depois, nao cronometrado na hora.
+ */
+export async function lancarRetroativo(form: FormData) {
+  const tarefaId = Number(form.get('tarefaId'))
+  const data = String(form.get('data') ?? '')
+  const hIni = String(form.get('inicio') ?? '')
+  const hFim = String(form.get('fim') ?? '')
+  if (!tarefaId || !data || !hIni || !hFim) return
+
+  const inicio = new Date(`${data}T${hIni}:00-03:00`)
+  const fim = new Date(`${data}T${hFim}:00-03:00`)
+  if (!(fim > inicio)) return
+
+  const t = await prisma.tarefa.findUnique({ where: { id: tarefaId } })
+  if (!t) return
+
+  await prisma.apontamento.create({
+    data: {
+      tarefaId,
+      iniciadoEm: inicio,
+      encerradoEm: fim,
+      encerradoPor: 'usuario',
+      blocoDesde: inicio,
+      revisar: true,
+    },
+  })
+  await garantirFrenteAberta(t.frenteId)
+  await registrarMovimento(t.frenteId, 'lancamento-retroativo', t.titulo)
+  revalidatePath('/painel')
+  revalidatePath('/frentes')
+}

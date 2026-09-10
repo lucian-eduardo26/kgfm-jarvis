@@ -24,8 +24,9 @@ import { montarPainel } from './painel'
 import { decidirAgora } from './agora'
 import { montarEstado } from './conversa'
 import { diasUteisEntre } from './datas'
-import { casar, lerIntencao, tituloDoFalado, type AlvoPossivel } from './casar'
+import { casar, lerIntencao, ehDitado, tituloDoFalado, type AlvoPossivel } from './casar'
 import { garantirFrenteAberta } from './abrirFrente'
+import { interpretarDitado, gravarDitado } from './ditado'
 
 const MODELO = 'claude-sonnet-5'
 const PRECO = { entrada: 3, saida: 15 }
@@ -41,6 +42,8 @@ export type ResultadoComando = {
   recomendado: string | null
   /** true quando precisou gastar credito da API. */
   usouIa: boolean
+  /** o que foi criado no banco a partir do que ele ditou */
+  criou: string[] | null
 }
 
 function vazio(resposta: string, recomendado: string | null, usouIa = false): ResultadoComando {
@@ -54,6 +57,7 @@ function vazio(resposta: string, recomendado: string | null, usouIa = false): Re
     alinhamento: 'sem prioridade definida',
     recomendado,
     usouIa,
+    criou: null,
   }
 }
 
@@ -92,6 +96,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
       alinhamento: 'sem prioridade definida',
       recomendado,
       usouIa: false,
+      criou: null,
     }
   }
 
@@ -114,7 +119,11 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     tarefas: f.tarefas.map((t) => ({ id: t.id, titulo: t.titulo })),
   }))
 
-  const m = casar(texto, alvos)
+  // Texto longo, ou com varias acoes encadeadas, NUNCA passa pelo casamento de
+  // palavras: e plano, e plano se organiza, nao se "casa".
+  const m = ehDitado(texto)
+    ? { confiante: false, frenteId: null, tarefaId: null, tituloDaTarefaNova: tituloDoFalado(texto), nota: 0, segunda: 0 }
+    : casar(texto, alvos)
 
   // ---------- concluir ----------
   if (intencao === 'concluir') {
@@ -143,12 +152,75 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
       alinhamento: 'sem prioridade definida',
       recomendado,
       usouIa: false,
+      criou: null,
     }
   }
 
-  // ---------- perguntar, ou nao ter certeza: aí sim a IA ----------
-  if (intencao === 'perguntar' || !m.confiante) {
-    return await comIa(texto, recomendado, m.confiante ? null : alvos)
+  // ---------- pergunta: a IA responde, nao escreve nada ----------
+  if (intencao === 'perguntar') {
+    return await comIa(texto, recomendado, null)
+  }
+
+  // ---------- nao casou com nada: e DITADO, nao comando ----------
+  //
+  // Este era o beco sem saida do sistema. Quando ele ditava trabalho novo -
+  // "o motoboy busca as pecas na usinagem do Dennis, depois vai pro banho na
+  // Soriel" - a comparacao por palavras nao tinha o que casar e respondia
+  // "nao tenho certeza de qual frente e": tecnicamente correta e inutil.
+  //
+  // Agora, se nao casou, o sistema entende que e trabalho NOVO e organiza:
+  // cria a frente na area certa, as tarefas na ordem, e os prazos.
+  if (!m.confiante) {
+    const { plano, usouIa } = await interpretarDitado(texto)
+
+    if (!plano || !plano.frentes?.length) {
+      if (!usouIa) {
+        return vazio(
+          'Sem chave da API eu so consigo casar com o que ja existe - e isto aqui e assunto novo. Configure ANTHROPIC_API_KEY, ou abra a frente na tela de Frentes.',
+          recomendado,
+        )
+      }
+      return vazio('Nao consegui organizar isso. Repita separando as coisas: o que fazer, onde, e para quando.', recomendado, true)
+    }
+
+    const { linhas, tarefaParaComecar } = await gravarDitado(plano)
+
+    // Se ele disse que ja esta fazendo uma delas, o relogio parte junto.
+    let tarefaIniciada: string | null = null
+    let frenteIniciada: string | null = null
+    let areaIniciada: string | null = null
+    if (tarefaParaComecar) {
+      const t = await prisma.tarefa.findUnique({
+        where: { id: tarefaParaComecar },
+        include: { frente: { include: { area: true } } },
+      })
+      if (t) {
+        await prisma.apontamento.updateMany({
+          where: { encerradoEm: null },
+          data: { encerradoEm: agora, encerradoPor: 'troca' },
+        })
+        await prisma.apontamento.create({
+          data: { tarefaId: t.id, iniciadoEm: agora, blocoDesde: agora },
+        })
+        await garantirFrenteAberta(t.frenteId)
+        tarefaIniciada = t.titulo
+        frenteIniciada = t.frente.titulo
+        areaIniciada = t.frente.area.nome
+      }
+    }
+
+    return {
+      ok: true,
+      acao: tarefaIniciada ? 'iniciar' : 'nada',
+      tarefa: tarefaIniciada,
+      frente: frenteIniciada,
+      area: areaIniciada,
+      resposta: plano.entendi || 'Organizado.',
+      alinhamento: 'sem prioridade definida',
+      recomendado,
+      usouIa: true,
+      criou: linhas,
+    }
   }
 
   // ---------- iniciar, com certeza e sem custo ----------
@@ -211,6 +283,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
     alinhamento,
     recomendado,
     usouIa: false,
+    criou: null,
   }
 }
 

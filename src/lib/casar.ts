@@ -70,12 +70,63 @@ const PARAR = /\b(parei|parar|pausa|pausar|pausei|parou|chega|encerrei|encerrar)
 const CONCLUIR = /\b(acabei|terminei|conclui|concluido|finalizei|fechei|pronto|feito|resolvido)\b/
 const PERGUNTA = /\?|^\s*(o que|qual|quais|quanto|quando|quem|por que|porque|como|me diga|me fala|explica)\b/
 
+/**
+ * A intencao da frase.
+ *
+ * ARMADILHA que este codigo existe para evitar (achada em 10/09/2026): a
+ * primeira versao procurava a palavra em qualquer lugar do texto. Ai ele ditou
+ * "...depois de PRONTO eu coleto, valido e embalo..." e o sistema entendeu
+ * "terminei" - e marcou uma tarefa como feita no meio de um ditado de logistica.
+ *
+ * Duas regras corrigem isso, e as duas sao sobre POSICAO e TAMANHO:
+ *
+ * 1. Frase longa e DITADO, nunca comando curto. Ninguem diz "parei" em
+ *    quarenta palavras.
+ * 2. "Parei" e "terminei" so valem NO COMECO da frase. No meio, sao parte da
+ *    narrativa do que vai acontecer - nao um comando.
+ */
 export function lerIntencao(texto: string): Intencao {
   const t = normalizar(texto)
-  if (PARAR.test(t)) return 'parar'
-  if (CONCLUIR.test(t)) return 'concluir'
+  const palavrasTotais = t.split(' ').filter(Boolean)
+
+  // Frase longa nunca e "parei" nem "terminei": e ditado.
+  if (palavrasTotais.length > 22) {
+    return PERGUNTA.test(texto.toLowerCase().trim()) ? 'perguntar' : 'iniciar'
+  }
+
+  // Comando de encerrar so vale nas primeiras palavras.
+  const comeco = palavrasTotais.slice(0, 4).join(' ')
+  if (PARAR.test(comeco)) return 'parar'
+  if (CONCLUIR.test(comeco)) return 'concluir'
+
+  // Frase muito curta: aceita a palavra em qualquer lugar dela.
+  if (palavrasTotais.length <= 6) {
+    if (PARAR.test(t)) return 'parar'
+    if (CONCLUIR.test(t)) return 'concluir'
+  }
+
   if (PERGUNTA.test(texto.toLowerCase().trim())) return 'perguntar'
   return 'iniciar'
+}
+
+/**
+ * E ditado, e nao comando?
+ *
+ * "Estou fazendo o levantamento" tem cinco palavras. Uma cadeia de logistica
+ * tem sessenta. O tamanho sozinho ja separa os dois, e separar ANTES de tentar
+ * casar evita o erro que aconteceu em 10/09/2026: a frase longa continha
+ * "visita" e "qualidade", casou com a tarefa "Visita tecnica" que existia por
+ * acaso, e o cronometro partiu na coisa errada em vez de organizar o trabalho
+ * novo.
+ *
+ * Tambem conta a QUANTIDADE DE ACOES: duas ou mais acoes encadeadas ja e plano,
+ * mesmo em frase curta.
+ */
+export function ehDitado(texto: string): boolean {
+  const p = normalizar(texto).split(' ').filter(Boolean)
+  if (p.length > 22) return true
+  const acoes = (normalizar(texto).match(/(buscar|coletar|levar|entregar|mandar|marcar|analisar|validar|embalar|conferir|comprar|cotar|ligar|visitar|montar|instalar|enviar|receber|separar|transportar)/g) ?? []).length
+  return acoes >= 2 && p.length > 10
 }
 
 export type AlvoPossivel = {

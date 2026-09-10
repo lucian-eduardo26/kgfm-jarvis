@@ -1,69 +1,42 @@
 'use client'
 
-// "Jarvis, estou fazendo o detalhamento do transportador."
-// Fala -> tarefa identificada -> relogio rodando -> veredito sobre prioridade.
-// O reconhecimento de fala e do navegador: zero custo, Android e Chrome no PC.
+// "Jarvis, o motoboy tem que buscar as pecas na usinagem do Dennis..."
+//
+// Duas coisas mudaram em 10/09/2026, e as duas vieram de reclamacao com razao:
+//
+// 1. O MICROFONE CORTAVA no meio da fala. Agora usa o motor unico
+//    (src/lib/useEscuta.ts): escuta continua, religa sozinho, e SO ENVIA
+//    QUANDO VOCE MANDA. Quem decide que a frase acabou e voce.
+//
+// 2. QUANDO NAO CASAVA, MORRIA. Dizia "nao tenho certeza de qual frente e" -
+//    correto e inutil. Agora, se e assunto novo, o sistema organiza: cria a
+//    frente na area certa, as tarefas na ordem, os prazos. O que ele criou
+//    aparece listado aqui embaixo, para voce conferir na hora.
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ResultadoComando } from '@/lib/comando'
 import { falar } from '@/lib/vozNavegador'
-
-type Reconhecimento = {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  start: () => void
-  stop: () => void
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
-  onend: (() => void) | null
-}
+import { useEscuta } from '@/lib/useEscuta'
 
 export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<ResultadoComando> }) {
-  const [texto, setTexto] = useState('')
-  const [ouvindo, setOuvindo] = useState(false)
   const [processando, setProcessando] = useState(false)
   const [r, setR] = useState<ResultadoComando | null>(null)
-  const [temVoz, setTemVoz] = useState(false)
-  const rec = useRef<Reconhecimento | null>(null)
+  const escuta = useEscuta()
   const router = useRouter()
 
-  useEffect(() => {
-    const w = window as unknown as {
-      SpeechRecognition?: new () => Reconhecimento
-      webkitSpeechRecognition?: new () => Reconhecimento
-    }
-    const Classe = w.SpeechRecognition ?? w.webkitSpeechRecognition
-    if (!Classe) return
-    setTemVoz(true)
-    const rr = new Classe()
-    rr.lang = 'pt-BR'
-    rr.continuous = false
-    rr.interimResults = true
-    rr.onresult = (e) => {
-      let t = ''
-      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript
-      setTexto(t)
-    }
-    rr.onend = () => {
-      setOuvindo(false)
-      // Parou de falar: manda sozinho. Um toque a menos e um toque que importa.
-      setTimeout(() => enviarRef.current?.(), 250)
-    }
-    rec.current = rr
-  }, [])
-
-  const enviarRef = useRef<(() => void) | null>(null)
+  const noCampo = escuta.parcial ? `${escuta.texto} ${escuta.parcial}`.trim() : escuta.texto
 
   async function enviar() {
-    const t = texto.trim()
+    const t = noCampo.trim()
     if (!t || processando) return
+    escuta.parar()
     setProcessando(true)
     setR(null)
     try {
       const resultado = await acao(t)
       setR(resultado)
-      setTexto('')
+      escuta.limpar()
       falar(resultado.resposta)
       router.refresh()
     } catch {
@@ -74,15 +47,15 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
         frente: null,
         area: null,
         resposta: 'Deu erro na chamada. Confira a chave da API em Configuracao.',
-        usouIa: false,
         alinhamento: 'sem prioridade definida',
         recomendado: null,
+        usouIa: false,
+        criou: null,
       })
     } finally {
       setProcessando(false)
     }
   }
-  enviarRef.current = enviar
 
   const corDoVeredito =
     r?.alinhamento === 'e a prioridade'
@@ -92,78 +65,117 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
         : 'var(--fraco)'
 
   return (
-    <section className="cartao p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="rotulo">o que voce esta fazendo</p>
-        {processando && <span className="text-xs fraco font-mono">...</span>}
-        {r?.usouIa && <span className="text-[10px] dado" title="esta resposta gastou credito da API">via IA</span>}
+    <section className="cartao">
+      <div className="painel-cabeca">
+        <span className="rotulo">o que voce esta fazendo</span>
+        <span className="flex items-center gap-2">
+          {escuta.ouvindo && (
+            <span className="text-[10px]" style={{ color: 'var(--laranja)' }}>
+              OUVINDO
+            </span>
+          )}
+          {processando && <span className="text-[10px] dado">ORGANIZANDO</span>}
+          {r?.usouIa && (
+            <span className="text-[10px] dado" title="esta resposta gastou credito da API">
+              via IA
+            </span>
+          )}
+        </span>
       </div>
 
-      <div className="flex gap-2 items-center mt-2">
-        {temVoz && (
-          <button
-            type="button"
-            aria-label={ouvindo ? 'Parar de ouvir' : 'Falar'}
-            onClick={() => {
-              if (ouvindo) {
-                rec.current?.stop()
-                setOuvindo(false)
-              } else {
-                setTexto('')
-                setOuvindo(true)
-                rec.current?.start()
+      <div className="painel-corpo">
+        <div className="flex gap-2 items-start">
+          {escuta.disponivel && (
+            <button
+              type="button"
+              aria-label={escuta.ouvindo ? 'Parar de ouvir' : 'Falar'}
+              onClick={escuta.alternar}
+              className="shrink-0 w-12 h-12 rounded-full grid place-items-center border transition"
+              style={{
+                borderColor: escuta.ouvindo ? 'var(--laranja)' : 'var(--linha)',
+                color: escuta.ouvindo ? 'var(--laranja)' : 'var(--texto)',
+                boxShadow: escuta.ouvindo ? '0 0 0 5px rgba(255,61,0,.13)' : 'none',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" />
+                <path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V23h2v-3.06A9 9 0 0 0 21 11h-2Z" />
+              </svg>
+            </button>
+          )}
+
+          <textarea
+            value={noCampo}
+            onChange={(e) => escuta.definir(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                void enviar()
               }
             }}
-            className="shrink-0 w-12 h-12 rounded-full grid place-items-center border transition"
-            style={{
-              borderColor: ouvindo ? 'var(--laranja)' : 'var(--linha)',
-              color: ouvindo ? 'var(--laranja)' : 'var(--texto)',
-              boxShadow: ouvindo ? '0 0 0 4px rgba(255,61,0,.14)' : 'none',
-            }}
+            rows={escuta.ouvindo || noCampo.length > 70 ? 3 : 1}
+            placeholder={
+              escuta.ouvindo
+                ? 'Pode falar. Toque no microfone quando terminar.'
+                : 'Estou fazendo o detalhamento - ou dite o trabalho novo'
+            }
+            className="campo resize-none flex-1 text-sm"
+            style={{ minHeight: 48, maxHeight: 180 }}
+          />
+
+          <button
+            type="button"
+            onClick={() => void enviar()}
+            disabled={!noCampo.trim() || processando}
+            className="botao shrink-0"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" />
-              <path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V23h2v-3.06A9 9 0 0 0 21 11h-2Z" />
-            </svg>
+            {processando ? '...' : 'Enviar'}
           </button>
+        </div>
+
+        {escuta.ouvindo && (
+          <p className="text-[11px] mt-2" style={{ color: 'var(--laranja-luz)' }}>
+            Escutando sem cortar - pode pensar no meio da frase. Toque no microfone para encerrar.
+          </p>
         )}
 
-        <input
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              void enviar()
-            }
-          }}
-          placeholder={ouvindo ? 'Ouvindo...' : 'Estou fazendo o detalhamento do transportador'}
-          className="campo flex-1"
-        />
-        <button type="button" onClick={() => void enviar()} disabled={!texto.trim() || processando} className="botao shrink-0">
-          Iniciar
-        </button>
+        {escuta.erro && (
+          <p className="text-[12px] mt-2" style={{ color: 'var(--ambar)' }}>
+            {escuta.erro}
+          </p>
+        )}
+
+        {r && (
+          <div className="mt-3 pt-3 border-t border-[var(--linha)]">
+            <p className="text-sm whitespace-pre-wrap">{r.resposta}</p>
+
+            {r.criou && r.criou.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {r.criou.map((c, i) => (
+                  <li key={i} className="text-xs flex items-start gap-2">
+                    <span style={{ color: 'var(--verde)' }}>+</span>
+                    <span className="fraco">{c}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {r.acao === 'iniciar' && r.ok && r.tarefa && (
+              <p className="text-xs dado mt-2">
+                RODANDO: {r.tarefa} · {r.frente} · {r.area}
+              </p>
+            )}
+
+            {r.alinhamento !== 'sem prioridade definida' && (
+              <p className="text-xs mt-2" style={{ color: corDoVeredito }}>
+                {r.alinhamento === 'e a prioridade'
+                  ? 'Isto e o que o painel apontaria agora.'
+                  : `O painel apontaria outra coisa: ${r.recomendado}. Voce decide - mas decide sabendo.`}
+              </p>
+            )}
+          </div>
+        )}
       </div>
-
-      {r && (
-        <div className="mt-3 pt-3 border-t border-[var(--linha)]">
-          <p className="text-sm">{r.resposta}</p>
-
-          {r.acao === 'iniciar' && r.ok && (
-            <p className="text-xs fraco mt-2 font-mono">
-              RODANDO: {r.tarefa} · {r.frente} · {r.area}
-            </p>
-          )}
-
-          {r.alinhamento !== 'sem prioridade definida' && (
-            <p className="text-xs mt-2" style={{ color: corDoVeredito }}>
-              {r.alinhamento === 'e a prioridade'
-                ? 'Isto e o que o painel apontaria agora.'
-                : `O painel apontaria outra coisa: ${r.recomendado}. Voce decide - mas decide sabendo.`}
-            </p>
-          )}
-        </div>
-      )}
     </section>
   )
 }

@@ -13,7 +13,9 @@ import { limparExemplo, comandoDeVoz, continuarBloco, comecarDescanso, encerrarD
 import { ComandoVoz } from '@/components/ComandoVoz'
 import { confrontar } from '@/lib/expediente'
 import { lerConfig } from '@/lib/configuracao'
+import { prisma } from '@/lib/prisma'
 import { AgendaDoDia } from '@/components/AgendaDoDia'
+import { LancarRetroativo } from '@/components/LancarRetroativo'
 import { hojeSP } from '@/lib/datas'
 import { vozDoDia } from '@/lib/resistencia'
 
@@ -28,6 +30,14 @@ export default async function Painel() {
   const c = confrontar(d.minutosHoje)
 
   const agenda = d.agenda
+  const tarefasAbertas = (
+    await prisma.tarefa.findMany({
+      where: { status: 'aberta' },
+      include: { frente: true },
+      orderBy: { criadaEm: 'desc' },
+      take: 40,
+    })
+  ).map((t) => ({ id: t.id, titulo: t.titulo, frente: t.frente.titulo }))
   const voz = vozDoDia({
     percentualNoEscuro: c.percentualNoEscuro,
     minutosExpediente: c.minutosExpediente,
@@ -215,6 +225,8 @@ export default async function Painel() {
               )
             })}
           </ul>
+
+          <LancarRetroativo tarefas={tarefasAbertas} hoje={hojeSP()} />
         </section>
       </div>
 
