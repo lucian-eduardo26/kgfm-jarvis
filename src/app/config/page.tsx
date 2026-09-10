@@ -18,9 +18,9 @@ export default async function Configuracao() {
   const gasto = await prisma.chamadaIa.aggregate({ _sum: { custoEstimado: true }, _count: true })
 
   return (
-    <Moldura titulo="Configuracao" atalhoAtivo="/config">
+    <Moldura titulo="Configuração" atalhoAtivo="/config">
       <p className="fraco text-sm mb-4 max-w-2xl">
-        Tudo aqui nasce com o padrão da especificação. Cada mudanca guarda a data - se o mostrador
+        Tudo aqui nasce com o padrão da especificação. Cada mudança guarda a data - se o mostrador
         mudar de cor, você precisa conseguir responder se foi o mundo que mudou ou se foi o peso.
       </p>
 

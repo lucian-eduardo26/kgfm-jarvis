@@ -146,7 +146,7 @@ export default async function Painel() {
       <div className="grid lg:grid-cols-2 gap-3">
         {/* Críticos */}
         <section className="cartao">
-          <Cabeca titulo="criticos" direita={<span className="text-[10px] dado">{d.criticosGerais.length}</span>} />
+          <Cabeca titulo="críticos" direita={<span className="text-[10px] dado">{d.criticosGerais.length}</span>} />
           <div className="painel-corpo">
           {d.criticosGerais.length === 0 ? (
             <p className="fraco text-sm">
