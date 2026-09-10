@@ -319,3 +319,30 @@ por apontamento -> tarefa -> frente -> projeto.
 - Explique o porquê das decisões técnicas — abordagem aconselhativa, não só executora.
 - Aponte quando ele estiver "coando mosquito e engolindo camelo": priorizar o que gera reunião e receita sobre o que organiza infraestrutura.
 - Nunca usar copiar/colar do sistema operacional ao mexer em planilhas dele — a área de transferência é compartilhada com o Windows.
+
+---
+
+## 12. Enderecos do projeto
+
+- **App no ar (URL fixa):** https://kgfm-jarvis.vercel.app
+  O endereco `kgfm-jarvis-kgfm-solucoes.vercel.app` esta atras do login da
+  Vercel (Deployment Protection ligada nele) e devolve a tela de login DA
+  VERCEL, nao o Jarvis. Nao usar.
+- **Repositorio:** https://github.com/lucian-eduardo26/kgfm-jarvis
+- **Banco:** Neon, projeto `Jarvis KGFM`, banco `neondb`, regiao sa-east-1.
+  E o MESMO banco do desenvolvimento local - o que voce mexe na sua maquina
+  aparece na producao. Nao existe base de teste separada.
+- **Funcoes na Vercel:** regiao gru1 (Sao Paulo), a mesma do banco. Sem isso
+  cada consulta atravessa o continente. Foi licao do CRM.
+- **Rodar no PC:** atalho "Jarvis KGFM" na area de trabalho, ou
+  `abrir-jarvis.cmd` na pasta. Ele espera a porta responder antes de abrir o
+  navegador - a versao anterior abria antes e dava "nao e possivel conectar".
+- **`prisma generate` no postinstall** e obrigatorio: a Vercel guarda
+  node_modules em cache e sem isso o build sai com o cliente errado.
+- NUNCA consultar a URL de producao em laco. A Vercel liga o Attack Challenge
+  Mode e passa a responder 403 a tudo. Esperar e conferir UMA vez.
+
+### Variaveis de ambiente
+`DATABASE_URL`, `DIRECT_URL`, `APP_PASSWORD_HASH` e `ANTHROPIC_API_KEY`.
+Variavel nova na Vercel so vale para deploys feitos DEPOIS dela: ao mexer numa,
+e obrigatorio redeploy.
