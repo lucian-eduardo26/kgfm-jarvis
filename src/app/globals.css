@@ -566,3 +566,93 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- o sinal de gravação ---------- */
+
+.gravando {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--texto-medio);
+}
+
+.gravando-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--laranja);
+  box-shadow: 0 0 10px -1px var(--laranja);
+  animation: pulsa-gravando 1.1s ease-in-out infinite;
+}
+
+/* Sem reconhecer nada: para de pulsar e fica cinza. Um sinal parado diz
+   "alguma coisa não está certa" sem precisar de texto. */
+.gravando-ponto-mudo {
+  background: var(--cinza);
+  box-shadow: none;
+  animation: none;
+}
+
+.gravando-tempo {
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gravando-texto {
+  color: var(--fraco);
+}
+
+@keyframes pulsa-gravando {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+}
+
+/* Quem não quer movimento na tela não recebe movimento. */
+@media (prefers-reduced-motion: reduce) {
+  .gravando-ponto {
+    animation: none;
+  }
+}
+
+/* ===========================================================================
+   O ZOOM QUE O CELULAR DAVA SOZINHO
+   ---------------------------------------------------------------------------
+   O Lucian mandou print em 10/09/2026: a tela abria ampliada e ele tinha que
+   afastar com dois dedos toda vez.
+
+   A causa não é o layout, é uma regra do celular: quando o dedo toca um campo
+   de texto com letra MENOR que 16px, o navegador amplia a página sozinho para
+   a letra ficar legível - e não desfaz o zoom depois. Os campos aqui estavam
+   com 14px.
+
+   16px em todo campo de digitação é o preço de o telefone não mexer no zoom.
+   Vale para input, textarea e select, porque os três disparam a mesma regra.
+   =========================================================================== */
+
+input,
+textarea,
+select,
+.campo {
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  /* No computador não existe esse zoom, então volta ao tamanho do desenho. */
+  input,
+  textarea,
+  select,
+  .campo {
+    font-size: 14px;
+  }
+}

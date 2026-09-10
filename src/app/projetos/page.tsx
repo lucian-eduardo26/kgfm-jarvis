@@ -46,7 +46,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
       {travada && (
         <section className="cartao p-4 mb-3" style={{ borderColor: 'var(--ambar)' }}>
           <p className="font-semibold" style={{ color: 'var(--ambar)' }}>
-            {travada.area.nome} ja esta no limite de {travada.area.limiteWip} frentes abertas.
+            {travada.area.nome} já está no limite de {travada.area.limiteWip} frentes abertas.
           </p>
           <p className="fraco text-sm mt-1">
             Ativar &quot;{travada.titulo}&quot; agora significa mais uma coisa aberta na mesma cabeca.
@@ -96,7 +96,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
         </div>
         <p className="fraco text-xs mt-2">
           A WBS padrão entra desdobrada nos quatro setores, com os pacotes PLANEJADOS - não abertos.
-          Plano nao consome limite de WIP; so o que voce ativa e que conta.
+          Plano não consome limite de WIP; só o que você ativa é que conta.
         </p>
       </form>
 

@@ -70,7 +70,7 @@ export default async function Estrategia() {
             <input name="descricao" placeholder="Ex.: propostas enviadas" className="campo" />
           </div>
           <div>
-            <label className="text-xs fraco block mb-1">Area</label>
+            <label className="text-xs fraco block mb-1">Área</label>
             <select name="areaId" className="campo">
               {areas.map((a) => (
                 <option key={a.id} value={a.id}>

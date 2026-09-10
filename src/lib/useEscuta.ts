@@ -62,6 +62,10 @@ export type Escuta = {
   /** o pedaco que ainda está sendo reconhecido, para a pessoa ver que funciona */
   parcial: string
   erro: string | null
+  /** segundos gravados, para a tela contar igual gravador de áudio */
+  segundos: number
+  /** há mais de 4 segundos sem reconhecer nada - fala baixa ou parou */
+  mudo: boolean
   comecar: () => void
   parar: () => void
   alternar: () => void
@@ -75,6 +79,10 @@ export function useEscuta(): Escuta {
   const [texto, setTexto] = useState('')
   const [parcial, setParcial] = useState('')
   const [erro, setErro] = useState<string | null>(null)
+  /** Segundos gravados, para a tela contar igual gravador de áudio. */
+  const [segundos, setSegundos] = useState(0)
+  /** Quando chegou o último pedaço de fala. Serve para dizer "ainda te ouço". */
+  const [ultimoSinal, setUltimoSinal] = useState(0)
 
   const rec = useRef<Reconhecimento | null>(null)
   const querOuvir = useRef(false)
@@ -83,6 +91,10 @@ export function useEscuta(): Escuta {
   const trilha = useRef<MediaStream | null>(null)
   /** Já sabemos que este endereço tem permissão? Evita perguntar de novo. */
   const jaAutorizado = useRef(false)
+  /** Religadas seguidas que falharam. Três e a escuta assume que parou. */
+  const tentativas = useRef(0)
+  const religar = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const relogio = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Ao abrir a tela, pergunta ao navegador se o microfone JÁ está autorizado.
   // Se estiver, o botão começa a escutar na hora, sem pedir nada.
@@ -98,6 +110,17 @@ export function useEscuta(): Escuta {
       })
       .catch(() => {})
   }, [])
+
+  // O relógio da gravação. Existe por pedido do Lucian: sem ver o tempo
+  // correndo não dá para saber se ainda está gravando ou se travou calado.
+  useEffect(() => {
+    if (!ouvindo) return
+    relogio.current = setInterval(() => setSegundos((s) => s + 1), 1000)
+    return () => {
+      if (relogio.current) clearInterval(relogio.current)
+      relogio.current = null
+    }
+  }, [ouvindo])
 
   useEffect(() => {
     const w = window as unknown as {
@@ -127,6 +150,8 @@ export function useEscuta(): Escuta {
         setTexto(acumulado.current)
       }
       setParcial(emAndamento)
+      // Qualquer pedaço reconhecido conta como sinal de vida.
+      if (novoFinal || emAndamento) setUltimoSinal(Date.now())
     }
 
     rr.onerror = (e) => {
@@ -147,18 +172,39 @@ export function useEscuta(): Escuta {
       // 'no-speech' e 'aborted' não são erro: o onend religa
     }
 
+    // POR QUE A GRAVACAO TRAVAVA NO MEIO (10/09/2026):
+    // aqui religava com `rr.start()` na hora, e o Android RECUSA quando a
+    // religada vem rapido demais depois do fim - lanca erro de estado. O
+    // `catch` antigo desistia de vez, entao o microfone ficava aceso na tela
+    // sem nada ser transcrito. Era exatamente o "passa um pouquinho e trava".
+    //
+    // Agora espera um respiro e insiste. Tres tentativas seguidas sem
+    // conseguir e que valem como desistencia - e ai o motivo aparece na tela,
+    // em vez de morrer calado.
     rr.onend = () => {
       if (!querOuvir.current) {
         setOuvindo(false)
         setParcial('')
         return
       }
-      try {
-        rr.start()
-      } catch {
-        querOuvir.current = false
-        setOuvindo(false)
+      const tentar = () => {
+        if (!querOuvir.current) return
+        try {
+          rr.start()
+          tentativas.current = 0
+        } catch {
+          tentativas.current += 1
+          if (tentativas.current <= 3) {
+            religar.current = setTimeout(tentar, 350 * tentativas.current)
+          } else {
+            tentativas.current = 0
+            querOuvir.current = false
+            setOuvindo(false)
+            setErro('A escuta parou sozinha. Toque no microfone de novo - o que já foi reconhecido está guardado no campo.')
+          }
+        }
       }
+      religar.current = setTimeout(tentar, 250)
     }
 
     rec.current = rr
@@ -169,6 +215,7 @@ export function useEscuta(): Escuta {
       } catch {
         // já estava parado
       }
+      if (religar.current) clearTimeout(religar.current)
       // Sair da tela com o microfone aberto deixa a luzinha acesa no aparelho.
       trilha.current?.getTracks().forEach((t) => t.stop())
       trilha.current = null
@@ -207,6 +254,9 @@ export function useEscuta(): Escuta {
   const comecar = useCallback(() => {
     setErro(null)
     querOuvir.current = true
+    tentativas.current = 0
+    setSegundos(0)
+    setUltimoSinal(Date.now())
     setOuvindo(true)
 
     // Com permissão já dada, começa AGORA, dentro do toque. Esperar aqui faria
@@ -222,6 +272,9 @@ export function useEscuta(): Escuta {
 
   const parar = useCallback(() => {
     querOuvir.current = false
+    tentativas.current = 0
+    if (religar.current) clearTimeout(religar.current)
+    religar.current = null
     setOuvindo(false)
     setParcial('')
     try {
@@ -251,5 +304,9 @@ export function useEscuta(): Escuta {
     setParcial('')
   }, [])
 
-  return { disponivel, ouvindo, texto, parcial, erro, comecar, parar, alternar, definir, limpar }
+  // `segundos` avança de um em um, então esta conta refaz a cada segundo e
+  // não precisa de relógio próprio.
+  const mudo = ouvindo && segundos > 0 && Date.now() - ultimoSinal > 4000
+
+  return { disponivel, ouvindo, texto, parcial, erro, segundos, mudo, comecar, parar, alternar, definir, limpar }
 }

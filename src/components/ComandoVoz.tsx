@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import type { ResultadoComando } from '@/lib/comando'
 import { falar } from '@/lib/vozNavegador'
 import { useEscuta } from '@/lib/useEscuta'
+import { Gravando } from './Gravando'
 
 export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<ResultadoComando> }) {
   const [processando, setProcessando] = useState(false)
@@ -69,11 +70,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
       <div className="painel-cabeca">
         <span className="rotulo">o que você está fazendo</span>
         <span className="flex items-center gap-2">
-          {escuta.ouvindo && (
-            <span className="text-[10px]" style={{ color: 'var(--laranja)' }}>
-              OUVINDO
-            </span>
-          )}
+          {escuta.ouvindo && <Gravando segundos={escuta.segundos} mudo={escuta.mudo} />}
           {processando && <span className="text-[10px] dado">ORGANIZANDO</span>}
           {r?.usouIa && (
             <span className="text-[10px] dado" title="está resposta gastou credito da API">
@@ -118,7 +115,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
             // e frase comprida quebra em duas linhas dentro de uma caixa de uma,
             // que corta o texto no meio. O cabeçalho do cartão já diz o resto.
             placeholder={escuta.ouvindo ? 'Pode falar. Toque para encerrar.' : 'Diga o que está fazendo'}
-            className="campo resize-none flex-1 text-sm"
+            className="campo resize-none flex-1"
             style={{ minHeight: 48, maxHeight: 180 }}
           />
 

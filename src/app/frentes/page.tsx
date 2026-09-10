@@ -75,7 +75,7 @@ export default async function Frentes({
           <input name="titulo" placeholder="Ex.: Cotacao Shopee peças pequenas" className="campo" />
         </div>
         <div>
-          <label className="text-xs fraco block mb-1">Area</label>
+          <label className="text-xs fraco block mb-1">Área</label>
           <select name="areaId" className="campo" defaultValue={filtro?.id ?? areas[0]?.id}>
             {areas.map((a) => (
               <option key={a.id} value={a.id}>

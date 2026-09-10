@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { capturar } from '@/app/acoes'
 import { useEscuta } from '@/lib/useEscuta'
+import { Gravando } from './Gravando'
 
 export function Captura({ flutuante = false }: { flutuante?: boolean }) {
   const [enviando, setEnviando] = useState(false)
@@ -76,6 +77,11 @@ export function Captura({ flutuante = false }: { flutuante?: boolean }) {
       }
     >
       <div className="mx-auto w-full max-w-[1500px]">
+        {escuta.ouvindo && (
+          <div className="mb-1.5">
+            <Gravando segundos={escuta.segundos} mudo={escuta.mudo} />
+          </div>
+        )}
         {escuta.erro && (
           <p className="text-[11px] mb-1.5" style={{ color: 'var(--ambar)' }}>
             {escuta.erro}
@@ -94,7 +100,7 @@ export function Captura({ flutuante = false }: { flutuante?: boolean }) {
             }}
             rows={escuta.ouvindo || noCampo.length > 70 ? 2 : 1}
             placeholder={escuta.ouvindo ? 'Ouvindo - toque no microfone para encerrar' : 'Capturar (Ctrl+K)'}
-            className="campo resize-none flex-1 text-sm"
+            className="campo resize-none flex-1"
             style={{ minHeight: 46, maxHeight: 140 }}
           />
           {escuta.disponivel && (
