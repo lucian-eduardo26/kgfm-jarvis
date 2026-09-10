@@ -17,6 +17,21 @@
 //
 // A captura estava pior: o `onend` só apagava a luz, e o texto ficava no campo
 // sem nunca ir para lugar nenhum.
+//
+// POR QUE ELE PEDIA PERMISSÃO TODA VEZ (10/09/2026):
+// o reconhecimento de fala do navegador NÃO guarda autorização. Ele abre o
+// microfone por conta própria a cada `start()`, e como o motor religa sozinho
+// no `onend` (item 2 acima), cada religada podia mostrar o pedido de novo.
+//
+// O microfone comum (`getUserMedia`) guarda: quando a pessoa autoriza uma vez
+// num endereço https, fica autorizado para sempre naquele endereço. Então a
+// ordem virou: primeiro abrir o microfone por essa via, SEGURAR o áudio aberto
+// enquanto o botão estiver aceso, e só então reconhecer a fala. Com o
+// microfone já aberto, as religadas não perguntam mais nada.
+//
+// Uma ressalva honesta: se a pessoa escolher "permitir desta vez" em vez de
+// "permitir", o navegador esquece de propósito e vai perguntar de novo. Por
+// isso o aviso de erro aqui diz qual das duas escolher.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -64,6 +79,25 @@ export function useEscuta(): Escuta {
   const rec = useRef<Reconhecimento | null>(null)
   const querOuvir = useRef(false)
   const acumulado = useRef('')
+  /** O áudio segurado aberto enquanto escuta. É ele que cala o pedido repetido. */
+  const trilha = useRef<MediaStream | null>(null)
+  /** Já sabemos que este endereço tem permissão? Evita perguntar de novo. */
+  const jaAutorizado = useRef(false)
+
+  // Ao abrir a tela, pergunta ao navegador se o microfone JÁ está autorizado.
+  // Se estiver, o botão começa a escutar na hora, sem pedir nada.
+  useEffect(() => {
+    const p = navigator.permissions as
+      | { query: (d: { name: string }) => Promise<{ state: string }> }
+      | undefined
+    if (!p?.query) return
+    // Nem todo navegador conhece o nome 'microphone'; o catch cobre isso.
+    p.query({ name: 'microphone' })
+      .then((r) => {
+        if (r.state === 'granted') jaAutorizado.current = true
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const w = window as unknown as {
@@ -97,9 +131,14 @@ export function useEscuta(): Escuta {
 
     rr.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setErro('O navegador não liberou o microfone. Toque no cadeado ao lado do endereco e permita.')
+        setErro(
+          'O navegador não liberou o microfone. Toque no cadeado ao lado do endereço e escolha PERMITIR - "permitir desta vez" faz ele perguntar de novo na próxima.',
+        )
         querOuvir.current = false
         setOuvindo(false)
+        jaAutorizado.current = false
+        trilha.current?.getTracks().forEach((t) => t.stop())
+        trilha.current = null
       } else if (e.error === 'audio-capture') {
         setErro('Nenhum microfone encontrado. Por acesso remoto ele quase nunca passa - teste no celular.')
         querOuvir.current = false
@@ -130,6 +169,38 @@ export function useEscuta(): Escuta {
       } catch {
         // já estava parado
       }
+      // Sair da tela com o microfone aberto deixa a luzinha acesa no aparelho.
+      trilha.current?.getTracks().forEach((t) => t.stop())
+      trilha.current = null
+    }
+  }, [])
+
+  /** Liga o reconhecimento de fala. Só é chamado com o microfone já aberto. */
+  const ligarMotor = useCallback(() => {
+    try {
+      rec.current?.start()
+    } catch {
+      // já estava escutando
+    }
+  }, [])
+
+  /**
+   * Abre o microfone pela via que o navegador MEMORIZA, e segura aberto.
+   * Da segunda vez em diante isto não pergunta nada.
+   */
+  const abrirMicrofone = useCallback(async () => {
+    if (trilha.current) return true
+    try {
+      trilha.current = await navigator.mediaDevices.getUserMedia({ audio: true })
+      jaAutorizado.current = true
+      return true
+    } catch {
+      setErro(
+        'O microfone não foi liberado. Toque no cadeado ao lado do endereço e escolha PERMITIR - se escolher "permitir desta vez", o navegador esquece e pergunta de novo.',
+      )
+      querOuvir.current = false
+      setOuvindo(false)
+      return false
     }
   }, [])
 
@@ -137,12 +208,17 @@ export function useEscuta(): Escuta {
     setErro(null)
     querOuvir.current = true
     setOuvindo(true)
-    try {
-      rec.current?.start()
-    } catch {
-      // já estava escutando
+
+    // Com permissão já dada, começa AGORA, dentro do toque. Esperar aqui faria
+    // o Safari perder o gesto da pessoa e recusar o microfone.
+    if (jaAutorizado.current && trilha.current) {
+      ligarMotor()
+      return
     }
-  }, [])
+    void abrirMicrofone().then((ok) => {
+      if (ok && querOuvir.current) ligarMotor()
+    })
+  }, [abrirMicrofone, ligarMotor])
 
   const parar = useCallback(() => {
     querOuvir.current = false
@@ -153,6 +229,10 @@ export function useEscuta(): Escuta {
     } catch {
       // já estava parado
     }
+    // Solta o microfone para a luzinha do aparelho apagar. A AUTORIZAÇÃO fica:
+    // quem guarda é o navegador, por endereço, e não este código.
+    trilha.current?.getTracks().forEach((t) => t.stop())
+    trilha.current = null
   }, [])
 
   const alternar = useCallback(() => {
