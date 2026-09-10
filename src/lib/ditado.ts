@@ -35,10 +35,12 @@ export type PlanoDitado = {
     area: string
     projeto?: string | null
     cliente?: string | null
-    tarefas: { titulo: string; venceEm?: string | null }[]
+    tarefas: { titulo: string; venceEm?: string | null; feita?: boolean; minutos?: number | null }[]
   }[]
   compromissos: { titulo: string; data: string; inicio: string; fim: string; local?: string | null }[]
   comecarAgora?: string | null
+  /** id de tarefa que ja existe e que ele quer comecar agora */
+  tarefaExistenteId?: number | null
 }
 
 const INSTRUCAO = `Voce organiza o trabalho ditado pelo Lucian, dono da KGFM - integradora de automacao intralogistica em Guarulhos. Ele fala rapido, misturando varias coisas na mesma frase, e voce transforma isso em estrutura.
@@ -53,11 +55,12 @@ Responda SO com JSON, sem texto em volta:
       "area": "comercial|engenharia|producao|adm",
       "projeto": "nome do projeto, se ele citou" ou null,
       "cliente": "nome do cliente, se ele citou" ou null,
-      "tarefas": [ { "titulo": "acao concreta", "venceEm": "AAAA-MM-DD" ou null } ]
+      "tarefas": [ { "titulo": "acao concreta", "venceEm": "AAAA-MM-DD" ou null, "feita": true se ele disse que JA foi feita, "minutos": quanto durou se ele disse, ou null } ]
     }
   ],
   "compromissos": [ { "titulo": "", "data": "AAAA-MM-DD", "inicio": "HH:MM", "fim": "HH:MM", "local": "" ou null } ],
-  "comecarAgora": "titulo exato de uma tarefa que ele ja esta fazendo agora" ou null
+  "comecarAgora": "titulo exato de uma tarefa que ele ja esta fazendo agora" ou null,
+  "tarefaExistenteId": numero da tarefa que JA EXISTE e que ele esta comecando agora, ou null
 }
 
 COMO DECIDIR A AREA:
@@ -67,28 +70,59 @@ COMO DECIDIR A AREA:
 - adm: nota fiscal, cobranca, contrato, financeiro, cadastro, documento.
 
 REGRAS QUE NAO SE QUEBRAM:
-- Uma frente por ASSUNTO, nao uma por tarefa. Uma sequencia de logistica do mesmo lote e UMA frente com varias tarefas em ordem.
-- REAPROVEITAR FRENTE EXISTENTE E EXCECAO, nao regra: so quando for literalmente o mesmo assunto, com as mesmas pessoas ou o mesmo lote. Assunto novo pede frente nova, mesmo que pareca da mesma familia. Encaixar tarefa nova num pacote generico que ja existe faz o trabalho sumir de vista.
+- TODO trabalho de producao e engenharia PERTENCE A UM PROJETO. Se ele citar o
+  nome ("batoque do Lojimate", "trava do Clinker"), use como projeto. Se falar de
+  peca, usinagem, banho ou entrega sem dizer o projeto, use o projeto que ja
+  existe com essa peca; se nao existir nenhum, crie com o nome da peca. Projeto e
+  a espinha: e por ele que as horas se somam no fim.
+- Uma frente por ASSUNTO, nao uma por tarefa. Uma sequencia de logistica do
+  mesmo lote e UMA frente com varias tarefas em ordem.
+- REAPROVEITAR FRENTE EXISTENTE E EXCECAO, nao regra: so quando for literalmente
+  o mesmo assunto, com as mesmas pessoas ou o mesmo lote. Assunto novo pede
+  frente nova. Encaixar tarefa nova num pacote generico que ja existe faz o
+  trabalho sumir de vista.
+- SE ELE ESTA COMECANDO ALGO QUE JA EXISTE, nao crie de novo: devolva o numero
+  em "tarefaExistenteId". Ele nao vai repetir o titulo exato - vai dizer "estou
+  fazendo a logistica das pecas pra trazer da usinagem" e a tarefa se chama
+  "Logistica de retorno da usinagem". E a mesma coisa. Case pelo sentido.
+- SE ELE DISSE QUE ALGO JA FOI FEITO ("ja foi conferido", "ja busquei", "isso
+  ja esta ok"), a tarefa entra com "feita": true. Se ele nao disser quanto
+  durou, use 30 minutos - o registro aproximado vale mais que registro nenhum.
 - As tarefas ficam na ORDEM em que acontecem.
-- Se uma acao serve a dois fins (entregar peca e visitar o cliente), ela vira UMA tarefa e voce escreve os dois fins no titulo.
-- NAO invente cliente, valor, endereco nem data que ele nao disse. Campo que ele nao disse vai null.
-- "hoje a tarde", "amanha", "essa semana" viram venceEm com data real, contando a partir de hoje.
-- Nomes de pessoa e de empresa que ele citar (fornecedor, contato) entram no titulo da tarefa - e assim que ele vai reconhecer depois.
-- Titulo de tarefa e acao: comeca com verbo.`
+- Se uma acao serve a dois fins (entregar peca e visitar o cliente), ela vira
+  UMA tarefa e voce escreve os dois fins no titulo.
+- NAO invente cliente, valor, endereco nem data que ele nao disse.
+- "hoje a tarde", "amanha", "semana passada" viram data real a partir de hoje.
+- Titulo de tarefa e acao curta: comeca com verbo. Nomes de pessoa e empresa que
+  ele citar entram no titulo - e assim que ele reconhece depois.`
 
 export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDitado | null; usouIa: boolean }> {
   if (!process.env.ANTHROPIC_API_KEY?.trim()) return { plano: null, usouIa: false }
 
   const [areas, frentes, projetos] = await Promise.all([
     prisma.area.findMany({ orderBy: { ordem: 'asc' } }),
-    prisma.frente.findMany({ where: { status: { in: ['aberta', 'planejada'] } }, select: { titulo: true } }),
+    prisma.frente.findMany({
+      where: { status: { in: ['aberta', 'planejada'] } },
+      select: { titulo: true, tarefas: { where: { status: 'aberta' }, select: { id: true, titulo: true } } },
+    }),
     prisma.projeto.findMany({ where: { ativo: true }, select: { nome: true, cliente: true } }),
   ])
 
   const contexto = [
     `Hoje e ${hojeSP()}.`,
     `Areas: ${areas.map((a) => a.chave).join(', ')}.`,
-    frentes.length ? `Frentes que ja existem (so reuse se for LITERALMENTE o mesmo assunto; na duvida, crie nova): ${frentes.map((f) => f.titulo).join(' | ')}` : 'Nenhuma frente existe ainda.',
+    frentes.length
+      ? [
+          'Frentes que ja existem (so reuse se for LITERALMENTE o mesmo assunto; na duvida, crie nova):',
+          ...frentes.map(
+            (f) =>
+              `- ${f.titulo}` +
+              (f.tarefas.length
+                ? `\n    tarefas abertas: ${f.tarefas.map((x) => `#${x.id} ${x.titulo}`).join(' | ')}`
+                : ''),
+          ),
+        ].join('\n')
+      : 'Nenhuma frente existe ainda.',
     projetos.length ? `Projetos: ${projetos.map((p) => `${p.nome}${p.cliente ? ` (${p.cliente})` : ''}`).join(' | ')}` : '',
   ].join('\n')
 
@@ -170,27 +204,39 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
       if (jaTem) continue
 
       const nova = await prisma.tarefa.create({
-        data: { frenteId: frente.id, titulo: t.titulo, estimativaMin: null },
+        data: {
+          frenteId: frente.id,
+          titulo: t.titulo,
+          estimativaMin: t.minutos ?? null,
+          status: t.feita ? 'feita' : 'aberta',
+          concluidaEm: t.feita ? new Date() : null,
+        },
       })
-      linhas.push(`tarefa: ${t.titulo}`)
-      ordem++
 
-      // Prazo dito vira compromisso-lembrete ligado a frente, que e o que faz
-      // o painel cobrar na data certa.
-      if (t.venceEm && /^\d{4}-\d{2}-\d{2}$/.test(t.venceEm)) {
-        await prisma.item.create({
+      if (t.feita) {
+        // Tarefa que ele DISSE que ja foi feita entra com o tempo lancado, e
+        // marcada como revisar: e registro aproximado, lembrado depois - nao
+        // cronometrado na hora. Sem isso o projeto nasce sem historico e as
+        // horas totais nunca fecham com a realidade.
+        const minutos = t.minutos && t.minutos > 0 ? t.minutos : 30
+        const fim = new Date()
+        await prisma.apontamento.create({
           data: {
-            tipo: 'compromisso',
-            conteudo: t.titulo,
-            conteudoBruto: t.titulo,
-            origem: 'voz',
-            status: 'classificado',
-            areaId: area.id,
-            frenteId: frente.id,
-            venceEm: new Date(`${t.venceEm}T12:00:00-03:00`),
+            tarefaId: nova.id,
+            iniciadoEm: new Date(fim.getTime() - minutos * 60000),
+            encerradoEm: fim,
+            encerradoPor: 'usuario',
+            revisar: true,
           },
         })
+        await prisma.movimento.create({
+          data: { frenteId: frente.id, tipo: 'tarefa-feita', descricao: t.titulo },
+        })
+        linhas.push(`feita: ${t.titulo} (${minutos} min)`)
+      } else {
+        linhas.push(`tarefa: ${t.titulo}`)
       }
+      ordem++
 
       if (plano.comecarAgora && t.titulo === plano.comecarAgora) tarefaParaComecar = nova.id
     }

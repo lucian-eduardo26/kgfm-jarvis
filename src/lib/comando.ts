@@ -185,13 +185,25 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
 
     const { linhas, tarefaParaComecar } = await gravarDitado(plano)
 
+    // Ele pode estar comecando algo que JA EXISTE, dito com outras palavras:
+    // "a logistica das pecas pra trazer da usinagem" e a tarefa
+    // "Logistica de retorno da usinagem". O modelo aponta o numero, e aqui a
+    // gente confere que a tarefa existe mesmo antes de ligar o relogio.
+    let alvo = tarefaParaComecar
+    if (!alvo && plano.tarefaExistenteId) {
+      const existe = await prisma.tarefa.findFirst({
+        where: { id: plano.tarefaExistenteId, status: 'aberta' },
+      })
+      if (existe) alvo = existe.id
+    }
+
     // Se ele disse que ja esta fazendo uma delas, o relogio parte junto.
     let tarefaIniciada: string | null = null
     let frenteIniciada: string | null = null
     let areaIniciada: string | null = null
-    if (tarefaParaComecar) {
+    if (alvo) {
       const t = await prisma.tarefa.findUnique({
-        where: { id: tarefaParaComecar },
+        where: { id: alvo },
         include: { frente: { include: { area: true } } },
       })
       if (t) {
