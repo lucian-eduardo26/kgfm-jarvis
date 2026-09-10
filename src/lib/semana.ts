@@ -214,7 +214,7 @@ export function textoDaSemana(s: DadosDaSemana): string {
   }
 
   if (s.criticos.length > 0) {
-    l.push('', 'CRITICOS:')
+    l.push('', 'CRÍTICOS:')
     for (const c of s.criticos) l.push(`- ${c.titulo}: ${c.texto}`)
   }
 

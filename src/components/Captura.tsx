@@ -14,7 +14,27 @@ import { useEscuta } from '@/lib/useEscuta'
 export function Captura({ flutuante = false }: { flutuante?: boolean }) {
   const [enviando, setEnviando] = useState(false)
   const campo = useRef<HTMLTextAreaElement>(null)
+  const barra = useRef<HTMLDivElement>(null)
   const escuta = useEscuta()
+
+  // A barra é fixa no rodapé, então o fim da página precisa terminar acima
+  // dela. A altura não é constante - o campo vira duas linhas ao ditar - então
+  // quem mede é o próprio elemento, e o padding do conteúdo acompanha.
+  useEffect(() => {
+    const alvo = barra.current
+    if (!alvo || !flutuante) return
+    // `offsetHeight` e não `contentRect`: a barra tem padding e borda, e o
+    // contentRect deixa os dois de fora - o conteúdo terminava 25px por baixo.
+    const olho = new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--altura-captura', `${alvo.offsetHeight}px`)
+    })
+    olho.observe(alvo)
+    return () => {
+      olho.disconnect()
+      // Página sem barra flutuante não deve herdar o espaço dela.
+      document.documentElement.style.setProperty('--altura-captura', '0px')
+    }
+  }, [flutuante])
 
   const noCampo = escuta.parcial ? `${escuta.texto} ${escuta.parcial}`.trim() : escuta.texto
 
@@ -48,6 +68,7 @@ export function Captura({ flutuante = false }: { flutuante?: boolean }) {
 
   return (
     <div
+      ref={barra}
       className={
         flutuante
           ? 'fixed bottom-0 left-0 right-0 z-40 bg-[var(--fundo)]/95 backdrop-blur px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 border-t border-[var(--linha)]'

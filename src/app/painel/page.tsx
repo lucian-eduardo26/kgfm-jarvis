@@ -68,11 +68,11 @@ export default async function Painel() {
         </div>
       )}
 
-      {/* FACA AGORA - destaque maximo, uma acao obvia por tela */}
+      {/* FAÇA AGORA - destaque máximo, uma ação óbvia por tela */}
       {agora && (
         <section className="cartao p-4 sm:p-5 mb-3" style={{ borderColor: 'var(--laranja)' }}>
           <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--laranja)' }}>
-            faca agora
+            faça agora
           </p>
           <p className="text-xl sm:text-2xl font-bold mt-1 leading-tight">{agora.titulo}</p>
           <p className="fraco text-sm mt-2 max-w-3xl">{agora.porque}</p>
@@ -123,7 +123,7 @@ export default async function Painel() {
       )}
 
       {/* Mostradores */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+      <section className="grade-mostradores grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         {d.areas.map((a) => (
           <Mostrador
             key={a.areaId}
@@ -144,7 +144,7 @@ export default async function Painel() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-3">
-        {/* Criticos */}
+        {/* Críticos */}
         <section className="cartao">
           <Cabeca titulo="criticos" direita={<span className="text-[10px] dado">{d.criticosGerais.length}</span>} />
           <div className="painel-corpo">

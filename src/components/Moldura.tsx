@@ -1,9 +1,18 @@
-// A casca do hub: trilho de icones a esquerda (desktop), cabecalho com a marca
-// e os três pontinhos.
+// A casca do hub: trilho de ícones à esquerda (desktop) e um cabeçalho fixo
+// no topo com a marca da KGFM, o nome do produto e os três pontinhos.
 //
-// No celular o trilho some e a navegação continua sendo os três pontinhos - e
+// Por que o cabeçalho é fixo (10/09/2026): antes a marca rolava junto com o
+// conteúdo e o botão de menu acabava por cima dos cartões no celular. Faixa
+// fixa resolve as duas coisas - a identidade fica sempre visível e o menu tem
+// lugar próprio, que ninguém disputa.
+//
+// A ordem da marca tem intenção: KGFM primeiro, divisória, Jarvis depois. A
+// empresa é a dona; o Jarvis é uma ferramenta dela.
+//
+// No celular o trilho some e a navegação continua sendo os três pontinhos - é
 // o que cabe na mão, e o mockup do telefone também mostra só o menu.
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { Menu } from './Menu'
 
@@ -46,39 +55,39 @@ export function Moldura({
       </nav>
 
       <div className="com-trilho">
-        <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pb-28">
-          <header className="flex items-center justify-between gap-3 py-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <Link href="/painel" className="flex items-center gap-2.5 shrink-0">
-                {/* A marca: o ponto laranja e o nome, como no mockup. */}
-                <span
-                  className="w-6 h-6 rounded-full grid place-items-center shrink-0"
-                  style={{ border: '1px solid var(--moldura-forte)', boxShadow: '0 0 14px -3px var(--brilho)' }}
-                >
-                  <span className="w-2 h-2 rounded-full" style={{ background: 'var(--laranja)' }} />
-                </span>
-                <span className="text-base font-bold tracking-[0.14em]">JARVIS</span>
+        <header className="cabecalho">
+          <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5">
+            <div className="cabecalho-linha">
+              {/* O logotipo oficial, versão clara: aqui o fundo é escuro e o
+                  laranja fica reservado para estado, não para enfeite. */}
+              <Link href="/painel" aria-label="KGFM, ir para o painel" className="shrink-0">
+                <Image src="/marca/kgfm-claro.png" alt="KGFM" width={600} height={83} priority className="marca-kgfm" />
               </Link>
-              <span className="fraco hidden sm:inline">|</span>
-              <h1 className="text-[11px] uppercase tracking-[0.14em] fraco truncate">{titulo}</h1>
+
+              <span className="marca-divisa" aria-hidden />
+
+              <Link href="/painel" className="flex items-center gap-2 shrink-0">
+                <span className="marca-ponto" aria-hidden />
+                <span className="marca-jarvis">JARVIS</span>
+              </Link>
+
+              <h1 className="cabecalho-titulo">{titulo}</h1>
+
+              <div className="cabecalho-acoes">
+                {acao}
+                <Menu />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {acao}
-              <span className="hidden sm:flex items-center gap-2 text-[11px] tracking-[0.12em]" style={{ color: 'var(--laranja-luz)' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--laranja)' }} />
-                KGFM
-              </span>
-              <Menu />
-            </div>
-          </header>
-          {children}
-        </div>
+          </div>
+        </header>
+
+        <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pt-3 com-captura">{children}</div>
       </div>
     </>
   )
 }
 
-/** Cabecalho de painel no estilo do hub. */
+/** Cabeçalho de painel no estilo do hub. */
 export function Cabeca({ titulo, direita }: { titulo: string; direita?: React.ReactNode }) {
   return (
     <div className="painel-cabeca">
@@ -96,7 +105,7 @@ export function Cabeca({ titulo, direita }: { titulo: string; direita?: React.Re
 }
 
 export function Vazio({ titulo, texto, acao }: { titulo: string; texto: string; acao?: React.ReactNode }) {
-  // Nada de tela vazia: estado sem dado explica o que fazer para preenche-lo.
+  // Nada de tela vazia: estado sem dado explica o que fazer para preenchê-lo.
   return (
     <div className="cartao p-6 text-center">
       <p className="font-semibold">{titulo}</p>

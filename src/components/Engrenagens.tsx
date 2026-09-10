@@ -12,7 +12,7 @@ export function Engrenagens({ e }: { e: Dados }) {
         titulo="engrenagens"
         direita={
           <span className="text-[11px] dado">
-            {e.girando.length} girando · {e.naMinhaMao.length} na sua mao
+            {e.girando.length} girando · {e.naMinhaMao.length} na sua mão
           </span>
         }
       />
@@ -53,7 +53,7 @@ export function Engrenagens({ e }: { e: Dados }) {
 
         {e.naMinhaMao.length > 0 && (
           <>
-            <p className="rotulo mt-4 mb-1.5">so anda com você</p>
+            <p className="rotulo mt-4 mb-1.5">só anda com você</p>
             <ul className="space-y-1.5">
               {e.naMinhaMao.slice(0, 8).map((m) => (
                 <li key={m.id} className="flex items-baseline gap-2 text-sm">

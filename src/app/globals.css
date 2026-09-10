@@ -58,24 +58,52 @@
 }
 
 /*
-  ROLAGEM: overflow-x so no body, e com `clip` em vez de `hidden`.
-  Com `hidden` nos DOIS (html e body) o navegador cria dois conteineres de
-  rolagem concorrentes, e a roda do mouse cai no errado - a pagina simplesmente
-  nao desce. `clip` corta o transbordo lateral SEM virar conteiner de rolagem.
+  ROLAGEM: nem `hidden` nem `clip` em html/body. NENHUM dos dois.
+
+  Historico, porque isso ja foi consertado errado duas vezes:
+  - `overflow-x: hidden` nos DOIS cria dois conteineres de rolagem concorrentes
+    e a pagina simplesmente nao desce.
+  - `overflow-x: clip` so no body parecia resolver, mas o valor PROPAGA para a
+    viewport, e com a viewport em `clip` o Chrome para de aceitar rolagem por
+    ENTRADA do usuario: a roda do mouse e o dedo no celular nao fazem nada,
+    enquanto arrastar a barra e rolar por javascript continuam funcionando.
+    Era exatamente o sintoma relatado - "so rola se arrastar com o mouse".
+
+  A rolagem lateral se resolve na ORIGEM, na regra logo abaixo, e nao cortando
+  o transbordo depois que ele aconteceu.
 */
 html {
   background: var(--fundo);
   color-scheme: dark;
 }
 
+/*
+  Filho de grid e de flex nasce com `min-width: auto`, quer dizer: ele se
+  recusa a encolher abaixo do proprio conteudo. Um rotulo comprido em caixa
+  alta com espacamento entre letras ("0 GIRANDO · 1 NA SUA MÃO") empurrava a
+  coluna, a coluna empurrava a pagina, e o app deixava de caber no celular.
+  Zerar o min-width devolve a decisao de largura para a grade.
+*/
+.grid > *,
+.flex > * {
+  min-width: 0;
+}
+
+/* Palavra comprida (nome de cliente, url colada na captura) quebra em vez de
+   esticar a caixa. */
+p,
+li,
+h1,
+h2,
+h3,
+td {
+  overflow-wrap: break-word;
+}
+
 body {
   background: var(--fundo);
   color: var(--texto);
   max-width: 100%;
-  overflow-x: clip;
-}
-
-body {
   font-family:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Inter, Roboto,
     sans-serif;
@@ -375,4 +403,166 @@ body {
 /* O brilho volta - mas so no arco do valor e no marcador, nunca no resto. */
 .arco-vivo {
   filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* ===========================================================================
+   O CABEÇALHO SUPERIOR
+   ---------------------------------------------------------------------------
+   Antes a marca e o título eram uma linha solta que rolava junto com o
+   conteúdo, e no celular o botão de menu caía por cima dos cartões. Agora o
+   cabeçalho é uma faixa fixa no topo: a marca da KGFM fica sempre visível, o
+   menu tem lugar próprio, e nada mais se sobrepõe.
+
+   A ordem da identidade é essa e tem motivo: a KGFM é a empresa, o Jarvis é
+   uma ferramenta dela. O logotipo vem primeiro, o produto vem depois de uma
+   divisória.
+   =========================================================================== */
+
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(10, 10, 11, 0.86);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--linha);
+  /* No iPhone em tela cheia o topo entra por baixo do notch. */
+  padding-top: env(safe-area-inset-top);
+}
+
+/* A linha de luz laranja embaixo do cabeçalho: um fio, não uma borda. */
+.cabecalho::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--laranja) 0%, rgba(255, 61, 0, 0.12) 38%, transparent 72%);
+  pointer-events: none;
+}
+
+.cabecalho-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 56px;
+  padding: 0.5rem 0;
+  /* Quebra para uma segunda linha no celular: o titulo desce, a marca e o
+     menu ficam. Um elemento so no HTML, o CSS decide onde ele cabe. */
+  flex-wrap: wrap;
+}
+
+/* O menu fica sempre no fim da PRIMEIRA linha. */
+.cabecalho-acoes {
+  order: 5;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* O logotipo oficial. Vem do arquivo de marca, nunca desenhado a mão. */
+.marca-kgfm {
+  height: 17px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* A divisória entre a empresa e o produto. */
+.marca-divisa {
+  width: 1px;
+  height: 20px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, transparent, var(--linha-forte), transparent);
+}
+
+.marca-jarvis {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* O ponto vivo: é o sinal de que o sistema está de pé. */
+.marca-ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--laranja);
+  box-shadow: 0 0 10px -1px var(--laranja);
+}
+
+/* O título da página vive numa segunda linha, e some ao rolar: quem já está
+   dentro da tela não precisa do nome dela ocupando altura o tempo todo. */
+.cabecalho-titulo {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fraco);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Celular: desce para a segunda linha, inteira. */
+  order: 9;
+  flex-basis: 100%;
+  padding-bottom: 0.55rem;
+  margin-top: -0.2rem;
+}
+
+@media (min-width: 640px) {
+  /* Tela grande: cabe tudo numa linha só, depois de uma divisória. */
+  .cabecalho-titulo {
+    order: 0;
+    flex-basis: auto;
+    flex: 1 1 auto;
+    padding-bottom: 0;
+    margin-top: 0;
+    border-left: 1px solid var(--linha);
+    padding-left: 0.75rem;
+  }
+}
+
+/* ---------- o que estava sobreposto no celular ---------- */
+
+/* O cabeçalho de cartão era uma linha de flex que não quebrava, então o rótulo
+   da direita empurrava a largura do cartão inteiro. */
+.painel-cabeca {
+  flex-wrap: wrap;
+  row-gap: 0.25rem;
+}
+
+.painel-cabeca > * {
+  min-width: 0;
+}
+
+/* A barra de captura é fixa no rodapé, então o conteúdo precisa terminar
+   ACIMA dela. A altura vira variável para o padding acompanhar quando a
+   barra cresce (o campo vira duas linhas ao ditar). */
+:root {
+  --altura-captura: 0px;
+}
+
+.com-captura {
+  padding-bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 1rem);
+}
+
+/* Menu dos três pontinhos: no celular vira folha ancorada no cabeçalho, com
+   rolagem própria - a lista tem dez itens e não cabe em tela pequena. */
+.folha-menu {
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 420px) {
+  /* Abaixo disso dois mostradores lado a lado viram dois selos ilegíveis. */
+  .grade-mostradores {
+    grid-template-columns: 1fr;
+  }
 }

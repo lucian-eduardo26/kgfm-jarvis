@@ -27,11 +27,20 @@ export function Menu() {
   useEffect(() => setAberto(false), [caminho])
 
   useEffect(() => {
-    function fora(e: MouseEvent) {
+    // `pointerdown` e não `mousedown`: no celular o toque fora precisa fechar
+    // na hora, sem esperar o mouse emulado que nem sempre vem.
+    function fora(e: PointerEvent) {
       if (caixa.current && !caixa.current.contains(e.target as Node)) setAberto(false)
     }
-    document.addEventListener('mousedown', fora)
-    return () => document.removeEventListener('mousedown', fora)
+    function escapou(e: KeyboardEvent) {
+      if (e.key === 'Escape') setAberto(false)
+    }
+    document.addEventListener('pointerdown', fora)
+    document.addEventListener('keydown', escapou)
+    return () => {
+      document.removeEventListener('pointerdown', fora)
+      document.removeEventListener('keydown', escapou)
+    }
   }, [])
 
   return (
@@ -50,7 +59,7 @@ export function Menu() {
       </button>
 
       {aberto && (
-        <nav className="absolute right-0 mt-2 w-56 cartao p-1 z-50 shadow-2xl">
+        <nav className="folha-menu absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] cartao p-1 z-50 shadow-2xl">
           {PAGINAS.map((p) => (
             <Link
               key={p.href}

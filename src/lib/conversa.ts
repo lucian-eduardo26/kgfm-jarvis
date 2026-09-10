@@ -94,7 +94,7 @@ export async function montarEstado(): Promise<string> {
   }
   linhas.push(`- maior janela livre: ${d.agenda.maiorJanela} min. ${d.agenda.frase}`)
 
-  linhas.push('', 'CRITICOS:')
+  linhas.push('', 'CRÍTICOS:')
   if (d.criticosGerais.length === 0) linhas.push('- nenhum')
   for (const x of d.criticosGerais) {
     linhas.push(`- ${x.titulo}: ${x.texto}${x.bloqueia > 0 ? ` - trava ${x.bloqueia} frente(s)` : ''}`)

@@ -114,11 +114,10 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
               }
             }}
             rows={escuta.ouvindo || noCampo.length > 70 ? 3 : 1}
-            placeholder={
-              escuta.ouvindo
-                ? 'Pode falar. Toque no microfone quando terminar.'
-                : 'Estou fazendo o detalhamento - ou dite o trabalho novo'
-            }
+            // Marca-d'água curta de propósito: no celular o campo tem uns 190px
+            // e frase comprida quebra em duas linhas dentro de uma caixa de uma,
+            // que corta o texto no meio. O cabeçalho do cartão já diz o resto.
+            placeholder={escuta.ouvindo ? 'Pode falar. Toque para encerrar.' : 'Diga o que está fazendo'}
             className="campo resize-none flex-1 text-sm"
             style={{ minHeight: 48, maxHeight: 180 }}
           />
