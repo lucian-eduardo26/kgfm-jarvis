@@ -1475,6 +1475,12 @@ h2 {
    está lá no primeiro quadro, e sai sozinha.
    =========================================================================== */
 
+/* O TEMPO DA ABERTURA, em um lugar só.
+   Ele em 11/09/2026: "eu quero uma abertura um pouquinho mais lenta, que dê
+   para apreciar aquela abertura". Era 1,5s no total, e 1,5s não é apresentação
+   - é um piscar. Agora são 2,4s, com a cena em três tempos: a marca chega, o
+   fio corre por baixo dela, e só então a cortina sai.
+   Mais que isso viraria pedágio: ele abre este aplicativo dez vezes por dia. */
 .abertura {
   position: fixed;
   inset: 0;
@@ -1482,7 +1488,7 @@ h2 {
   display: grid;
   place-items: center;
   background: var(--fundo);
-  animation: sair-abertura 1.5s ease-in-out forwards;
+  animation: sair-abertura 2.4s ease-in-out forwards;
   pointer-events: none;
 }
 
@@ -1490,7 +1496,9 @@ h2 {
   width: min(62vw, 300px);
   height: auto;
   opacity: 0;
-  animation: entrar-marca 1.2s ease-out forwards;
+  /* A marca ainda cresce um fio de nada enquanto aparece. É pouco de
+     propósito: assinatura de empresa não salta na tela, ela assenta. */
+  animation: entrar-marca 1.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 /* O fio laranja que corre embaixo da assinatura. É o mesmo gesto do fio do
@@ -1502,19 +1510,23 @@ h2 {
   width: min(62vw, 300px);
   background: linear-gradient(90deg, transparent, var(--laranja), transparent);
   transform-origin: center;
-  animation: correr-fio 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  /* Meio segundo de atraso: o fio corre DEPOIS que a marca já está em pé.
+     `both` em vez de `forwards` para ele ficar invisível durante a espera -
+     sem isso o traço aparece inteiro no primeiro quadro e depois recomeça. */
+  animation: correr-fio 1.25s cubic-bezier(0.22, 0.61, 0.36, 1) 0.5s both;
 }
 
 @keyframes entrar-marca {
   from {
     opacity: 0;
-    letter-spacing: 0;
+    transform: scale(0.965);
   }
-  45% {
+  55% {
     opacity: 1;
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -1523,7 +1535,7 @@ h2 {
     transform: scaleX(0);
     opacity: 0;
   }
-  40% {
+  35% {
     opacity: 1;
   }
   to {
@@ -1533,8 +1545,11 @@ h2 {
 }
 
 @keyframes sair-abertura {
+  /* Segura até 72% - a cena inteira acontece e ainda sobra meio segundo de
+     respiro antes de a cortina começar a sair. Era 62% de 1,5s: a cortina
+     começava a ir embora enquanto o fio ainda estava correndo. */
   0%,
-  62% {
+  72% {
     opacity: 1;
     visibility: visible;
   }
