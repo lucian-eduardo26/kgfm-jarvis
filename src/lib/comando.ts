@@ -24,7 +24,7 @@ import { montarPainel } from './painel'
 import { decidirAgora } from './agora'
 import { montarEstado } from './conversa'
 import { diasUteisEntre } from './datas'
-import { casar, lerIntencao, ehDitado, tituloDoFalado, type AlvoPossivel } from './casar'
+import { casar, lerIntencao, ehDitado, estaFazendoAgora, tituloDoFalado, type AlvoPossivel } from './casar'
 import { garantirFrenteAberta } from './abrirFrente'
 import { interpretarDitado, gravarDitado } from './ditado'
 
@@ -183,7 +183,7 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
       return vazio('Não consegui organizar isso. Repita separando as coisas: o que fazer, onde, e para quando.', recomendado, true)
     }
 
-    const { linhas, tarefaParaComecar } = await gravarDitado(plano)
+    const { linhas, tarefaParaComecar, primeiraAberta } = await gravarDitado(plano)
 
     // Ele pode estar começando algo que JA EXISTE, dito com outras palavras:
     // "a logística das peças pra trazer da usinagem" e a tarefa
@@ -196,6 +196,22 @@ export async function executarComando(texto: string): Promise<ResultadoComando> 
       })
       if (existe) alvo = existe.id
     }
+
+    // O ÚLTIMO RECURSO, e o que faltava em 11/09/2026.
+    //
+    // Ele mandou "acordei e to fazendo Jarvis e CRM simultaneo". O plano foi
+    // gravado certo - duas frentes, tarefas na ordem - e NADA comecou a contar,
+    // porque o modelo nao escreveu `comecarAgora`. Quatro horas depois o painel
+    // ainda dizia "sem nada medido", com ele trabalhando desde as sete.
+    //
+    // A regra dele nao admite isso: "quero contador iniciado se to fazendo
+    // alguma coisa". Entao, quando a frase esta no presente, o relogio cai na
+    // PRIMEIRA tarefa aberta do plano. Pode ser a segunda da lista, e trocar e
+    // um toque na barra - errar o alvo se conserta, hora perdida nao.
+    //
+    // Plano de amanha nao dispara: "o motoboy busca as pecas" nao tem presente
+    // nenhum, e `estaFazendoAgora` devolve falso.
+    if (!alvo && primeiraAberta && estaFazendoAgora(texto)) alvo = primeiraAberta
 
     // Se ele disse que já está fazendo uma delas, o relógio parte junto.
     let tarefaIniciada: string | null = null

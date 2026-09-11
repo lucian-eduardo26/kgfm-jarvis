@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { montarPainel } from '@/lib/painel'
 import { decidirAgora } from '@/lib/agora'
-import { formatarHoras } from '@/lib/datas'
+import { formatarHoras, diasUteisEntre } from '@/lib/datas'
 import { temChave } from '@/lib/classificador'
 import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { Mostrador } from '@/components/Mostrador'
@@ -20,6 +20,7 @@ import { carteiraDeProjetos } from '@/lib/projetos'
 import { BarraProjeto } from '@/components/BarraProjeto'
 import { Relogio } from '@/components/Relogio'
 import { AlertaDeCaixa } from '@/components/AlertaDeCaixa'
+import { EmAndamento } from '@/components/EmAndamento'
 import { alertasDeCaixa } from '@/lib/urgencia'
 import { SemanaCurta } from '@/components/SemanaCurta'
 import { montarSemanaCurta } from '@/lib/semanaCurta'
@@ -49,6 +50,67 @@ export default async function Painel() {
   const inicioDoExpediente = new Date()
   inicioDoExpediente.setHours(9, 0, 0, 0)
   const ultimoRegistro = (ultimo?.encerradoEm ?? inicioDoExpediente).toISOString()
+
+  // ---------- O QUE ESTÁ EM ANDAMENTO ----------
+  //
+  // O bloco que ele cobrou em 11/09/2026: "eu quero confronto sobre o que
+  // estou fazendo e o que não estou fazendo". De um lado o que o relógio está
+  // medindo; do outro, o trabalho aberto que não está sendo medido - cada um
+  // com um botão de começar, para a distância entre ver e medir ser um toque.
+  const inicioDeHoje = new Date()
+  inicioDeHoje.setHours(0, 0, 0, 0)
+
+  const frentesAbertas = await prisma.frente.findMany({
+    where: { status: 'aberta' },
+    include: { area: true, projeto: true },
+    orderBy: { ultimoMovimentoEm: 'desc' },
+  })
+
+  // Quanto cada frente já rendeu de medição HOJE. Um apontamento que começou
+  // ontem e atravessou a meia-noite conta só a parte de hoje.
+  const apontamentosDeHoje = await prisma.apontamento.findMany({
+    where: { OR: [{ encerradoEm: { gte: inicioDeHoje } }, { encerradoEm: null }] },
+    include: { tarefa: { select: { frenteId: true } } },
+  })
+  const minutosPorFrente = new Map<number, number>()
+  for (const a of apontamentosDeHoje) {
+    const de = a.iniciadoEm < inicioDeHoje ? inicioDeHoje : a.iniciadoEm
+    const ate = a.encerradoEm ?? new Date()
+    const min = Math.max(0, Math.round((ate.getTime() - de.getTime()) / 60000))
+    if (min > 0) {
+      minutosPorFrente.set(a.tarefa.frenteId, (minutosPorFrente.get(a.tarefa.frenteId) ?? 0) + min)
+    }
+  }
+
+  const andando = frentesAbertas
+    // A frente que já está no relógio sai da lista de baixo: o mesmo nome em
+    // cima e embaixo confunde em vez de cobrar.
+    .filter((f) => f.id !== d.cronometro?.frenteId)
+    .slice(0, 6)
+    .map((f) => ({
+      frenteId: f.id,
+      titulo: f.titulo,
+      projeto: f.projeto?.nome ?? null,
+      projetoId: f.projetoId,
+      area: f.area.nome,
+      dias: diasUteisEntre(f.ultimoMovimentoEm, new Date()),
+      minutosHoje: minutosPorFrente.get(f.id) ?? 0,
+    }))
+
+  const frenteMedida = d.cronometro
+    ? frentesAbertas.find((f) => f.id === d.cronometro!.frenteId)
+    : null
+  const medindo = d.cronometro
+    ? {
+        tarefa: d.cronometro.tarefaTitulo,
+        frenteId: d.cronometro.frenteId,
+        frenteTitulo: d.cronometro.frenteTitulo,
+        projeto: frenteMedida?.projeto?.nome ?? null,
+        projetoId: frenteMedida?.projetoId ?? null,
+        desde: d.cronometro.iniciadoEm.toISOString(),
+      }
+    : null
+
   const agenda = d.agenda
   const tarefasAbertas = (
     await prisma.tarefa.findMany({
@@ -88,6 +150,10 @@ export default async function Painel() {
         oQue={d.cronometro ? d.cronometro.tarefaTitulo : null}
         semRegistroDesde={ultimoRegistro}
       />
+
+      {/* LOGO ABAIXO DO RELÓGIO, e antes de qualquer outra coisa. O relógio
+          diz QUANTO; este bloco diz O QUÊ, e dá o caminho para cada nome. */}
+      <EmAndamento medindo={medindo} andando={andando} />
 
       <div className="mb-3">
         <SemanaCurta dias={semana} />

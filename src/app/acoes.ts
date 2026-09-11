@@ -1028,7 +1028,16 @@ export async function falarComOJarvis(texto: string): Promise<ResultadoComando> 
   //
   // Então: se a intenção era COMEÇAR, o Jarvis cria a tarefa e liga o
   // cronômetro na hora, e avisa que chutou o lugar.
-  if (!r.ok && r.acao === 'nada' && lerIntencao(t) === 'iniciar') {
+  // CORRIGIDO EM 11/09/2026: a condicao era `!r.ok && r.acao === 'nada'`, e o
+  // `!r.ok` era o furo. Quando o ditado dava CERTO mas nao comecava nada -
+  // plano gravado, relogio parado - `ok` vinha true e esta rede nao pegava.
+  // Foi exatamente o que aconteceu as 11h44: duas frentes criadas, zero
+  // apontamento, e o painel dizendo "sem nada medido" a tarde inteira.
+  //
+  // Agora o que manda e a ACAO: nao comecou nada, a intencao era comecar,
+  // entao comeca. O `criou` protege o plano de amanha - se o Jarvis ja
+  // organizou trabalho de verdade, nao inventa tarefa solta por cima.
+  if (r.acao === 'nada' && !r.criou?.length && lerIntencao(t) === 'iniciar') {
     const tarefa = await criarTarefaAvulsa(t)
     if (tarefa) {
       const form = new FormData()
@@ -1073,6 +1082,37 @@ export async function falarComOJarvis(texto: string): Promise<ResultadoComando> 
  * O título sai do que ele falou, cortado no tamanho de um título. Guardar a
  * frase inteira faria a lista de tarefas virar um diário.
  */
+/**
+ * COMEÇAR A CONTAR UMA FRENTE, com um toque.
+ *
+ * O Lucian em 11/09/2026: "eu tenho que ter um link na tela, de cara, o que
+ * estou fazendo, o que está em andamento".
+ *
+ * Falar com a barra funciona, mas exige frase. Quando o trabalho JÁ está
+ * cadastrado e visível na tela inicial, pedir que ele descreva de novo o que
+ * está ali na frente dele é atrito puro. Aqui o botão pega a primeira tarefa
+ * aberta da frente; se a frente não tiver nenhuma, cria uma com o nome dela -
+ * frente aberta sem tarefa é falha de cadastro, não motivo para não medir.
+ */
+export async function comecarNaFrente(form: FormData) {
+  const frenteId = Number(form.get('frenteId'))
+  if (!frenteId) return
+
+  const frente = await prisma.frente.findUnique({
+    where: { id: frenteId },
+    include: { tarefas: { where: { status: 'aberta' }, orderBy: { criadaEm: 'asc' }, take: 1 } },
+  })
+  if (!frente) return
+
+  const tarefa =
+    frente.tarefas[0] ??
+    (await prisma.tarefa.create({ data: { frenteId, titulo: frente.titulo } }))
+
+  const f = new FormData()
+  f.set('tarefaId', String(tarefa.id))
+  await iniciarCronometro(f)
+}
+
 async function criarTarefaAvulsa(texto: string) {
   const frentes = await prisma.frente.findMany({
     where: { status: { in: ['aberta', 'planejada'] } },

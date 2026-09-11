@@ -71,6 +71,25 @@ const CONCLUIR = /\b(acabei|terminei|conclui|concluido|finalizei|fechei|pronto|f
 const PERGUNTA = /\?|^\s*(o que|qual|quais|quanto|quando|quem|por que|porque|como|me diga|me fala|explica)\b/
 
 /**
+ * ELE ESTÁ FAZENDO AGORA, ou está contando um plano?
+ *
+ * A diferenca decide se o relogio parte junto com o que foi ditado. Em
+ * 11/09/2026 ele mandou "acordei e to fazendo Jarvis e CRM simultaneo": o
+ * Jarvis organizou as duas frentes certinho e NÃO ligou o cronometro, porque
+ * o modelo nao marcou qual tarefa comecar. Quatro horas depois o painel ainda
+ * dizia "sem nada medido" - com ele trabalhando o tempo todo.
+ *
+ * Presente do indicativo e gerundio sao o sinal, e sao baratos de achar. Plano
+ * de amanha vem no futuro ("o motoboy busca", "vou levar") e nao liga nada.
+ */
+const FAZENDO_AGORA =
+  /\b(estou|est(o|ó)|to|tô|tou|ta|tá|agora|comecei|come(c|ç)ando|seguindo|mexendo|trabalhando|fazendo|rodando|tocando|executando)\b/
+
+export function estaFazendoAgora(texto: string): boolean {
+  return FAZENDO_AGORA.test(normalizar(texto)) || FAZENDO_AGORA.test(texto.toLowerCase())
+}
+
+/**
  * A intencao da frase.
  *
  * ARMADILHA que este codigo existe para evitar (achada em 10/09/2026): a

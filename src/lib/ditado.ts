@@ -178,12 +178,26 @@ export async function interpretarDitado(texto: string): Promise<{ plano: PlanoDi
   }
 }
 
-export type Criado = { linhas: string[]; tarefaParaComecar: number | null }
+export type Criado = {
+  linhas: string[]
+  tarefaParaComecar: number | null
+  /**
+   * A PRIMEIRA TAREFA ABERTA DO PLANO, para o relogio ter onde cair.
+   *
+   * O modelo so preenche `comecarAgora` quando ele diz o titulo com todas as
+   * letras, e quase nunca diz. Em 11/09/2026 isso deixou o dia inteiro sem
+   * medicao: duas frentes criadas, zero apontamento. Quando ele avisa que esta
+   * FAZENDO, alguma coisa tem que estar rodando - e a primeira da fila e o
+   * palpite honesto, com trocar a um toque na barra.
+   */
+  primeiraAberta: number | null
+}
 
 /** Grava o plano. Reusa frente que já existe com o mesmo titulo, nunca duplica. */
 export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
   const linhas: string[] = []
   let tarefaParaComecar: number | null = null
+  let primeiraAberta: number | null = null
 
   const areas = await prisma.area.findMany()
   const porChave = new Map(areas.map((a) => [a.chave, a]))
@@ -220,7 +234,12 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
       const jaTem = await prisma.tarefa.findFirst({
         where: { frenteId: frente.id, titulo: t.titulo, status: 'aberta' },
       })
-      if (jaTem) continue
+      if (jaTem) {
+        // Repetida não vira tarefa nova, mas continua servindo de alvo para o
+        // relógio: ele pode estar recomeçando o que já existia.
+        primeiraAberta ??= jaTem.id
+        continue
+      }
 
       const nova = await prisma.tarefa.create({
         data: {
@@ -254,6 +273,7 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
         linhas.push(`feita: ${t.titulo} (${minutos} min)`)
       } else {
         linhas.push(`tarefa: ${t.titulo}`)
+        primeiraAberta ??= nova.id
       }
       ordem++
 
@@ -278,5 +298,5 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
     linhas.push(`compromisso: ${c.titulo} em ${new Date(inicio).toLocaleDateString('pt-BR')}`)
   }
 
-  return { linhas, tarefaParaComecar }
+  return { linhas, tarefaParaComecar, primeiraAberta }
 }
