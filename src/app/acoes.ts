@@ -509,6 +509,7 @@ export async function criarCompromisso(form: FormData) {
 export async function apagarCompromisso(form: FormData) {
   await prisma.compromisso.delete({ where: { id: Number(form.get('id')) } })
   revalidatePath('/painel')
+  revalidatePath('/agenda')
 }
 
 /** Mais um bloco na mesma tarefa: reinicia o bloco sem parar o cronômetro. */
@@ -806,4 +807,37 @@ export async function marcarPacote(form: FormData) {
   revalidatePath('/projetos')
   revalidatePath('/painel')
   revalidatePath('/producao')
+}
+
+/**
+ * Marcar um compromisso.
+ *
+ * O caso que o Lucian descreveu é curto e tem que ser rápido: ele acertou a
+ * reunião pelo WhatsApp e precisa lançar antes de esquecer. Por isso o
+ * formulário tem seis campos e nenhum obrigatório além do essencial.
+ *
+ * Hora local: o campo devolve "09:00" sem fuso, e o servidor da Vercel roda em
+ * UTC. Montar a data com o texto cru marcaria três horas cedo.
+ */
+export async function marcarCompromisso(form: FormData) {
+  const titulo = String(form.get('titulo') ?? '').trim()
+  const dia = String(form.get('dia') ?? '').trim()
+  const hora = String(form.get('hora') ?? '09:00').trim()
+  if (!titulo || !dia) return
+
+  const minutos = Number(form.get('minutos')) || 60
+  const projetoId = Number(form.get('projetoId')) || null
+  const local = String(form.get('local') ?? '').trim() || null
+
+  // -03:00 explícito: São Paulo não tem mais horário de verão desde 2019.
+  const inicio = new Date(`${dia}T${hora}:00-03:00`)
+  if (Number.isNaN(inicio.getTime())) return
+  const fim = new Date(inicio.getTime() + minutos * 60000)
+
+  await prisma.compromisso.create({
+    data: { titulo, inicio, fim, local, projetoId },
+  })
+
+  revalidatePath('/agenda')
+  revalidatePath('/painel')
 }

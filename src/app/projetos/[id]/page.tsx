@@ -12,19 +12,13 @@ import { notFound } from 'next/navigation'
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { Moldura, Cabeca } from '@/components/Moldura'
-import { montarCronograma, dataCurta, oQueFazerComOAtraso, horasCurtas } from '@/lib/cronograma'
+import { montarCronograma, dataCurta, oQueFazerComOAtraso } from '@/lib/cronograma'
 import { NOME_DO_TIPO } from '@/lib/modelos'
 import { definirInicioDoProjeto, editarProjeto, marcarPacote } from '../../acoes'
-import { PacoteLinha } from '@/components/PacoteLinha'
+import { Cronograma } from '@/components/Cronograma'
 import { Spin } from '@/components/Spin'
 
 export const dynamic = 'force-dynamic'
-
-const COR_DE_QUEM: Record<string, string> = {
-  eu: 'var(--texto)',
-  terceiro: 'var(--verde)',
-  cliente: 'var(--ambar)',
-}
 
 const NOME_DE_QUEM: Record<string, string> = {
   eu: 'VOCÊ',
@@ -123,9 +117,10 @@ export default async function ProjetoDetalhe({
           nascia do script ou do ditado e depois ficava congelado.
           Valor e prazo moram aqui de propósito - são os dois números que
           faltam para a régua de prioridade parar de empatar todo mundo. */}
-      <form action={editarProjeto} className="cartao p-4 mb-3">
+      <details className="cartao p-4 mb-3">
+        <summary className="rotulo cursor-pointer select-none">editar o projeto</summary>
+        <form action={editarProjeto} className="mt-3">
         <input type="hidden" name="projetoId" value={projeto.id} />
-        <p className="rotulo mb-3">editar o projeto</p>
 
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">
@@ -192,13 +187,15 @@ export default async function ProjetoDetalhe({
           Valor e prazo alimentam a régua de prioridade. Mudar o tipo ou as condições refaz a WBS -
           e por isso só funciona enquanto nenhum pacote estiver fechado.
         </p>
-      </form>
+        </form>
+      </details>
 
       {/* A data de início é o que faz o cronograma existir. Enquanto ela for
           o dia em que o projeto foi cadastrado, a previsão está errada - e a
           tela diz isso em vez de fingir. */}
-      <form action={definirInicioDoProjeto} className="cartao p-4 mb-3">
-        <p className="rotulo mb-2">quando este projeto começou de verdade</p>
+      <details className="cartao p-4 mb-3">
+        <summary className="rotulo cursor-pointer select-none">quando este projeto começou de verdade</summary>
+        <form action={definirInicioDoProjeto} className="mt-3">
         <div className="flex flex-wrap gap-2 items-end">
           <input type="hidden" name="projetoId" value={projeto.id} />
           <div className="min-w-[170px]">
@@ -214,7 +211,8 @@ export default async function ProjetoDetalhe({
         <p className="fraco text-xs mt-2">
           Todas as previsões saem daqui. Sem a data certa, o cronograma é bonito e errado.
         </p>
-      </form>
+        </form>
+      </details>
 
       {/* A QUALIFICAÇÃO MORA AQUI, e não na lista de projetos.
           O Lucian em 10/09/2026: "isso é só um banco de dados que vai estar
@@ -258,59 +256,7 @@ export default async function ProjetoDetalhe({
           }
         />
         <div className="painel-corpo">
-          {c.pacotes.length === 0 ? (
-            <p className="fraco text-sm">
-              Este projeto ainda não tem WBS. Diga ao Jarvis que tipo ele é e a corrente se desdobra
-              com as datas - ou abra os pacotes na tela de projetos.
-            </p>
-          ) : (
-            <ol className="space-y-1.5">
-              {c.pacotes.map((p) => (
-                <li key={p.id} className="flex items-center gap-2 text-sm py-1">
-                  <span
-                    className="numero text-[11px] shrink-0 w-5 text-right"
-                    style={{ color: p.fechado ? 'var(--laranja)' : 'var(--fraco)' }}
-                  >
-                    {p.ordem}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span
-                      style={{
-                        textDecoration: p.fechado ? 'line-through' : undefined,
-                        color: p.fechado ? 'var(--fraco)' : undefined,
-                      }}
-                    >
-                      {p.pacote ?? p.titulo}
-                    </span>
-                    <span className="block text-[11px] dado mt-0.5">
-                      {dataCurta(p.inicioPrevisto)} a {dataCurta(p.fimPrevisto)} · {p.dias}d · {p.areaNome}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-right mr-1">
-                    <span
-                      className="text-[10px] font-mono block"
-                      style={{ color: COR_DE_QUEM[p.quemSegura] }}
-                    >
-                      {NOME_DE_QUEM[p.quemSegura]}
-                    </span>
-                    <span className="text-[10px] dado block">{horasCurtas(p.minutos)}</span>
-                    {p.atrasado && (
-                      <span className="block text-[10px] numero" style={{ color: 'var(--vermelho)' }}>
-                        +{p.diasDeAtraso}d
-                      </span>
-                    )}
-                  </span>
-
-                  <PacoteLinha
-                    frenteId={p.id}
-                    percentual={p.percentual}
-                    fechado={p.fechado}
-                    acao={marcarPacote}
-                  />
-                </li>
-              ))}
-            </ol>
-          )}
+          <Cronograma pacotes={c.pacotes} acao={marcarPacote} />
         </div>
       </section>
     </Moldura>

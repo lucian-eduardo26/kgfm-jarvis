@@ -28,6 +28,7 @@ export const ORDEM_DAS_TELAS = [
   { href: '/painel', nome: 'Painel' },
   { href: '/projetos', nome: 'Projetos' },
   { href: '/frentes', nome: 'Frentes' },
+  { href: '/agenda', nome: 'Agenda' },
   { href: '/semana', nome: 'A semana' },
   { href: '/prioridades', nome: 'Prioridade' },
   { href: '/estrategia', nome: 'Estratégia' },

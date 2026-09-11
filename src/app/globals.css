@@ -952,3 +952,133 @@ select,
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---------- os grupos do cronograma ----------
+   Shneiderman (1996): visão geral primeiro, detalhe sob demanda. O resumo
+   fechado precisa responder sozinho, senão abrir vira obrigação e não escolha. */
+
+.grupo-cronograma {
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  background: var(--superficie);
+}
+
+.grupo-cronograma > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.grupo-cronograma > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A seta que diz que abre. Gira ao abrir, porque estado sem sinal é bug. */
+.grupo-cronograma > summary::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--fraco);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  transform-origin: 25% 50%;
+}
+
+.grupo-cronograma[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.grupo-titulo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.grupo-resumo {
+  font-size: 12px;
+  color: var(--fraco);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grupo-conta {
+  font-size: 12px;
+  color: var(--fraco);
+  flex-shrink: 0;
+}
+
+.grupo-cronograma > ol {
+  padding: 0 0.8rem 0.6rem;
+  border-top: 1px solid var(--linha);
+  margin-top: 0;
+  padding-top: 0.4rem;
+}
+
+/* ---------- a semana, em sete colunas ---------- */
+
+.semana-tiras {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.semana-dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.1rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  min-width: 0;
+}
+
+.semana-dia-hoje {
+  border-color: var(--secao);
+  background: color-mix(in srgb, var(--secao) 9%, transparent);
+}
+
+.semana-sigla {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fraco);
+}
+
+.semana-numero {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Um traço por compromisso. Mais de três vira "3+", porque quatro traços num
+   dia de 45px não se distinguem de cinco. */
+.semana-marcas {
+  display: flex;
+  gap: 2px;
+  min-height: 6px;
+  align-items: center;
+}
+
+.semana-marca {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--secao);
+}
+
+.semana-vazio {
+  width: 4px;
+  height: 1px;
+  background: var(--linha-forte);
+}

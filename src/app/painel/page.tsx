@@ -21,6 +21,8 @@ import { hojeSP } from '@/lib/datas'
 import { carteiraDeProjetos } from '@/lib/projetos'
 import { BarraProjeto } from '@/components/BarraProjeto'
 import { Relogio } from '@/components/Relogio'
+import { SemanaCurta } from '@/components/SemanaCurta'
+import { montarSemanaCurta } from '@/lib/semanaCurta'
 import { vozDoDia } from '@/lib/resistencia'
 
 export const dynamic = 'force-dynamic'
@@ -34,6 +36,7 @@ export default async function Painel() {
   const c = confrontar(d.minutosHoje)
 
   const carteira = await carteiraDeProjetos()
+  const semana = await montarSemanaCurta()
 
   // Desde quando nada é medido: o fim do último apontamento, ou o começo do
   // expediente se ainda não houve nenhum. É a conta do buraco do dia.
@@ -80,6 +83,10 @@ export default async function Painel() {
         semRegistroDesde={ultimoRegistro}
       />
 
+      <div className="mb-3">
+        <SemanaCurta dias={semana} />
+      </div>
+
       <div className="grid xl:grid-cols-[1.15fr_1fr] xl:items-start gap-3">
         <div>
       {/* A empresa acontecendo: uma barra por projeto, na mesma escala de
@@ -90,12 +97,12 @@ export default async function Painel() {
             titulo="os projetos"
             direita={
               <Link href="/projetos" className="text-[10px] dado">
-                VER TODOS
+                {carteira.length > 4 ? `+${carteira.length - 4} · VER TODOS` : 'VER TODOS'}
               </Link>
             }
           />
           <div className="p-1.5">
-            {carteira.map((p) => (
+            {carteira.slice(0, 4).map((p) => (
               <BarraProjeto key={p.id} p={p} />
             ))}
           </div>

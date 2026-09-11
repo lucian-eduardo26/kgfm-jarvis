@@ -10,6 +10,7 @@ const PAGINAS = [
   { href: '/painel', nome: 'Painel' },
   { href: '/conversa', nome: 'Conversa' },
   { href: '/caixa', nome: 'Caixa e runway' },
+  { href: '/agenda', nome: 'Agenda' },
   { href: '/semana', nome: 'A semana' },
   { href: '/projetos', nome: 'Projetos' },
   { href: '/prioridades', nome: 'Prioridade dos projetos' },
