@@ -12,9 +12,10 @@ import { notFound } from 'next/navigation'
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { Moldura, Cabeca } from '@/components/Moldura'
-import { montarCronograma, dataCurta, oQueFazerComOAtraso } from '@/lib/cronograma'
+import { montarCronograma, dataCurta, oQueFazerComOAtraso, horasCurtas } from '@/lib/cronograma'
 import { NOME_DO_TIPO } from '@/lib/modelos'
-import { definirInicioDoProjeto, editarProjeto } from '../../acoes'
+import { definirInicioDoProjeto, editarProjeto, marcarPacote } from '../../acoes'
+import { PacoteLinha } from '@/components/PacoteLinha'
 import { Spin } from '@/components/Spin'
 
 export const dynamic = 'force-dynamic'
@@ -265,7 +266,7 @@ export default async function ProjetoDetalhe({
           ) : (
             <ol className="space-y-1.5">
               {c.pacotes.map((p) => (
-                <li key={p.id} className="flex items-baseline gap-2.5 text-sm">
+                <li key={p.id} className="flex items-center gap-2 text-sm py-1">
                   <span
                     className="numero text-[11px] shrink-0 w-5 text-right"
                     style={{ color: p.fechado ? 'var(--laranja)' : 'var(--fraco)' }}
@@ -285,19 +286,27 @@ export default async function ProjetoDetalhe({
                       {dataCurta(p.inicioPrevisto)} a {dataCurta(p.fimPrevisto)} · {p.dias}d · {p.areaNome}
                     </span>
                   </span>
-                  <span className="shrink-0 text-right">
+                  <span className="shrink-0 text-right mr-1">
                     <span
-                      className="text-[10px] font-mono"
+                      className="text-[10px] font-mono block"
                       style={{ color: COR_DE_QUEM[p.quemSegura] }}
                     >
                       {NOME_DE_QUEM[p.quemSegura]}
                     </span>
+                    <span className="text-[10px] dado block">{horasCurtas(p.minutos)}</span>
                     {p.atrasado && (
                       <span className="block text-[10px] numero" style={{ color: 'var(--vermelho)' }}>
                         +{p.diasDeAtraso}d
                       </span>
                     )}
                   </span>
+
+                  <PacoteLinha
+                    frenteId={p.id}
+                    percentual={p.percentual}
+                    fechado={p.fechado}
+                    acao={marcarPacote}
+                  />
                 </li>
               ))}
             </ol>

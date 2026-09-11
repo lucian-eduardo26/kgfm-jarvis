@@ -23,7 +23,7 @@ export default async function Capturas() {
   ])
 
   return (
-    <Moldura titulo="Capturas">
+    <Moldura titulo="Capturas" atalhoAtivo="/capturas">
       {/* Classificação errada é silenciosa: este número é o alarme. */}
       {total > 0 && (
         <p className="fraco text-sm mb-3">

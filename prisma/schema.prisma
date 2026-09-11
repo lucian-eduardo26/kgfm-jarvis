@@ -187,6 +187,37 @@ model Frente {
   // previsao de cada pacote e a data de entrega do projeto. Estimativa nasce
   // do modelo e o Lucian corrige - por isso fica na frente e nao no codigo.
   diasEstimados     Int?           @map("dias_estimados")
+  // QUANTO DA HORA DELE este pacote consome. E numero DIFERENTE de dias, e a
+  // diferenca foi ele quem ensinou em 10/09/2026: "no caso dos fornecedores
+  // cinco dias em paralelo, nao precisa somar, estao os dois correndo cinco
+  // dias" - mas a hora dele nao corre em paralelo com ela mesma.
+  //
+  // Dias alimentam o CRONOGRAMA. Minutos alimentam a SEMANA e a capacidade.
+  // Fabricacao tem 5 dias e 0 minuto dele; ler o pedido do cliente tem 0 dia
+  // e 5 minutos. Um numero so nao conseguiria dizer as duas coisas.
+  minutosEstimados  Int?           @map("minutos_estimados")
+
+  // O PADRAO: depois que o pacote anterior fecha, este deveria comecar em
+  // ate quantos dias. E a linha de base do alarme que ele pediu - "ja faz
+  // tanto tempo que voce recebeu o pedido e nao deu start na producao".
+  diasParaIniciar   Int?           @map("dias_para_iniciar")
+
+  // AS DATAS REAIS, que nao sao a previsao. Sem elas nao da para comparar o
+  // que aconteceu com o padrao, e sem essa comparacao o indicador e chute.
+  realInicioEm      DateTime?      @map("real_inicio_em")
+  realFimEm         DateTime?      @map("real_fim_em")
+
+  // A LINHA DE BASE: as datas previstas CONGELADAS no momento em que o plano
+  // foi feito. Sem congelar nao existe comparacao - se a previsao se recalcula
+  // toda vez que ele muda um prazo, o projeto esta sempre "no prazo", porque o
+  // prazo persegue a realidade. E o erro classico de cronograma.
+  baseInicioEm      DateTime?      @map("base_inicio_em")
+  baseFimEm         DateTime?      @map("base_fim_em")
+
+  // QUANTO DESTE PACOTE JA ANDOU, de 0 a 100. O tique da tela poe 100; o campo
+  // aceita qualquer numero. Fechar deixou de ser sim-ou-nao porque pacote de
+  // 15 dias fica muito tempo em "nao", e nesse tempo a barra mente.
+  percentual        Int            @default(0)
   // A etapa dentro da area (prospeccao, venda, pos-venda, compras, financeiro...).
   // Texto e nao enum de proposito: ele ja avisou que vai desmembrar producao
   // depois, e migrar enum e mais caro do que migrar texto. src/lib/etapas.ts.

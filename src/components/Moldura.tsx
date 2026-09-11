@@ -16,6 +16,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Menu } from './Menu'
 import { Deslizar } from './Deslizar'
+import { Transicao } from './Transicao'
 
 const ATALHOS = [
   { href: '/painel', nome: 'Painel', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
@@ -27,6 +28,25 @@ const ATALHOS = [
   { href: '/conversa', nome: 'Conversa', d: 'M4 5h16v11H9l-5 4z' },
   { href: '/config', nome: 'Configuração', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6M4 12h2M18 12h2M12 4v2M12 18v2' },
 ]
+
+/**
+ * A COR DE CADA SEÇÃO. Só moldura: fio do cabeçalho, título, ponto ativo.
+ *
+ * Verde, âmbar e vermelho continuam sendo ESTADO dentro dos instrumentos, e
+ * por isso nenhuma seção usa os três. Se a cor da tela vazasse para dentro do
+ * dado, o painel perderia a única coisa que o faz funcionar.
+ */
+const COR_DA_SECAO: Record<string, string> = {
+  '/painel': '#ff3d00',
+  '/projetos': '#38bdf8',
+  '/producao': '#22d3ee',
+  '/frentes': '#a78bfa',
+  '/semana': '#2dd4bf',
+  '/prioridades': '#f59e0b',
+  '/estrategia': '#f472b6',
+  '/conversa': '#60a5fa',
+  '/config': '#94a3b8',
+}
 
 function Icone({ d, preenchido }: { d: string; preenchido: boolean }) {
   return (
@@ -57,7 +77,7 @@ export function Moldura({
         ))}
       </nav>
 
-      <div className="com-trilho">
+      <div className="com-trilho" style={{ ['--secao' as string]: COR_DA_SECAO[atalhoAtivo ?? '/painel'] ?? 'var(--laranja)' }}>
         <header className="cabecalho">
           <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5">
             <div className="cabecalho-linha">
@@ -87,7 +107,7 @@ export function Moldura({
         {/* O respiro entre o cabeçalho e o primeiro cartão. Estava em 12px e ele
             reclamou com razão: o cartão encostava na faixa da marca e a tela
             parecia desalinhada. */}
-        <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pt-5 sm:pt-6 com-captura">{children}</div>
+        <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pt-5 sm:pt-6 com-captura"><Transicao>{children}</Transicao></div>
       </div>
 
       {/* FORA do cabeçalho de propósito: ele usa `backdrop-filter`, e isso faz

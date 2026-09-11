@@ -756,3 +756,54 @@ export async function editarProjeto(form: FormData) {
     redirect(`/projetos/${id}?corrente=travada`)
   }
 }
+
+/**
+ * Quanto deste pacote já andou.
+ *
+ * O tique põe 100 e fecha; digitar 100 faz a mesma coisa. São dois caminhos
+ * para o mesmo lugar, e não dois estados diferentes - se fossem, existiria
+ * pacote "100% mas aberto", que ninguém saberia explicar.
+ *
+ * Fechar carimba a data REAL, que é o que permite comparar com a linha de
+ * base depois. Sem isso a acuracidade nunca teria o que medir.
+ */
+export async function marcarPacote(form: FormData) {
+  const frenteId = Number(form.get('frenteId'))
+  if (!frenteId) return
+
+  const frente = await prisma.frente.findUnique({ where: { id: frenteId } })
+  if (!frente) return
+
+  const tique = form.get('tique') === '1'
+  const bruto = String(form.get('percentual') ?? '').trim()
+  const digitado = Number(bruto)
+
+  let pct: number
+  if (tique) {
+    // O tique alterna: pacote fechado volta a zero, para corrigir engano.
+    pct = frente.status === 'fechada' ? 0 : 100
+  } else {
+    pct = Number.isFinite(digitado) ? Math.max(0, Math.min(100, Math.round(digitado))) : frente.percentual
+  }
+
+  const fechou = pct >= 100
+  const agora = new Date()
+
+  await prisma.frente.update({
+    where: { id: frenteId },
+    data: {
+      percentual: pct,
+      status: fechou ? 'fechada' : frente.status === 'fechada' ? 'planejada' : frente.status,
+      fechadaEm: fechou ? (frente.fechadaEm ?? agora) : null,
+      // A data real: começou quando saiu do zero, terminou quando chegou a 100.
+      realInicioEm: pct > 0 ? (frente.realInicioEm ?? agora) : null,
+      realFimEm: fechou ? (frente.realFimEm ?? agora) : null,
+      ultimoMovimentoEm: agora,
+    },
+  })
+
+  if (frente.projetoId) revalidatePath(`/projetos/${frente.projetoId}`)
+  revalidatePath('/projetos')
+  revalidatePath('/painel')
+  revalidatePath('/producao')
+}

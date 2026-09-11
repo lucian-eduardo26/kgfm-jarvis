@@ -18,7 +18,7 @@ export default async function Playbook() {
   const notas = await prisma.conhecimento.findMany({ orderBy: { atualizadoEm: 'desc' } })
 
   return (
-    <Moldura titulo="Playbook KGFM">
+    <Moldura titulo="Playbook KGFM" atalhoAtivo="/playbook">
       <p className="fraco text-sm mb-4 max-w-3xl">
         O lastro técnico. Serve a duas coisas: parar de deixar o que a KGFM já sabe morando só na
         sua cabeça, e dar chao para a IA quando ela te ajudar a redigir - sem isto ela inventa

@@ -822,3 +822,133 @@ select,
     display: none;
   }
 }
+
+/* ===========================================================================
+   COR POR SEÇÃO, TÍTULO E TRANSIÇÃO
+   ---------------------------------------------------------------------------
+   O Lucian em 10/09/2026: "estou mexendo na tela, às vezes mudou e eu não
+   percebi". Três pistas resolvem, e nenhuma delas mexe no dado:
+
+     1. cada seção tem uma cor própria, só na moldura;
+     2. o título fica grande no topo, e não escondido numa linha fina;
+     3. a tela entra com um quarto de segundo de deslocamento.
+
+   A REGRA QUE PROTEGE O SISTEMA: a cor da seção vive em `--secao` e pinta
+   APENAS moldura - fio do cabeçalho, título, ponto ativo. Verde, âmbar e
+   vermelho continuam significando estado, e só estado, dentro dos
+   instrumentos. Se a cor da seção vazasse para dentro do dado, o painel
+   perderia a única coisa que o faz funcionar: cor significar alguma coisa.
+   =========================================================================== */
+
+:root {
+  --secao: var(--laranja);
+}
+
+/* O fio de luz embaixo do cabeçalho ganha a cor da seção. */
+.cabecalho::after {
+  background: linear-gradient(90deg, var(--secao) 0%, color-mix(in srgb, var(--secao) 12%, transparent) 38%, transparent 72%);
+}
+
+.marca-ponto {
+  background: var(--secao);
+  box-shadow: 0 0 10px -1px var(--secao);
+}
+
+/* O TÍTULO DA SEÇÃO, agora legível de longe. Era 11px cinza numa linha fina;
+   virou o nome da tela, na cor da tela. */
+.cabecalho-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--secao);
+  opacity: 0.95;
+}
+
+@media (min-width: 640px) {
+  .cabecalho-titulo {
+    font-size: 12px;
+  }
+}
+
+.ponto-tela-aqui::before {
+  background: var(--secao);
+}
+
+/* A transição de entrada. Curta: o suficiente para o olho registrar, não o
+   bastante para atrasar quem já sabe para onde vai. */
+.tela-entrando {
+  animation: entrar 0.24s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tela-entrando {
+    animation: none;
+  }
+}
+
+/* ---------- o relógio da tela inicial ---------- */
+
+.relogio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.relogio-hora {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.relogio-hora .numero {
+  font-size: clamp(1.5rem, 6vw, 1.9rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.relogio-fuso {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fraco);
+}
+
+.relogio-lado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 0;
+}
+
+.relogio-contador {
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.relogio-legenda {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fraco);
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

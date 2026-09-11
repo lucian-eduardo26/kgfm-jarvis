@@ -41,7 +41,7 @@ export default async function Caixa() {
     r.zona === 'vermelho' ? 'var(--vermelho)' : r.zona === 'ambar' ? 'var(--ambar)' : r.zona === 'verde' ? 'var(--verde)' : 'var(--cinza)'
 
   return (
-    <Moldura titulo="Caixa e runway">
+    <Moldura titulo="Caixa e runway" atalhoAtivo="/caixa">
       <section className="cartao p-5" style={{ borderColor: corRunway }}>
         <p className="rotulo">dias de vida do caixa</p>
         <div className="flex flex-wrap items-end gap-4 mt-1">

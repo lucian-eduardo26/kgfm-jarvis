@@ -45,7 +45,7 @@ export default async function Frentes({
   const areaTravada = sp.wip ? areas.find((a) => a.id === Number(sp.wip)) : null
 
   return (
-    <Moldura titulo={filtro ? `Frentes · ${filtro.nome}` : 'Frentes abertas'}>
+    <Moldura titulo={filtro ? `Frentes · ${filtro.nome}` : 'Frentes abertas'} atalhoAtivo="/frentes">
       {/* A trava de WIP - e o botao de liberar do lado, na mesma tela. */}
       {areaTravada && (
         <section className="cartao p-4 mb-3" style={{ borderColor: 'var(--ambar)' }}>

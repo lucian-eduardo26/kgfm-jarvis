@@ -26,7 +26,7 @@ export default async function Estrategia() {
   const { total, decorridos } = diasUteisDoMes()
 
   return (
-    <Moldura titulo="Estratégia">
+    <Moldura titulo="Estratégia" atalhoAtivo="/estrategia">
       <p className="fraco text-sm mb-4 max-w-2xl">
         Rumelt: estratégia é diagnóstico, política norteadora e ações coerentes - não lista de metas.
         Guardada estruturada nesses tres campos, ela vira filtro: da para dizer &quot;essa

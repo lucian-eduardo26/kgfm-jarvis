@@ -20,6 +20,7 @@ import { LancarRetroativo } from '@/components/LancarRetroativo'
 import { hojeSP } from '@/lib/datas'
 import { carteiraDeProjetos } from '@/lib/projetos'
 import { BarraProjeto } from '@/components/BarraProjeto'
+import { Relogio } from '@/components/Relogio'
 import { vozDoDia } from '@/lib/resistencia'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,17 @@ export default async function Painel() {
   const c = confrontar(d.minutosHoje)
 
   const carteira = await carteiraDeProjetos()
+
+  // Desde quando nada é medido: o fim do último apontamento, ou o começo do
+  // expediente se ainda não houve nenhum. É a conta do buraco do dia.
+  const ultimo = await prisma.apontamento.findFirst({
+    where: { encerradoEm: { not: null } },
+    orderBy: { encerradoEm: 'desc' },
+    select: { encerradoEm: true },
+  })
+  const inicioDoExpediente = new Date()
+  inicioDoExpediente.setHours(9, 0, 0, 0)
+  const ultimoRegistro = (ultimo?.encerradoEm ?? inicioDoExpediente).toISOString()
   const agenda = d.agenda
   const tarefasAbertas = (
     await prisma.tarefa.findMany({
@@ -59,6 +71,15 @@ export default async function Painel() {
           do momento e a voz à direita. O Lucian pediu "tudo espalhado, sem
           precisar passar de lado" - numa tela larga, empilhar desperdiça
           metade do monitor e empurra o resto para baixo da dobra. */}
+      {/* O TEMPO PASSANDO. Primeira coisa da tela, de propósito: ele pediu
+          "o tempo está passando, a vida está passando". A hora anda sempre; o
+          número da direita diz se ela está virando registro ou não. */}
+      <Relogio
+        rodandoDesde={d.cronometro ? d.cronometro.iniciadoEm.toISOString() : null}
+        oQue={d.cronometro ? d.cronometro.tarefaTitulo : null}
+        semRegistroDesde={ultimoRegistro}
+      />
+
       <div className="grid xl:grid-cols-[1.15fr_1fr] xl:items-start gap-3">
         <div>
       {/* A empresa acontecendo: uma barra por projeto, na mesma escala de

@@ -1,26 +1,24 @@
-// O BATOQUE DO LOGIMAT no ponto em que ele realmente está, ditado pelo Lucian
-// em 10/09/2026:
+// O BATOQUE DO LOGIMAT no ponto em que ele realmente está, e com os tempos
+// que o Lucian ditou em 10/09/2026.
 //
-//   "entrou o pedido, programação da produção, um dia de serviço de
-//    programação, cotei o material está feito, coloquei o pedido da fabricação
-//    está feito, fiz a logística de mandar matéria-prima pro fornecedor está
-//    feito, o fornecedor executou em cinco dias e me entregou. Hoje, dia dez
-//    de setembro, tudo isso já aconteceu. Amanhã, dia onze, tem a logística
-//    pro banho. O banho vai me pedir dois dias."
+// O QUE ELE CORRIGIU NESTA RODADA:
 //
-// Daí saem três coisas que este script grava:
+// 1. A ORDEM. A programação da produção vem DEPOIS da cotação: "eu coto, eu
+//    tenho o preço, aí eu decido a programação e fecho com esse fornecedor".
+// 2. OS MINUTOS. Ler o pedido são 5 min, cotação 1h, programação 1h, fechar
+//    condição 1h, colocar o pedido 30 min, logística da matéria-prima 2h. A
+//    fabricação são 5 dias e ZERO minuto dele - é aqui que os dois números se
+//    separam, e é o motivo de existirem dois.
+// 3. A ÂNCORA. "Pega toda essa sequência e volta do dia dez de setembro."
+//    Os oito primeiros pacotes somam 12 dias de calendário; se o nono começa
+//    amanhã, o projeto começou em 30 de agosto.
 //
-// 1. A MATÉRIA-PRIMA SAI DAQUI. Ele mandou para o fornecedor, então a condição
-//    é verdadeira - eu tinha chutado o contrário na primeira carga.
-// 2. DOIS PRAZOS SÃO DESTE PROJETO, não do modelo: fabricação levou 5 dias (o
-//    modelo diz 15) e o banho pede 2 (o modelo diz 7). É exatamente para isso
-//    que os dias moram na frente e não no código.
-// 3. A DATA DE INÍCIO SE DEDUZ. Se o pacote 9 começa amanhã e os oito
-//    primeiros somam 18 dias, o projeto começou em 24 de agosto. Melhor
-//    deduzir da realidade do que inventar.
+// A LINHA DE BASE fica gravada agora, e é ela que vai permitir comparar. Para
+// os pacotes já feitos, a data real é a mesma da base: foi o que ele contou,
+// sem mencionar atraso nenhum. Quando ele lançar a data verdadeira do pedido
+// do cliente, o indicador de "parado esperando começar" acende sozinho.
 //
-// Rodar de novo refaz a WBS deste projeto do zero. É seguro: nenhum
-// apontamento de hora depende dela ainda.
+// Rodar de novo refaz a WBS deste projeto do zero.
 
 import { prisma } from '../src/lib/prisma'
 import { correnteDoProjeto } from '../src/lib/modelos'
@@ -33,23 +31,26 @@ const DIAS_DESTE_PROJETO: Record<string, number> = {
   'Revestimento ou banho': 2,
 }
 
-/** Até onde já andou. Os oito primeiros estão feitos. */
 const FEITO_ATE_A_ORDEM = 8
+
+function somarDias(d: Date, n: number) {
+  const x = new Date(d)
+  x.setDate(x.getDate() + n)
+  return x
+}
 
 async function main() {
   const projeto = await prisma.projeto.findFirst({ where: { nome: NOME } })
   if (!projeto) {
-    console.error(`Projeto "${NOME}" não existe. Rode npm run projetos antes.`)
+    console.error(`Projeto "${NOME}" não existe.`)
     process.exit(1)
   }
 
   const condicoes = { materiaPrimaNossa: true, temRevestimento: true }
   const corrente = correnteDoProjeto('peca', condicoes)
+  const dias = (p: { pacote: string; dias: number }) => DIAS_DESTE_PROJETO[p.pacote] ?? p.dias
 
-  // Quanto tempo consumiram os pacotes já feitos.
-  const diasFeitos = corrente
-    .filter((p) => p.ordem <= FEITO_ATE_A_ORDEM)
-    .reduce((s, p) => s + (DIAS_DESTE_PROJETO[p.pacote] ?? p.dias), 0)
+  const diasFeitos = corrente.filter((p) => p.ordem <= FEITO_ATE_A_ORDEM).reduce((s, p) => s + dias(p), 0)
 
   // O pacote seguinte começa AMANHÃ, então o início é hoje + 1 - diasFeitos.
   const inicio = new Date()
@@ -57,7 +58,6 @@ async function main() {
   inicio.setDate(inicio.getDate() + 1 - diasFeitos)
 
   await prisma.frente.deleteMany({ where: { projetoId: projeto.id } })
-
   await prisma.projeto.update({
     where: { id: projeto.id },
     data: {
@@ -70,13 +70,17 @@ async function main() {
   })
 
   const areas = new Map((await prisma.area.findMany()).map((a) => [a.chave, a]))
-  const agora = new Date()
+  let cursor = inicio
+  let minutosDele = 0
 
   for (const p of corrente) {
     const area = areas.get(p.area)
     if (!area) continue
+    const d = dias(p)
+    const baseInicio = cursor
+    const baseFim = somarDias(cursor, d)
     const feito = p.ordem <= FEITO_ATE_A_ORDEM
-    const dias = DIAS_DESTE_PROJETO[p.pacote] ?? p.dias
+    minutosDele += p.minutos
 
     await prisma.frente.create({
       data: {
@@ -84,28 +88,40 @@ async function main() {
         areaId: area.id,
         projetoId: projeto.id,
         status: feito ? 'fechada' : 'planejada',
-        fechadaEm: feito ? agora : null,
+        fechadaEm: feito ? baseFim : null,
         ordem: p.ordem,
         pacote: p.pacote,
         etapa: p.etapa,
-        diasEstimados: dias,
+        diasEstimados: d,
+        minutosEstimados: p.minutos,
+        diasParaIniciar: p.diasParaIniciar ?? null,
+        percentual: feito ? 100 : 0,
+        baseInicioEm: baseInicio,
+        baseFimEm: baseFim,
+        // Feito é feito: a data real é a que ele contou, que bate com a base.
+        realInicioEm: feito ? baseInicio : null,
+        realFimEm: feito ? baseFim : null,
         aguardandoQuem: p.quemSegura,
         tarefas: {
           create: p.tarefas.map((t) => ({
             titulo: t,
             status: feito ? ('feita' as const) : ('aberta' as const),
-            concluidaEm: feito ? agora : null,
+            concluidaEm: feito ? baseFim : null,
           })),
         },
       },
     })
+
+    cursor = baseFim
   }
 
-  const total = corrente.reduce((s, p) => s + (DIAS_DESTE_PROJETO[p.pacote] ?? p.dias), 0)
+  const restantes = corrente.filter((p) => p.ordem > FEITO_ATE_A_ORDEM).reduce((s, p) => s + p.minutos, 0)
   console.log(`${NOME}: ${corrente.length} pacotes, ${FEITO_ATE_A_ORDEM} feitos.`)
-  console.log(`início deduzido: ${inicio.toLocaleDateString('pt-BR')}`)
-  console.log(`corrente inteira: ${total} dias`)
-  console.log(`o próximo pacote é "${corrente[FEITO_ATE_A_ORDEM].pacote}", e começa amanhã.`)
+  console.log(`início: ${inicio.toLocaleDateString('pt-BR')}`)
+  console.log(`entrega prevista: ${cursor.toLocaleDateString('pt-BR')}`)
+  console.log(`esforço dele na corrente inteira: ${Math.round(minutosDele / 60 * 10) / 10}h`)
+  console.log(`ainda falta da sua hora: ${Math.round(restantes / 60 * 10) / 10}h`)
+  console.log(`próximo pacote: "${corrente[FEITO_ATE_A_ORDEM].pacote}", começa amanhã.`)
 }
 
 main()
