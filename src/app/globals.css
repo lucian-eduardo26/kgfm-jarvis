@@ -1329,3 +1329,21 @@ h2 {
   background: linear-gradient(90deg, var(--secao), color-mix(in srgb, var(--secao) 55%, transparent));
   opacity: 0.85;
 }
+
+/* O ponto que pulsa enquanto o cronômetro roda. Verde porque, aqui, medir é
+   estar bem - e é a mesma cor do pacote feito na barra do projeto. */
+.ponto-rodando {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--verde);
+  box-shadow: 0 0 12px -1px var(--verde);
+  animation: pulsa-gravando 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ponto-rodando {
+    animation: none;
+  }
+}

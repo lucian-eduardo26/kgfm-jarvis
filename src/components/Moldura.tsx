@@ -17,6 +17,9 @@ import Link from 'next/link'
 import { Menu } from './Menu'
 import { Deslizar } from './Deslizar'
 import { Transicao } from './Transicao'
+import { BarraDoJarvis } from './BarraDoJarvis'
+import { cronometroAtivo } from '@/lib/cronometro'
+import { falarComOJarvis, pararCronometro } from '@/app/acoes'
 
 const ATALHOS = [
   { href: '/painel', nome: 'Painel', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
@@ -60,7 +63,7 @@ function Icone({ d, preenchido }: { d: string; preenchido: boolean }) {
   )
 }
 
-export function Moldura({
+export async function Moldura({
   titulo,
   children,
   acao,
@@ -71,6 +74,8 @@ export function Moldura({
   acao?: React.ReactNode
   atalhoAtivo?: string
 }) {
+  const cronometro = await cronometroAtivo()
+
   return (
     // A cor da seção envolve TUDO, inclusive o rodapé fixo. Ele é irmão do
     // conteúdo, e enquanto a variável morava dentro de `.com-trilho` o rodapé
@@ -121,6 +126,11 @@ export function Moldura({
       {/* FORA do cabeçalho de propósito: ele usa `backdrop-filter`, e isso faz
           dele o ponto de referência de qualquer filho `fixed` - os pontinhos
           ficariam presos dentro da faixa do topo em vez de colar no rodapé. */}
+      {/* A BARRA VIVE NA MOLDURA, e por isso existe em toda tela. O
+          cronômetro é o estado mais importante do sistema: some de vista
+          assim que ele troca de página, e volta a ser esquecido. */}
+      <BarraDoJarvis cronometro={cronometro} acao={falarComOJarvis} parar={pararCronometro} />
+
       <Deslizar />
     </div>
   )

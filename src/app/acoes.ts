@@ -15,6 +15,7 @@ import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
 import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
 import { correnteDoProjeto } from '@/lib/modelos'
 import { extrairSpin } from '@/lib/transcricao'
+import { lerIntencao, palavras, parecenca, tituloDoFalado } from '@/lib/casar'
 import { fazerPlanoDoDia } from '@/lib/ritual'
 import { sincronizarDoGoogle } from '@/lib/sincronizarAgenda'
 import { desligarConta } from '@/lib/google'
@@ -961,4 +962,137 @@ export async function desligarGoogle() {
   await desligarConta()
   revalidatePath('/agenda')
   redirect('/agenda?google=desligado')
+}
+
+/**
+ * A ENTRADA ÚNICA do Jarvis.
+ *
+ * Antes havia duas: o cartão "o que você está fazendo", que iniciava o
+ * cronômetro, e a barra do rodapé, que só arquivava. Nada diferenciava as
+ * duas, e a do rodapé é a que fica sempre visível. Em 11/09/2026 ele escreveu
+ * "acordei e tô fazendo Jarvis e CRM simultâneo" na barra, e o sistema
+ * arquivou em silêncio sem contar um segundo.
+ *
+ * Duas caixas com aparência igual e comportamento diferente é armadilha. Agora
+ * é uma só, e ela decide - e SEMPRE diz o que decidiu, porque sistema que
+ * adivinha calado é pior do que sistema que pergunta.
+ */
+export async function falarComOJarvis(texto: string): Promise<ResultadoComando> {
+  const t = texto.trim()
+  if (!t) {
+    return {
+      ok: false,
+      acao: 'nada',
+      tarefa: null,
+      frente: null,
+      area: null,
+      resposta: 'Não veio nada escrito.',
+      alinhamento: 'sem prioridade definida',
+      recomendado: null,
+      usouIa: false,
+      criou: null,
+    }
+  }
+
+  const r = await executarComando(t)
+
+  // O COMANDO NÃO ENCONTROU ONDE ENCAIXAR.
+  //
+  // A REGRA AQUI É DELE, e é a mais importante do time tracking:
+  // "quero contador iniciado se tô fazendo alguma coisa".
+  //
+  // Antes o sistema respondia "não consegui organizar isso" e deixava ele
+  // trabalhando sem relógio. Isso é o contrário do método: o relógio existe
+  // justamente para medir o que ninguém lembrou de cadastrar. Registrar no
+  // lugar aproximado vale mais do que não registrar - lugar errado se
+  // conserta depois, hora perdida não se recupera.
+  //
+  // Então: se a intenção era COMEÇAR, o Jarvis cria a tarefa e liga o
+  // cronômetro na hora, e avisa que chutou o lugar.
+  if (!r.ok && r.acao === 'nada' && lerIntencao(t) === 'iniciar') {
+    const tarefa = await criarTarefaAvulsa(t)
+    if (tarefa) {
+      const form = new FormData()
+      form.set('tarefaId', String(tarefa.id))
+      await iniciarCronometro(form)
+      return {
+        ...r,
+        ok: true,
+        acao: 'iniciar',
+        tarefa: tarefa.titulo,
+        frente: tarefa.frenteTitulo,
+        area: tarefa.areaNome,
+        resposta: `Contando "${tarefa.titulo}" em ${tarefa.frenteTitulo}. Não achei onde isso encaixava, então abri aí - corrija a frente depois se for outro lugar.`,
+      }
+    }
+  }
+
+  // Não era para começar nada: o texto vai para a caixa de entrada. Ele
+  // falou, o sistema guarda. Perder o que a pessoa disse é o pior desfecho.
+  if (!r.ok && r.acao === 'nada') {
+    const form = new FormData()
+    form.set('conteudo', t)
+    form.set('origem', 'texto')
+    await capturar(form)
+    return { ...r, resposta: `Guardei na caixa. ${r.resposta}` }
+  }
+
+  revalidatePath('/painel')
+  revalidatePath('/frentes')
+  revalidatePath('/capturas')
+  return r
+}
+
+
+/**
+ * A TAREFA DE ÚLTIMO RECURSO, para o cronômetro nunca ficar sem onde rodar.
+ *
+ * Tenta encaixar numa frente que já existe, comparando palavras. Se nada
+ * parecer, abre a frente "Sem classificação" na área ADM - que é onde o
+ * trabalho que ninguém categorizou realmente mora até alguém categorizar.
+ *
+ * O título sai do que ele falou, cortado no tamanho de um título. Guardar a
+ * frase inteira faria a lista de tarefas virar um diário.
+ */
+async function criarTarefaAvulsa(texto: string) {
+  const frentes = await prisma.frente.findMany({
+    where: { status: { in: ['aberta', 'planejada'] } },
+    include: { area: true },
+  })
+
+  const ditas = palavras(texto)
+  let melhor: { id: number; titulo: string; areaNome: string; nota: number } | null = null
+  for (const f of frentes) {
+    const nota = parecenca(ditas, f.titulo)
+    if (!melhor || nota > melhor.nota) {
+      melhor = { id: f.id, titulo: f.titulo, areaNome: f.area.nome, nota }
+    }
+  }
+
+  // 0.35 é folgado de propósito: aqui o objetivo não é acertar a frente, é
+  // não perder a hora. Encaixe ruim se corrige na tela; hora não.
+  let frenteId: number
+  let frenteTitulo: string
+  let areaNome: string
+
+  if (melhor && melhor.nota >= 0.35) {
+    frenteId = melhor.id
+    frenteTitulo = melhor.titulo
+    areaNome = melhor.areaNome
+  } else {
+    const adm = await prisma.area.findFirst({ where: { chave: 'adm' } })
+    if (!adm) return null
+    const semClass = await prisma.frente.upsert({
+      where: { id: (await prisma.frente.findFirst({ where: { titulo: 'Sem classificação' } }))?.id ?? -1 },
+      create: { titulo: 'Sem classificação', areaId: adm.id, status: 'aberta' },
+      update: {},
+    })
+    frenteId = semClass.id
+    frenteTitulo = semClass.titulo
+    areaNome = adm.nome
+  }
+
+  const titulo = tituloDoFalado(texto)
+  const tarefa = await prisma.tarefa.create({ data: { frenteId, titulo } })
+  return { id: tarefa.id, titulo, frenteTitulo, areaNome }
 }

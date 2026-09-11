@@ -6,11 +6,9 @@ import { formatarHoras } from '@/lib/datas'
 import { temChave } from '@/lib/classificador'
 import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { Mostrador } from '@/components/Mostrador'
-import { Captura } from '@/components/Captura'
 import { Ciclo } from '@/components/Ciclo'
 import { COR_DA_ZONA } from '@/lib/mostrador'
-import { limparExemplo, comandoDeVoz, continuarBloco, comecarDescanso, encerrarDescanso, pararCronometro } from '../acoes'
-import { ComandoVoz } from '@/components/ComandoVoz'
+import { limparExemplo, continuarBloco, comecarDescanso, encerrarDescanso, pararCronometro } from '../acoes'
 import { confrontar } from '@/lib/expediente'
 import { lerConfig } from '@/lib/configuracao'
 import { prisma } from '@/lib/prisma'
@@ -152,9 +150,6 @@ export default async function Painel() {
         </section>
       )}
 
-      <div className="mb-3">
-        <ComandoVoz acao={comandoDeVoz} />
-      </div>
         </div>
       </div>
 
@@ -331,7 +326,6 @@ export default async function Painel() {
         <p className="text-sm mt-1 max-w-3xl">{voz.frase}</p>
       </section>
 
-      <Captura flutuante />
     </Moldura>
   )
 }
