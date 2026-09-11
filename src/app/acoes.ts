@@ -16,6 +16,7 @@ import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
 import { correnteDoProjeto } from '@/lib/modelos'
 import { extrairSpin } from '@/lib/transcricao'
 import { lerIntencao, palavras, parecenca, tituloDoFalado } from '@/lib/casar'
+import { crmConfigurado, buscarNoCrm, registrarToque, nomesProvaveis } from '@/lib/crm'
 import { fazerPlanoDoDia } from '@/lib/ritual'
 import { sincronizarDoGoogle } from '@/lib/sincronizarAgenda'
 import { desligarConta } from '@/lib/google'
@@ -994,6 +995,19 @@ export async function falarComOJarvis(texto: string): Promise<ResultadoComando> 
     }
   }
 
+  // ANTES DE TUDO: isto é prospecção?
+  //
+  // A integração que ele pediu não é abrir um aplicativo pelo outro - é falar
+  // uma frase só e o sistema saber onde ela mora. "Liguei pro Jackson da Roge"
+  // é toque de prospecção e pertence ao CRM; "estou detalhando o Batoque" é
+  // trabalho de projeto e pertence aqui.
+  //
+  // A checagem é barata: só roda quando a frase tem verbo de contato E nome
+  // próprio, e só então pergunta ao CRM se aquele nome existe lá. Sem os dois
+  // sinais, nem chega a perguntar.
+  const doCrm = await talvezSejaProspeccao(t)
+  if (doCrm) return doCrm
+
   const r = await executarComando(t)
 
   // O COMANDO NÃO ENCONTROU ONDE ENCAIXAR.
@@ -1095,4 +1109,50 @@ async function criarTarefaAvulsa(texto: string) {
   const titulo = tituloDoFalado(texto)
   const tarefa = await prisma.tarefa.create({ data: { frenteId, titulo } })
   return { id: tarefa.id, titulo, frenteTitulo, areaNome }
+}
+
+
+/** Verbos que denunciam contato com pessoa, e não trabalho de bancada. */
+const VERBO_DE_CONTATO =
+  /\b(liguei|falei|conversei|mandei mensagem|respondeu|retornou|marquei (com|reuni[ãa]o)|visitei|almocei com|encontrei)\b/i
+
+/**
+ * A frase é um toque de prospecção? Se for, registra no CRM e devolve a
+ * resposta pronta. Se não for - ou se o CRM não estiver ligado - devolve null
+ * e a frase segue o caminho normal.
+ *
+ * NUNCA INVENTA PESSOA. Se o nome não existe no CRM, isto não cria ninguém:
+ * devolve null e o texto vira trabalho ou captura aqui. Criar ficha a partir
+ * de uma frase solta encheria o CRM de gente que ninguém prospectou.
+ */
+async function talvezSejaProspeccao(texto: string): Promise<ResultadoComando | null> {
+  if (!crmConfigurado()) return null
+  if (!VERBO_DE_CONTATO.test(texto)) return null
+
+  const nomes = nomesProvaveis(texto)
+  if (nomes.length === 0) return null
+
+  for (const nome of nomes) {
+    const achado = await buscarNoCrm(nome)
+    const pessoa = achado?.pessoas?.[0]
+    if (!pessoa) continue
+
+    const gravou = await registrarToque({ pessoaId: pessoa.id, tipo: 'nota', texto })
+    if (!gravou) continue
+
+    return {
+      ok: true,
+      acao: 'nada',
+      tarefa: null,
+      frente: null,
+      area: 'Comercial',
+      resposta: `Registrei no CRM, na ficha de ${pessoa.nome}${pessoa.empresa ? ` (${pessoa.empresa})` : ''}. Isso é prospecção, então mora lá e não aqui.`,
+      alinhamento: 'sem prioridade definida',
+      recomendado: null,
+      usouIa: false,
+      criou: null,
+    }
+  }
+
+  return null
 }

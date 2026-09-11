@@ -2,6 +2,7 @@ import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { lerConfig, CAMPOS } from '@/lib/configuracao'
 import { CONFIG_PADRAO } from '@/lib/mostrador'
+import { LigarCrm } from '@/components/LigarCrm'
 import { Moldura } from '@/components/Moldura'
 import { salvarConfig, restaurarPadrao } from '../acoes'
 import { EscolherVoz } from '@/components/EscolherVoz'
@@ -19,6 +20,10 @@ export default async function Configuracao() {
 
   return (
     <Moldura titulo="Configuração" atalhoAtivo="/config">
+      <div className="mb-3">
+        <LigarCrm />
+      </div>
+
       <p className="fraco text-sm mb-4 max-w-2xl">
         Tudo aqui nasce com o padrão da especificação. Cada mudança guarda a data - se o mostrador
         mudar de cor, você precisa conseguir responder se foi o mundo que mudou ou se foi o peso.
