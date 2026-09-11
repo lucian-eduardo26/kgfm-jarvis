@@ -1134,3 +1134,168 @@ select,
   height: 1px;
   background: var(--linha-forte);
 }
+
+/* ===========================================================================
+   A IDENTIDADE VISUAL DA KGFM DENTRO DO APP
+   ---------------------------------------------------------------------------
+   Pedido do Lucian em 10/09/2026: "mescle estudos da ID visual no app".
+
+   Fui aos originais em 063 MARCA KGFM. O que veio de lá, e nada foi inventado:
+
+   1. A TIPOGRAFIA OFICIAL. A KGFM tem uma fonte própria, AtAero, com vinte
+      pesos. O app usava a fonte do sistema - correta, neutra, e de mais
+      ninguém. Agora AtAero carrega os TÍTULOS e a marca.
+
+      Só os títulos, de propósito. Texto corrido em fonte de marca cansa a
+      leitura, e a família inteira pesaria 2MB no celular dele. Três pesos,
+      no que aparece grande: é onde a tipografia fala.
+
+   2. A ASSINATURA COMPLETA na abertura: KGFM Soluções Industriais, do arquivo
+      oficial KGFM_VAR. 03, que é a variação com o descritivo.
+
+   O número continua em monoespaçada, e isso não muda: número que muda de
+   largura quando muda de valor faz a tela tremer, e o painel é feito de
+   números que mudam o tempo todo.
+   =========================================================================== */
+
+@font-face {
+  font-family: 'AtAero';
+  src: url('/fontes/AtAero-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  /* swap: o texto aparece na hora com a fonte do sistema e troca quando a de
+     marca chega. Esperar 110KB para mostrar um título é pior do que trocar. */
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'AtAero';
+  src: url('/fontes/AtAero-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'AtAero';
+  src: url('/fontes/AtAero-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --marca-fonte: 'AtAero', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Onde a tipografia da marca fala: título de tela, título de cartão, o nome
+   do produto, e os números grandes do relógio e dos mostradores. */
+h1,
+h2,
+.marca-jarvis,
+.cabecalho-titulo,
+.rodape-nome,
+.relogio-hora .numero {
+  font-family: var(--marca-fonte);
+}
+
+h2 {
+  letter-spacing: -0.01em;
+}
+
+/* ===========================================================================
+   A ABERTURA
+   ---------------------------------------------------------------------------
+   Aparece uma vez por abertura do aplicativo, e não a cada tela: a animação
+   roda no carregamento da página, e navegar entre telas não recarrega nada.
+
+   É CSS puro, sem javascript nenhum, e isso é decisão e não preguiça: o
+   javascript chega depois do HTML, então uma abertura feita em javascript
+   aparece TARDE - o pior momento possível para uma cortina. Em CSS ela já
+   está lá no primeiro quadro, e sai sozinha.
+   =========================================================================== */
+
+.abertura {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: var(--fundo);
+  animation: sair-abertura 1.5s ease-in-out forwards;
+  pointer-events: none;
+}
+
+.abertura-marca {
+  width: min(62vw, 300px);
+  height: auto;
+  opacity: 0;
+  animation: entrar-marca 1.2s ease-out forwards;
+}
+
+/* O fio laranja que corre embaixo da assinatura. É o mesmo gesto do fio do
+   cabeçalho - a marca se apresenta com o traço que ela usa no resto do app. */
+.abertura-fio {
+  position: absolute;
+  bottom: calc(50% - 2.6rem);
+  height: 1px;
+  width: min(62vw, 300px);
+  background: linear-gradient(90deg, transparent, var(--laranja), transparent);
+  transform-origin: center;
+  animation: correr-fio 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes entrar-marca {
+  from {
+    opacity: 0;
+    letter-spacing: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes correr-fio {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes sair-abertura {
+  0%,
+  62% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Quem pediu menos movimento recebe a marca parada, e a cortina sai mais
+   rápido - não recebe animação nenhuma, mas continua vendo a marca. */
+@media (prefers-reduced-motion: reduce) {
+  .abertura {
+    animation: sair-abertura 0.6s ease-out forwards;
+  }
+  .abertura-marca {
+    opacity: 1;
+    animation: none;
+  }
+  .abertura-fio {
+    animation: none;
+    opacity: 0.7;
+  }
+}

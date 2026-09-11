@@ -48,8 +48,13 @@ export function PacoteLinha({
             e.currentTarget.blur()
           }
         }}
-        className="campo w-14 text-center"
-        style={{ minHeight: 34, padding: '0.2rem', fontSize: 14 }}
+        className="campo text-center"
+        // LARGURA NO ESTILO E NÃO NA CLASSE, e isto é um bug caro de achar:
+        // `.campo` tem `width: 100%`, e ela ganha da classe utilitária porque
+        // vem depois na folha. Dentro deste formulário, que não encolhe, o
+        // campo esticava e espremia o nome do pacote até UMA LETRA POR LINHA -
+        // o texto saía escrito na vertical. Estilo em linha ganha de tudo.
+        style={{ width: 56, flex: '0 0 56px', minHeight: 34, padding: '0.2rem', fontSize: 14 }}
       />
       <span className="text-[11px] fraco">%</span>
 

@@ -54,9 +54,15 @@ function Linha({ p, acao }: { p: PacoteNoTempo; acao: (f: FormData) => Promise<v
 
       <span className="min-w-0 flex-1">
         <span style={{ color: p.fechado ? 'var(--fraco)' : undefined }}>{p.pacote ?? p.titulo}</span>
+        {/* Quem segura desceu para esta linha em 10/09/2026. Em coluna própria
+            ele custava 60px de largura fixa, e num telefone de 375px sobravam
+            87px para o nome do pacote - que saía quebrado em quatro linhas.
+            Aqui a cor continua dizendo a mesma coisa e não custa coluna. */}
         <span className="block text-[11px] dado mt-0.5">
           {dataCurta(p.inicioPrevisto)} a {dataCurta(p.fimPrevisto)} · {p.dias}d
           {p.minutos > 0 && ` · ${horasCurtas(p.minutos)} sua`}
+          {' · '}
+          <span style={{ color: COR_DE_QUEM[p.quemSegura] }}>{NOME_DE_QUEM[p.quemSegura]}</span>
         </span>
         {p.paradoParaComecar && (
           <span className="block text-[11px] mt-0.5" style={{ color: 'var(--ambar)' }}>
@@ -70,16 +76,11 @@ function Linha({ p, acao }: { p: PacoteNoTempo; acao: (f: FormData) => Promise<v
         )}
       </span>
 
-      <span className="shrink-0 text-right mr-1">
-        <span className="text-[10px] font-mono block" style={{ color: COR_DE_QUEM[p.quemSegura] }}>
-          {NOME_DE_QUEM[p.quemSegura]}
+      {p.atrasado && (
+        <span className="shrink-0 text-[10px] numero mr-1" style={{ color: 'var(--vermelho)' }}>
+          +{p.diasDeAtraso}d
         </span>
-        {p.atrasado && (
-          <span className="block text-[10px] numero" style={{ color: 'var(--vermelho)' }}>
-            +{p.diasDeAtraso}d
-          </span>
-        )}
-      </span>
+      )}
 
       <PacoteLinha frenteId={p.id} percentual={p.percentual} fechado={p.fechado} acao={acao} />
     </li>

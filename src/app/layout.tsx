@@ -28,7 +28,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh">
+        {/* A ABERTURA. Aparece uma vez por abertura do aplicativo: a animação
+            roda no carregamento da página, e trocar de tela não recarrega.
+            CSS puro e sem javascript, de propósito - javascript chega depois
+            do HTML, e cortina que aparece tarde é pior do que cortina nenhuma. */}
+        <div className="abertura" aria-hidden>
+          <img src="/marca/kgfm-assinatura-laranja.png" alt="" className="abertura-marca" />
+          <span className="abertura-fio" />
+        </div>
+        {children}
+      </body>
     </html>
   )
 }

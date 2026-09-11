@@ -91,8 +91,8 @@ export default async function Prioridades() {
                     max={100}
                     placeholder={String(p.prioridade.calculada)}
                     defaultValue={p.prioridade.manual ?? ''}
-                    className="campo w-16 text-center"
-                    style={{ minHeight: 38, padding: '0.3rem' }}
+                    className="campo text-center"
+                    style={{ width: 64, flex: '0 0 64px', minHeight: 38, padding: '0.3rem' }}
                   />
                   <button className="botao-fantasma text-xs px-2">ok</button>
                 </form>
@@ -128,8 +128,8 @@ export default async function Prioridades() {
                   min={0}
                   max={100}
                   defaultValue={pesos[c.chave]}
-                  className="campo w-20 text-center"
-                  style={{ minHeight: 38, padding: '0.3rem' }}
+                  className="campo text-center"
+                  style={{ width: 80, flex: '0 0 80px', minHeight: 38, padding: '0.3rem' }}
                 />
               </div>
               <p className="text-[11px] fraco mt-0.5 max-w-xl">{c.explicacao}</p>
