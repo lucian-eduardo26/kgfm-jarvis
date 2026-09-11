@@ -7,6 +7,7 @@
 import { prisma } from './prisma'
 import { montarCronograma, type Cronograma } from './cronograma'
 import { NOME_DO_TIPO } from './modelos'
+import { calcularPrioridades, lerPesosPrioridade, type Prioridade } from './prioridade'
 import type { TipoProjeto } from '@prisma/client'
 
 export type ProjetoNaCarteira = {
@@ -22,6 +23,7 @@ export type ProjetoNaCarteira = {
   /** Quanto do PRAZO já passou, de 0 a 100. Comparado com o progresso, é o
       que revela atraso sem precisar de nenhum texto. */
   tempoDecorrido: number
+  prioridade: Prioridade
 }
 
 export async function carteiraDeProjetos(): Promise<ProjetoNaCarteira[]> {
@@ -38,9 +40,29 @@ export async function carteiraDeProjetos(): Promise<ProjetoNaCarteira[]> {
   })
 
   const agora = new Date()
+  const pesos = await lerPesosPrioridade()
 
-  return projetos.map((p) => {
-    const cronograma = montarCronograma(p.inicioEm, p.frentes, agora)
+  const cronogramas = new Map(projetos.map((p) => [p.id, montarCronograma(p.inicioEm, p.frentes, agora)]))
+
+  const prioridades = new Map(
+    calcularPrioridades(
+      projetos.map((p) => ({
+        id: p.id,
+        nome: p.nome,
+        tipo: p.tipo,
+        fase: p.fase,
+        valorEstimado: p.valorEstimado,
+        prazoRecebimentoDias: p.prazoRecebimentoDias,
+        probabilidade: p.probabilidade,
+        prioridadeManual: p.prioridade,
+        atrasoDias: cronogramas.get(p.id)?.atrasoMaximo ?? 0,
+      })),
+      pesos,
+    ).map((x) => [x.id, x]),
+  )
+
+  const carteira = projetos.map((p) => {
+    const cronograma = cronogramas.get(p.id)!
 
     let tempoDecorrido = 0
     if (cronograma.temData && cronograma.inicio && cronograma.entregaPrevista) {
@@ -60,6 +82,19 @@ export async function carteiraDeProjetos(): Promise<ProjetoNaCarteira[]> {
       temWbs: p.frentes.length > 0,
       cronograma,
       tempoDecorrido,
+      prioridade: prioridades.get(p.id)!,
     }
+  })
+
+  // A ORDEM DA TELA É A ORDEM DA PRIORIDADE. O Lucian pediu "os mais
+  // importantes primeiro", e importante aqui quer dizer o que traz dinheiro
+  // para o caixa - não o que foi cadastrado primeiro.
+  //
+  // O desempate é o atraso: entre dois projetos que valem o mesmo, quem já
+  // estourou o prazo aparece antes.
+  return carteira.sort((a, b) => {
+    const dif = b.prioridade.efetiva - a.prioridade.efetiva
+    if (dif !== 0) return dif
+    return b.cronograma.atrasoMaximo - a.cronograma.atrasoMaximo
   })
 }

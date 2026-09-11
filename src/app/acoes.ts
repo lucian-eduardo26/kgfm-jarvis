@@ -12,6 +12,7 @@ import { senhaConfere, abrirSessao, fecharSessao } from '@/lib/sessao'
 import type { ConfigMostrador } from '@/lib/mostrador'
 import { responder, type Fala } from '@/lib/conversa'
 import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
+import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
 import { podeMandarProposta } from '@/lib/spin'
@@ -625,6 +626,39 @@ export async function definirInicioDoProjeto(form: FormData) {
 
   await prisma.projeto.update({ where: { id }, data: { inicioEm: inicio } })
   revalidatePath(`/projetos/${id}`)
+  revalidatePath('/projetos')
+  revalidatePath('/painel')
+}
+
+/** A prioridade que ELE mandou. Campo vazio devolve a decisão ao sistema. */
+export async function definirPrioridadeDoProjeto(form: FormData) {
+  const id = Number(form.get('projetoId'))
+  const bruto = String(form.get('prioridade') ?? '').trim()
+  if (!id) return
+
+  const n = Number(bruto)
+  // Vazio é "volte a calcular", e não "prioridade zero". A diferença importa.
+  const prioridade = bruto === '' || !Number.isFinite(n) ? null : Math.max(0, Math.min(100, Math.round(n)))
+
+  await prisma.projeto.update({ where: { id }, data: { prioridade } })
+  revalidatePath('/prioridades')
+  revalidatePath('/projetos')
+  revalidatePath('/painel')
+}
+
+/** Os pesos da régua de prioridade. Mesma tabela config do mostrador. */
+export async function salvarPesosPrioridade(form: FormData) {
+  for (const campo of CAMPOS_PRIORIDADE) {
+    const n = Number(form.get(campo.chave))
+    if (!Number.isFinite(n)) continue
+    const valor = String(Math.max(0, Math.min(100, Math.round(n))))
+    await prisma.config.upsert({
+      where: { chave: campo.chave },
+      create: { chave: campo.chave, valor },
+      update: { valor },
+    })
+  }
+  revalidatePath('/prioridades')
   revalidatePath('/projetos')
   revalidatePath('/painel')
 }

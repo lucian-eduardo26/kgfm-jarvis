@@ -22,6 +22,7 @@ const ATALHOS = [
   { href: '/projetos', nome: 'Projetos', d: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
   { href: '/frentes', nome: 'Frentes', d: 'M4 6h16M4 12h16M4 18h10' },
   { href: '/semana', nome: 'A semana', d: 'M4 5h16v15H4zM4 9h16M9 3v4M15 3v4' },
+  { href: '/prioridades', nome: 'Prioridade', d: 'M4 20V10M10 20V4M16 20v-7M22 20H2' },
   { href: '/estrategia', nome: 'Estratégia', d: 'M12 2 4 7v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z' },
   { href: '/conversa', nome: 'Conversa', d: 'M4 5h16v11H9l-5 4z' },
   { href: '/config', nome: 'Configuração', d: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6M4 12h2M18 12h2M12 4v2M12 18v2' },
@@ -80,12 +81,16 @@ export function Moldura({
                 <Menu />
               </div>
             </div>
-            <Deslizar />
           </div>
         </header>
 
         <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pt-3 com-captura">{children}</div>
       </div>
+
+      {/* FORA do cabeçalho de propósito: ele usa `backdrop-filter`, e isso faz
+          dele o ponto de referência de qualquer filho `fixed` - os pontinhos
+          ficariam presos dentro da faixa do topo em vez de colar no rodapé. */}
+      <Deslizar />
     </>
   )
 }

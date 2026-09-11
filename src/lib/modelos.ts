@@ -57,8 +57,31 @@ const seMateriaPrimaNossa = (c: Condicoes) => c.materiaPrimaNossa
 // ---------------------------------------------------------------------------
 
 const PECA: PacoteModelo[] = [
+  // Os dois primeiros vieram do áudio de 10/09/2026, quando ele contou o
+  // Batoque passo a passo: "entrou o pedido, programação da produção, a
+  // programação entra um dia ali de serviço". Não estavam na corrente antes.
   {
     ordem: 1,
+    pacote: 'Pedido do cliente',
+    area: 'adm',
+    etapa: 'venda',
+    quemSegura: 'cliente',
+    dias: 1,
+    fase: 'fechado',
+    tarefas: ['Receber o pedido formal', 'Conferir quantidade e desenho'],
+  },
+  {
+    ordem: 2,
+    pacote: 'Programação da produção',
+    area: 'producao',
+    etapa: 'fabricacao',
+    quemSegura: 'eu',
+    dias: 1,
+    fase: 'fechado',
+    tarefas: ['Programar a peça', 'Definir o roteiro de fabricação'],
+  },
+  {
+    ordem: 3,
     pacote: 'Cotação com o fornecedor',
     area: 'adm',
     etapa: 'compras',
@@ -68,7 +91,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Levantar o desenho e a quantidade', 'Mandar para os fornecedores', 'Comparar as cotações'],
   },
   {
-    ordem: 2,
+    ordem: 4,
     pacote: 'Atualizar preço e fechar condição',
     area: 'adm',
     etapa: 'compras',
@@ -78,7 +101,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Confirmar preço atual', 'Negociar prazo de entrega', 'Fechar condição de pagamento'],
   },
   {
-    ordem: 3,
+    ordem: 5,
     pacote: 'Colocar o pedido',
     area: 'adm',
     etapa: 'compras',
@@ -88,7 +111,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Emitir o pedido de compra', 'Confirmar o recebimento com o fornecedor'],
   },
   {
-    ordem: 4,
+    ordem: 6,
     pacote: 'Logística de envio da matéria-prima',
     area: 'producao',
     etapa: 'logistica',
@@ -99,7 +122,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Separar a matéria-prima', 'Contratar o frete de ida', 'Confirmar a chegada no fornecedor'],
   },
   {
-    ordem: 5,
+    ordem: 7,
     pacote: 'Fabricação',
     area: 'producao',
     etapa: 'fabricacao',
@@ -109,7 +132,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Acompanhar o andamento', 'Confirmar a data de conclusão'],
   },
   {
-    ordem: 6,
+    ordem: 8,
     pacote: 'Logística de retirada da peça',
     area: 'producao',
     etapa: 'logistica',
@@ -119,7 +142,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Agendar a retirada', 'Conferir a peça na saída'],
   },
   {
-    ordem: 7,
+    ordem: 9,
     pacote: 'Logística de ida para o revestimento',
     area: 'producao',
     etapa: 'logistica',
@@ -130,7 +153,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Levar a peça para o banho'],
   },
   {
-    ordem: 8,
+    ordem: 10,
     pacote: 'Revestimento ou banho',
     area: 'producao',
     etapa: 'fabricacao',
@@ -141,7 +164,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Acompanhar o processo', 'Conferir a espessura e o acabamento'],
   },
   {
-    ordem: 9,
+    ordem: 11,
     pacote: 'Logística de retorno do revestimento',
     area: 'producao',
     etapa: 'logistica',
@@ -152,7 +175,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Retirar a peça do banho', 'Conferir no recebimento'],
   },
   {
-    ordem: 10,
+    ordem: 12,
     pacote: 'Embalagem',
     area: 'producao',
     etapa: 'expedicao',
@@ -162,7 +185,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Conferir a quantidade', 'Embalar e identificar'],
   },
   {
-    ordem: 11,
+    ordem: 13,
     pacote: 'Logística para o cliente',
     area: 'producao',
     etapa: 'logistica',
@@ -172,7 +195,7 @@ const PECA: PacoteModelo[] = [
     tarefas: ['Contratar o frete', 'Emitir a nota de remessa', 'Confirmar a entrega'],
   },
   {
-    ordem: 12,
+    ordem: 14,
     pacote: 'Faturar e cobrar',
     area: 'adm',
     etapa: 'financeiro',

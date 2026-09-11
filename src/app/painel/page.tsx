@@ -55,6 +55,34 @@ export default async function Painel() {
 
   return (
     <Moldura titulo="Operational hub" atalhoAtivo="/painel">
+      {/* NO COMPUTADOR isto vira duas colunas: a carteira à esquerda, a ação
+          do momento e a voz à direita. O Lucian pediu "tudo espalhado, sem
+          precisar passar de lado" - numa tela larga, empilhar desperdiça
+          metade do monitor e empurra o resto para baixo da dobra. */}
+      <div className="grid xl:grid-cols-[1.15fr_1fr] xl:items-start gap-3">
+        <div>
+      {/* A empresa acontecendo: uma barra por projeto, na mesma escala de
+          tempo. O vão entre o preenchido e o risco de hoje é o atraso. */}
+      {carteira.length > 0 && (
+        <section className="cartao mb-3">
+          <Cabeca
+            titulo="os projetos"
+            direita={
+              <Link href="/projetos" className="text-[10px] dado">
+                VER TODOS
+              </Link>
+            }
+          />
+          <div className="p-1.5">
+            {carteira.map((p) => (
+              <BarraProjeto key={p.id} p={p} />
+            ))}
+          </div>
+        </section>
+      )}
+        </div>
+
+        <div>
       {/* Aviso de carga de teste. Trava com botao de liberar do lado. */}
       {d.temExemplo && (
         <div className="cartao p-3 mb-3 flex flex-wrap items-center justify-between gap-2" style={{ borderColor: 'var(--ambar)' }}>
@@ -89,6 +117,8 @@ export default async function Painel() {
 
       <div className="mb-3">
         <ComandoVoz acao={comandoDeVoz} />
+      </div>
+        </div>
       </div>
 
       {(d.cronometro || d.descanso) && (
@@ -140,26 +170,6 @@ export default async function Painel() {
           />
         ))}
       </section>
-
-      {/* A empresa acontecendo: uma barra por projeto, na mesma escala de
-          tempo. O vão entre o preenchido e o risco de hoje é o atraso. */}
-      {carteira.length > 0 && (
-        <section className="cartao mb-3">
-          <Cabeca
-            titulo="os projetos"
-            direita={
-              <Link href="/projetos" className="text-[10px] dado">
-                VER TODOS
-              </Link>
-            }
-          />
-          <div className="p-1.5">
-            {carteira.map((p) => (
-              <BarraProjeto key={p.id} p={p} />
-            ))}
-          </div>
-        </section>
-      )}
 
       <div className="grid lg:grid-cols-2 gap-3 mb-3">
         <Engrenagens e={d.engrenagens} />

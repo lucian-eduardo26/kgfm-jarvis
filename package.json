@@ -16,7 +16,10 @@
     "postinstall": "prisma generate",
     "icone": "node scripts/gerar-icone.mjs",
     "jarvis": "tsx scripts/projeto-jarvis.ts",
-    "acentuar-banco": "tsx scripts/acentuar-banco.ts"
+    "acentuar-banco": "tsx scripts/acentuar-banco.ts",
+    "projetos": "tsx scripts/projetos-em-andamento.ts",
+    "batoque": "tsx scripts/batoque-como-esta.ts",
+    "prioridade": "tsx scripts/prioridade-ditada.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

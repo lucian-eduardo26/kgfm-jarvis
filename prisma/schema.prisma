@@ -138,6 +138,11 @@ model Projeto {
   prazoRecebimentoDias Int?      @map("prazo_recebimento_dias")
   probabilidade        Int?      @default(50)
 
+  // A prioridade que o LUCIAN mandou, de 0 a 100. Quando existe, ganha da
+  // conta do sistema - ele sabe de coisa que o banco nao tem. Vazio quer
+  // dizer "use o que voce calculou", e nao "prioridade zero".
+  prioridade           Int?
+
   area      Area      @relation(fields: [areaId], references: [id])
   frentes   Frente[]
   decisores Decisor[]

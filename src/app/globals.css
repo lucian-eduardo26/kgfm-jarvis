@@ -548,8 +548,16 @@ body {
   --altura-captura: 0px;
 }
 
+/* Sobra para a barra de captura E para a fileira de pontinhos acima dela. */
 .com-captura {
-  padding-bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 1rem);
+  padding-bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 2.6rem);
+}
+
+@media (min-width: 1024px) {
+  /* No computador não há pontinhos, então a sobra volta a ser só da barra. */
+  .com-captura {
+    padding-bottom: calc(var(--altura-captura) + 1rem);
+  }
 }
 
 /* Menu dos três pontinhos: no celular vira folha ancorada no cabeçalho, com
@@ -560,10 +568,25 @@ body {
   overscroll-behavior: contain;
 }
 
-@media (max-width: 420px) {
-  /* Abaixo disso dois mostradores lado a lado viram dois selos ilegíveis. */
+/* O Lucian em 10/09/2026: "não precisa ter aquele monte de quadros".
+   Ele tinha razão - quatro aneis grandes empilhados empurravam as barras dos
+   projetos para tão longe que ele achou que elas nem existiam. No celular o
+   mostrador vira selo: dois por linha, anel pequeno, só o número. A legenda
+   fica na tela da área, a um toque. */
+@media (max-width: 640px) {
   .grade-mostradores {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .grade-mostradores svg {
+    max-width: 62px;
+  }
+  .grade-mostradores .painel-cabeca {
+    padding: 0.4rem 0.55rem;
+  }
+  /* a legenda e os minutos do dia - não cabem num selo de 170px */
+  .grade-mostradores p {
+    display: none;
   }
 }
 
@@ -711,9 +734,11 @@ select,
   border-radius: 2px;
 }
 
-/* Feito é a única coisa que ganha a cor da marca aqui. */
+/* Feito é verde, e não laranja. O Lucian pediu "verdinho" e tem razão de
+   sobra: laranja aqui é moldura e marca, e o olho já aprendeu no resto do
+   sistema que verde quer dizer que está bem. */
 .barra-feita {
-  background: var(--laranja);
+  background: var(--verde);
 }
 
 /* Estourou a previsão e ainda não fechou. */
@@ -741,31 +766,58 @@ select,
   pointer-events: none;
 }
 
-/* ---------- os pontinhos de tela, e o deslize ---------- */
+/* ---------- os pontinhos de tela ----------
+   Ficam FIXOS no rodapé, logo acima da barra de captura: quem navega com o
+   polegar não olha para o topo da tela. Cada ponto também é botão. */
 
-/* Sem eles ninguém descobre que dá para deslizar. Ficam logo abaixo do
-   cabeçalho, discretos, e somem no computador - lá existe o trilho. */
 .pontos-telas {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 0.35rem);
+  z-index: 35;
   display: flex;
   justify-content: center;
-  gap: 5px;
-  padding: 0.45rem 0 0.1rem;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
 }
 
 .ponto-tela {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--linha-forte);
-  transition: background 0.2s ease, width 0.2s ease;
+  pointer-events: auto;
+  /* A área de toque é 28x28 e o desenho é 6px: alvo grande, marca discreta. */
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
 
-.ponto-tela-aqui {
-  width: 16px;
+.ponto-tela::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--linha-forte);
+  transition: background 0.18s ease, width 0.18s ease;
+}
+
+.ponto-tela-aqui::before {
+  width: 18px;
   background: var(--laranja);
 }
 
+.ponto-tela:focus-visible {
+  outline: 2px solid var(--laranja-luz);
+  outline-offset: -4px;
+  border-radius: 999px;
+}
+
 @media (min-width: 1024px) {
+  /* No computador existe o trilho de ícones, e não existe deslize. */
   .pontos-telas {
     display: none;
   }

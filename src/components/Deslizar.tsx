@@ -14,8 +14,8 @@
 //
 // 1. Nunca cancelar o gesto do navegador. Os eventos são passivos e não
 //    chamam preventDefault - rolar a página continua sendo rolar a página.
-// 2. O gesto tem que ser CLARAMENTE horizontal: 70px de lado e pelo menos o
-//    dobro do movimento vertical. Sem isso, rolar torto trocaria de tela.
+// 2. O gesto tem que ser CLARAMENTE horizontal: 55px de lado e mais da metade
+//    a mais que o movimento vertical. Sem isso, rolar torto trocaria de tela.
 // 3. Nada de deslizar dentro de campo de texto, de algo que rola de lado, ou
 //    da barra de captura. Ali o arrasto tem outro dono.
 
@@ -29,6 +29,7 @@ export const ORDEM_DAS_TELAS = [
   { href: '/projetos', nome: 'Projetos' },
   { href: '/frentes', nome: 'Frentes' },
   { href: '/semana', nome: 'A semana' },
+  { href: '/prioridades', nome: 'Prioridade' },
   { href: '/estrategia', nome: 'Estratégia' },
   { href: '/conversa', nome: 'Conversa' },
 ]
@@ -77,8 +78,10 @@ export function Deslizar() {
       const dx = t.clientX - i.x
       const dy = t.clientY - i.y
 
-      // Claramente horizontal, ou nada acontece.
-      if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return
+      // Claramente horizontal, ou nada acontece. 55px em vez de 70: o Lucian
+      // achou o gesto duro, e o filtro de direção abaixo já impede que rolar
+      // torto vire troca de tela - não precisa exigir um arrastão.
+      if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.6) return
 
       const destino = dx < 0 ? atual + 1 : atual - 1
       if (destino < 0 || destino >= ORDEM_DAS_TELAS.length) return
@@ -100,11 +103,21 @@ export function Deslizar() {
 
   if (atual < 0) return null
 
+  // Os pontinhos ficam EMBAIXO, onde o dedão alcança - ele pediu, e faz
+  // sentido: quem navega com o polegar não olha para o topo da tela. E cada
+  // ponto é um botão, para quem preferir tocar a deslizar.
   return (
-    <div className="pontos-telas" aria-hidden data-indo={indo ?? ''}>
+    <nav className="pontos-telas" aria-label="Telas" data-indo={indo ?? ''}>
       {ORDEM_DAS_TELAS.map((t, i) => (
-        <span key={t.href} className={i === atual ? 'ponto-tela ponto-tela-aqui' : 'ponto-tela'} />
+        <button
+          key={t.href}
+          type="button"
+          aria-label={t.nome}
+          aria-current={i === atual ? 'page' : undefined}
+          onClick={() => router.push(t.href)}
+          className={i === atual ? 'ponto-tela ponto-tela-aqui' : 'ponto-tela'}
+        />
       ))}
-    </div>
+    </nav>
   )
 }

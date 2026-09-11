@@ -12,6 +12,7 @@ const PAGINAS = [
   { href: '/caixa', nome: 'Caixa e runway' },
   { href: '/semana', nome: 'A semana' },
   { href: '/projetos', nome: 'Projetos' },
+  { href: '/prioridades', nome: 'Prioridade dos projetos' },
   { href: '/frentes', nome: 'Frentes' },
   { href: '/playbook', nome: 'Playbook' },
   { href: '/estrategia', nome: 'Estratégia' },
