@@ -21,6 +21,8 @@ import { hojeSP } from '@/lib/datas'
 import { carteiraDeProjetos } from '@/lib/projetos'
 import { BarraProjeto } from '@/components/BarraProjeto'
 import { Relogio } from '@/components/Relogio'
+import { AlertaDeCaixa } from '@/components/AlertaDeCaixa'
+import { alertasDeCaixa } from '@/lib/urgencia'
 import { SemanaCurta } from '@/components/SemanaCurta'
 import { montarSemanaCurta } from '@/lib/semanaCurta'
 import { vozDoDia } from '@/lib/resistencia'
@@ -37,6 +39,7 @@ export default async function Painel() {
 
   const carteira = await carteiraDeProjetos()
   const semana = await montarSemanaCurta()
+  const alertas = await alertasDeCaixa()
 
   // Desde quando nada é medido: o fim do último apontamento, ou o começo do
   // expediente se ainda não houve nenhum. É a conta do buraco do dia.
@@ -74,6 +77,11 @@ export default async function Painel() {
           do momento e a voz à direita. O Lucian pediu "tudo espalhado, sem
           precisar passar de lado" - numa tela larga, empilhar desperdiça
           metade do monitor e empurra o resto para baixo da dobra. */}
+      {/* ACIMA DE TUDO, inclusive do relógio. Todo o resto do painel responde
+          "como estão as coisas"; isto responde "o que você perde se não fizer
+          hoje", e essa pergunta vence. Some quando não há nada vencendo. */}
+      <AlertaDeCaixa alertas={alertas} />
+
       {/* O TEMPO PASSANDO. Primeira coisa da tela, de propósito: ele pediu
           "o tempo está passando, a vida está passando". A hora anda sempre; o
           número da direita diz se ela está virando registro ou não. */}
