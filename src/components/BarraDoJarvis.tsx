@@ -221,7 +221,12 @@ export function BarraDoJarvis({
                 }
               }}
               rows={escuta.ouvindo || noCampo.length > 70 ? 2 : 1}
-              placeholder={rodando ? 'Agora estou fazendo...' : 'O que você está fazendo?'}
+              // O TEXTO DE DENTRO PRECISA CABER EM UMA LINHA. Num telefone de
+              // 375px sobram uns 200px depois do microfone e do botão, e "O que
+              // você está fazendo?" quebrava em duas linhas com a segunda
+              // cortada pela metade - campo com texto decepado parece defeito,
+              // e neste caso era. A frase inteira continua logo abaixo.
+              placeholder={rodando ? 'Agora estou...' : 'O que está fazendo?'}
               className="campo resize-none flex-1"
               style={{ minHeight: 46, maxHeight: 140 }}
             />

@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Segredo do Google Cloud. Nunca entra no repositorio: ID do cliente e
+# chave secreta moram nas variaveis da Vercel, e uma copia solta no Git vai
+# junto em todo clone e em todo push.
+/CHAVE GOOGLE CLOUD/

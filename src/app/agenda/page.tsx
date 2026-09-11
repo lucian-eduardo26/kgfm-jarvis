@@ -8,23 +8,23 @@
 // porque o caso de uso que ele descreveu é curto: conversou no WhatsApp,
 // acertou a reunião, e precisa lançar antes de esquecer.
 //
-// O QUE AINDA NÃO É: isto NÃO fala com o Google Calendar. O que está aqui é
-// do Jarvis. Ligar no Google exige uma autorização que só ele pode dar, no
-// Google Cloud Console, e eu não invento credencial - a tela diz isso em vez
-// de fingir que sincronizou.
+// ONDE MORA A LIGAÇÃO COM O GOOGLE: na Configuração, e não aqui.
 //
-// Quando a ligação existir, o formato não muda: a mesma tira, a mesma lista,
-// e a origem de cada compromisso marcada ao lado.
+// O Lucian em 11/09/2026: "não vai fazer no meio do aplicativo uma parte de
+// conectar que você vai usar uma vez na vida". O passo a passo de credencial
+// ocupava metade desta tela em toda visita, para ser lido uma vez. Ficou lá,
+// e aqui sobrou uma linha: qual conta está espelhando, e um botão de
+// sincronizar. Trabalho diário na tela de trabalho; instalação na instalação.
 
+import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { SemanaCurta } from '@/components/SemanaCurta'
 import { montarSemanaCurta } from '@/lib/semanaCurta'
 import { FUSO } from '@/lib/datas'
-import { marcarCompromisso, apagarCompromisso, gerarPlanoDoDia } from '../acoes'
-import { LigarGoogle } from '@/components/LigarGoogle'
-import { googleConfigurado, enderecoDeRetorno, contaLigada, listarCalendarios } from '@/lib/google'
+import { marcarCompromisso, apagarCompromisso, gerarPlanoDoDia, sincronizarAgenda } from '../acoes'
+import { googleConfigurado, contaLigada } from '@/lib/google'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,34 +33,12 @@ const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sáb
 export default async function Agenda({
   searchParams,
 }: {
-  searchParams: Promise<{ dia?: string; google?: string; motivo?: string; conta?: string; sincronia?: string }>
+  searchParams: Promise<{ dia?: string; sincronia?: string }>
 }) {
   await exigirSessao()
-  const { dia, google, motivo, conta: contaDoRetorno, sincronia } = await searchParams
+  const { dia, sincronia } = await searchParams
 
   const conta = await contaLigada()
-  // So pergunta as agendas se houver conta: sem conta a lista seria sempre nula.
-  const calendarios = conta ? await listarCalendarios() : null
-
-  // O retorno do Google vira frase em portugues. "invalid_grant" na tela e
-  // um beco: quem le nao sabe se a culpa e dele, minha, ou do Google.
-  const avisoDoGoogle =
-    google === 'erro'
-      ? (motivo ?? 'O Google recusou a autorização.')
-      : google === 'recusado'
-        ? 'Você cancelou na tela do Google. Nada foi ligado.'
-        : google === 'sem-chave'
-          ? 'Falta a credencial do Google nas variáveis do app.'
-          : google === 'ligado'
-            ? `Conta ${contaDoRetorno ?? ''} ligada.`
-            : google === 'desligado'
-              ? 'Conta desligada. O espelho para de atualizar.'
-              : google === 'falhou'
-                ? 'Não consegui ler a agenda. A autorização pode ter sido revogada.'
-                : sincronia
-                  ? `${sincronia} compromissos espelhados do Google.`
-                  : null
-
   const semana = await montarSemanaCurta()
   const inicio = new Date(`${semana[0].dia}T00:00:00`)
   const fim = new Date(`${semana[6].dia}T23:59:59`)
@@ -100,6 +78,55 @@ export default async function Agenda({
     <Moldura titulo="Agenda" atalhoAtivo="/agenda">
       <div className="mb-3">
         <SemanaCurta dias={semana} titulo="esta semana" />
+      </div>
+
+      {/* A LIGAÇÃO COM O GOOGLE, EM UMA LINHA. Ela fica aqui por um motivo só:
+          esta lista pode estar incompleta, e quem olha precisa saber disso na
+          mesma tela. O que NÃO fica aqui é o passo a passo de credencial -
+          esse mora na Configuração, que é onde se instala uma coisa. */}
+      {/* EMPILHADO NO CELULAR, lado a lado no computador. Numa tela de 375px o
+          botão ao lado do texto espremia a frase numa coluna de cinco palavras
+          quebradas - o texto fica com a linha inteira, e a ação vem embaixo. */}
+      <div className="cartao px-4 py-3 mb-3 flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-2.5">
+        <span className="flex items-baseline gap-2 min-w-0 flex-1">
+          <span
+            className="shrink-0 translate-y-[-2px]"
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: 999,
+              background: conta ? 'var(--verde)' : 'var(--fraco)',
+            }}
+            aria-hidden
+          />
+          {conta ? (
+            <span className="text-sm min-w-0">
+              Espelhando <span className="dado">{conta.email}</span>
+              {sincronia && (
+                <span className="text-[11px] ml-2" style={{ color: 'var(--verde)' }}>
+                  {sincronia} espelhados agora
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="fraco text-sm min-w-0">
+              {googleConfigurado()
+                ? 'A agenda do Google ainda não está conectada.'
+                : 'O Jarvis ainda não lê o Google Calendar.'}{' '}
+              Esta lista mostra só o que foi marcado aqui.
+            </span>
+          )}
+        </span>
+
+        {conta ? (
+          <form action={sincronizarAgenda} className="shrink-0">
+            <button className="botao-fantasma text-xs px-3 w-full sm:w-auto">Sincronizar</button>
+          </form>
+        ) : (
+          <Link href="/config" className="botao-fantasma text-xs px-3 shrink-0 text-center">
+            Conectar na Configuração
+          </Link>
+        )}
       </div>
 
       <details className="cartao p-4 mb-3" open={Boolean(dia)}>
@@ -190,20 +217,6 @@ export default async function Agenda({
           )}
         </div>
       </section>
-
-      {/* A LIGACAO COM O GOOGLE. O arquivo .ics saiu daqui: ele testou e
-          travou - "abriu um negocio de calendario que nao gera coisa nenhuma,
-          nao da pra editar o nome". Arquivo no meio do caminho e sempre pior
-          do que ligacao direta, e ele estava certo em recusar. */}
-      <div className="mt-3">
-        <LigarGoogle
-          configurado={googleConfigurado()}
-          conta={conta}
-          calendarios={calendarios}
-          enderecoDeRetorno={enderecoDeRetorno()}
-          aviso={avisoDoGoogle}
-        />
-      </div>
 
       {/* O PLANO DE AMANHA. E o consultor, e nao a lista: ele diz a hora de
           cada bloco, o que fica de fora, e o custo de ter ficado. */}

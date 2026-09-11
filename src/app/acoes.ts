@@ -955,14 +955,19 @@ export async function sincronizarAgenda() {
   const r = await sincronizarDoGoogle(de, ate)
   revalidatePath('/agenda')
   revalidatePath('/painel')
-  redirect(r.ok ? `/agenda?sincronia=${r.espelhados}` : '/agenda?google=falhou')
+  revalidatePath('/config')
+  // DEU CERTO, VAI PARA A AGENDA: é lá que o resultado aparece. DEU ERRADO,
+  // VAI PARA A CONFIGURAÇÃO: é lá que se conserta uma autorização revogada, e
+  // mandar ele para a tela onde não há nada a fazer é mandar para o nada.
+  redirect(r.ok ? `/agenda?sincronia=${r.espelhados}` : '/config?google=falhou')
 }
 
 /** Desligar a conta do Google. Apaga o token, e o espelho deixa de atualizar. */
 export async function desligarGoogle() {
   await desligarConta()
   revalidatePath('/agenda')
-  redirect('/agenda?google=desligado')
+  revalidatePath('/config')
+  redirect('/config?google=desligado')
 }
 
 /**
@@ -1178,4 +1183,5 @@ export async function definirCalendarioDaEmpresa(form: FormData) {
     data: { calendarioId: id || null },
   })
   revalidatePath('/agenda')
+  revalidatePath('/config')
 }

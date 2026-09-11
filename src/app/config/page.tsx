@@ -1,16 +1,57 @@
+// A CONFIGURAÇÃO, e agora ela é o lugar ÚNICO de tudo que se liga uma vez.
+//
+// O Lucian em 11/09/2026: "é melhor concentrar tudo nas configurações e ter
+// uma parte de conectar agenda, e acabou - não vai fazer no meio do
+// aplicativo uma parte de conectar que você vai usar uma vez na vida".
+//
+// A tela abre pelas LIGAÇÕES (CRM e Google), porque ligação quebrada é a
+// única coisa aqui capaz de fazer o resto do sistema mentir em silêncio. Os
+// pesos e os limiares vêm depois: eles funcionam sozinhos no padrão.
+
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { lerConfig, CAMPOS } from '@/lib/configuracao'
 import { CONFIG_PADRAO } from '@/lib/mostrador'
 import { LigarCrm } from '@/components/LigarCrm'
+import { LigarGoogle } from '@/components/LigarGoogle'
+import { googleConfigurado, enderecoDeRetorno, contaLigada, listarCalendarios } from '@/lib/google'
 import { Moldura } from '@/components/Moldura'
 import { salvarConfig, restaurarPadrao } from '../acoes'
 import { EscolherVoz } from '@/components/EscolherVoz'
 
 export const dynamic = 'force-dynamic'
 
-export default async function Configuracao() {
+export default async function Configuracao({
+  searchParams,
+}: {
+  searchParams: Promise<{ google?: string; motivo?: string; conta?: string }>
+}) {
   await exigirSessao()
+  const { google, motivo, conta: contaDoRetorno } = await searchParams
+
+  const conta = await contaLigada()
+  // Só pergunta as agendas se houver conta: sem conta a lista seria sempre nula.
+  const calendarios = conta ? await listarCalendarios() : null
+
+  // O retorno do Google vira frase em português. "invalid_grant" na tela é um
+  // beco: quem lê não sabe se a culpa é dele, minha, ou do Google.
+  const avisoDoGoogle =
+    google === 'erro'
+      ? (motivo ?? 'O Google recusou a autorização.')
+      : google === 'recusado'
+        ? 'Você cancelou na tela do Google. Nada foi ligado.'
+        : google === 'sem-codigo'
+          ? 'O Google voltou sem código de autorização. Tente de novo.'
+          : google === 'sem-chave'
+            ? 'Falta a credencial do Google nas variáveis do app.'
+            : google === 'ligado'
+              ? `Conta ${contaDoRetorno ?? ''} ligada.`
+              : google === 'desligado'
+                ? 'Conta desligada. O espelho para de atualizar.'
+                : google === 'falhou'
+                  ? 'Não consegui ler a agenda. A autorização pode ter sido revogada.'
+                  : null
+
   const cfg = await lerConfig()
   const gravados = await prisma.config.findMany()
   const quando = new Map(gravados.map((g) => [g.chave, g.alteradoEm]))
@@ -20,9 +61,23 @@ export default async function Configuracao() {
 
   return (
     <Moldura titulo="Configuração" atalhoAtivo="/config">
-      <div className="mb-3">
+      {/* AS LIGAÇÕES PRIMEIRO. São as únicas coisas desta tela que, quando
+          estão erradas, fazem o resto do sistema mostrar número errado sem
+          avisar. Peso mal ajustado engana; ligação caída apaga. */}
+      <p className="rotulo mb-2">o que o Jarvis liga</p>
+
+      <div className="grid lg:grid-cols-2 gap-3 mb-5">
         <LigarCrm />
+        <LigarGoogle
+          configurado={googleConfigurado()}
+          conta={conta}
+          calendarios={calendarios}
+          enderecoDeRetorno={enderecoDeRetorno()}
+          aviso={avisoDoGoogle}
+        />
       </div>
+
+      <p className="rotulo mb-2">como o Jarvis calcula</p>
 
       <p className="fraco text-sm mb-4 max-w-2xl">
         Tudo aqui nasce com o padrão da especificação. Cada mudança guarda a data - se o mostrador

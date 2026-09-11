@@ -422,9 +422,12 @@ body {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(10, 10, 11, 0.86);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  /* Opaco, pelo mesmo motivo das faixas de baixo: com 14% de transparência o
+     texto do cartão passava por trás do logotipo da KGFM ao rolar, e marca
+     com letra de outro lugar atravessada é a pior sujeira da tela. O
+     `backdrop-filter` saiu junto - sem ele o cabeçalho deixa de ser
+     referência de posicionamento para qualquer filho `fixed`. */
+  background: var(--fundo);
   border-bottom: 1px solid var(--linha);
   /* No iPhone em tela cheia o topo entra por baixo do notch. */
   padding-top: env(safe-area-inset-top);
@@ -792,9 +795,9 @@ select,
   justify-content: space-around;
   gap: 2px;
   padding: 0 0.25rem env(safe-area-inset-bottom);
-  background: rgba(10, 10, 11, 0.94);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  /* Opaco pelo mesmo motivo da barra acima: rodapé com a lista aparecendo por
+     trás dos ícones é o que faz a tela parecer suja. */
+  background: var(--fundo);
   border-top: 1px solid var(--linha);
 }
 
@@ -860,10 +863,48 @@ select,
   }
 }
 
-/* A barra de captura se apoia no rodapé em vez de brigar com ele. */
+/* ===========================================================================
+   A BARRA DO JARVIS, ANCORADA
+   ---------------------------------------------------------------------------
+   O Lucian em 11/09/2026: "tem um negócio de áudio, janela de áudio com
+   janela para digitar no meio do aplicativo - isso devia estar numa área
+   fixa na parte inferior".
+
+   Ele estava vendo a verdade: a barra já era `position: fixed`, mas era
+   TRANSPARENTE. Sem fundo, o texto do cartão continuava passando por trás do
+   microfone e do campo, e o que deveria ser uma faixa virou um recorte solto
+   no meio da tela. Faixa que não tem fundo não é faixa, é sobreposição.
+
+   Agora ela é uma barra de verdade: fundo próprio, fio em cima, e o rodapé
+   logo abaixo. Duas faixas empilhadas, nenhuma disputando o mesmo dedo.
+   =========================================================================== */
+
+.captura-flutuante {
+  /* OPACO DE VERDADE, e não quase. Com 4% de transparência a linha da agenda
+     ainda passava por baixo do microfone - e foi isso que ele viu: "janela de
+     áudio com janela para digitar no meio do aplicativo". Faixa de comando não
+     deixa nada atravessar; o que está atrás dela fica atrás.
+     Sem `backdrop-filter` de propósito: com fundo opaco ele não pinta nada, e
+     ainda faz da barra a referência de qualquer filho `fixed`. */
+  background: var(--fundo);
+  border-top: 1px solid var(--linha);
+  /* A sombra separa a barra do conteúdo que passa por baixo dela ao rolar.
+     Sem isso, em fundo escuro, as duas superfícies se confundem. */
+  box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* No celular ela se apoia no rodapé em vez de brigar com ele. */
 @media (max-width: 1023px) {
   .captura-flutuante {
     bottom: calc(52px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1024px) {
+  /* No computador não há rodapé embaixo, então a barra encosta no fim da
+     tela e precisa respeitar a área segura por conta própria. */
+  .captura-flutuante {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 

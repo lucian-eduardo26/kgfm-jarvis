@@ -12,6 +12,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   if (!(await temSessao())) redirect('/entrar')
-  if (!googleConfigurado()) redirect('/agenda?google=sem-chave')
+  if (!googleConfigurado()) redirect('/config?google=sem-chave')
   redirect(urlDeConsentimento())
 }
