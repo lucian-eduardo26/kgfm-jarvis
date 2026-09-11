@@ -1489,7 +1489,15 @@ h2 {
   place-items: center;
   background: var(--fundo);
   animation: sair-abertura 2.4s ease-in-out forwards;
-  pointer-events: none;
+  /* A CORTINA SEGURA O TOQUE enquanto está na tela, e isso virou necessário
+     quando o som entrou: agora existe motivo para encostar durante a abertura,
+     e um dedo que atravessa a cortina acerta o botão que estiver embaixo. O
+     toque que toca o tom não pode ser o mesmo que começa um cronômetro.
+     Ela solta o toque sozinha nos últimos quadros - ver `sair-abertura`. */
+  pointer-events: auto;
+  /* Dedo na cortina não deve pintar o retângulo azul de seleção do iOS. */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .abertura-marca {
@@ -1552,10 +1560,16 @@ h2 {
   72% {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
   }
   100% {
     opacity: 0;
     visibility: hidden;
+    /* `pointer-events` é propriedade discreta: troca no meio do trecho, ou
+       seja por volta de 2,06s. A tela volta a aceitar toque antes de a
+       cortina terminar de sumir, que é o que se espera de uma cortina indo
+       embora - ninguém quer tocar duas vezes. */
+    pointer-events: none;
   }
 }
 

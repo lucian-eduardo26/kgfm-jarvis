@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { SomDaAbertura } from '@/components/SomDaAbertura'
 
 export const metadata: Metadata = {
   title: 'Jarvis KGFM',
@@ -37,6 +38,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <img src="/marca/kgfm-assinatura-laranja.png" alt="" className="abertura-marca" />
           <span className="abertura-fio" />
         </div>
+        {/* O SOM DA ABERTURA. Não desenha nada: só fica escutando o primeiro
+            toque enquanto a cortina está na tela. O Safari não deixa página
+            nenhuma tocar som sem um gesto, e abrir o aplicativo pelo ícone é
+            gesto no iOS, não aqui dentro. Encostou, ouviu; não encostou, roda
+            em silêncio. Desliga na Configuração. */}
+        <SomDaAbertura />
         {children}
       </body>
     </html>
