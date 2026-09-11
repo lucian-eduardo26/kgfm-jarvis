@@ -26,6 +26,7 @@ import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
 import { podeMandarProposta } from '@/lib/spin'
 import { garantirFrenteAberta } from '@/lib/abrirFrente'
 import { iniciarProximoPacote, fraseDoProximo } from '@/lib/corrente'
+import { FUSO } from '@/lib/datas'
 
 export async function entrar(form: FormData) {
   const senha = String(form.get('senha') ?? '')
@@ -1089,6 +1090,71 @@ export async function falarComOJarvis(texto: string): Promise<ResultadoComando> 
  * O título sai do que ele falou, cortado no tamanho de um título. Guardar a
  * frase inteira faria a lista de tarefas virar um diário.
  */
+/**
+ * "ESTOU TRABALHANDO SIM, DESDE AS DUAS." O lançamento com hora escolhida.
+ *
+ * O Lucian em 11/09/2026, olhando "2:50 sem nada medido" enquanto fazia o
+ * banho da trava e conferia os batoques:
+ *
+ *   "Eu quero clicar lá, abrir a janela, e ter fácil para colocar: não, está
+ *    sendo medido, olha. Tica, começa isso aqui. Eu posso esquecer, tem que
+ *    pensar no usuário. Coloca coisas para EDITAR, e não para digitar."
+ *
+ * A diferença para `lancarRetroativo`: aquele fecha um bloco que já acabou
+ * (começo e fim); este ABRE um que continua rodando. É o caso de quem lembrou
+ * no meio - e é o caso mais comum, porque ninguém lembra de apontar quando
+ * começa, lembra quando olha o relógio.
+ *
+ * Hora no passado entra como `revisar`: é memória, não medição, e o sistema
+ * não pode fingir que os dois têm a mesma confiança.
+ */
+export async function comecarDesde(form: FormData) {
+  const frenteId = Number(form.get('frenteId'))
+  const hora = String(form.get('hora') ?? '').trim()
+  if (!frenteId || !/^\d{2}:\d{2}$/.test(hora)) return
+
+  const frente = await prisma.frente.findUnique({
+    where: { id: frenteId },
+    include: { tarefas: { where: { status: 'aberta' }, orderBy: { criadaEm: 'asc' }, take: 1 } },
+  })
+  if (!frente) return
+
+  const tarefa =
+    frente.tarefas[0] ?? (await prisma.tarefa.create({ data: { frenteId, titulo: frente.titulo } }))
+
+  const agora = new Date()
+  const hoje = agora.toLocaleDateString('en-CA', { timeZone: FUSO })
+  let inicio = new Date(`${hoje}T${hora}:00-03:00`)
+  // Hora no futuro não existe: quem escolheu 23:00 às 14h errou o campo, e
+  // cronômetro que começa daqui a nove horas conta negativo.
+  if (inicio > agora) inicio = agora
+
+  // O bloco anterior fecha NA HORA EM QUE ELE TROCOU, e não agora: é isso que
+  // faz "troquei de tarefa às duas" registrar as duas coisas certas de uma vez.
+  const abertos = await prisma.apontamento.findMany({ where: { encerradoEm: null } })
+  for (const a of abertos) {
+    await prisma.apontamento.update({
+      where: { id: a.id },
+      data: { encerradoEm: a.iniciadoEm > inicio ? a.iniciadoEm : inicio, encerradoPor: 'troca' },
+    })
+  }
+
+  await prisma.apontamento.create({
+    data: {
+      tarefaId: tarefa.id,
+      iniciadoEm: inicio,
+      blocoDesde: inicio,
+      // Mais de dois minutos atrás é memória, e memória se confere depois.
+      revisar: agora.getTime() - inicio.getTime() > 120_000,
+    },
+  })
+
+  await garantirFrenteAberta(frenteId)
+  await registrarMovimento(frenteId, 'cronometro', tarefa.titulo)
+  revalidatePath('/painel')
+  revalidatePath('/frentes')
+}
+
 /**
  * TERMINEI. O botão que faltava ao lado de "parar".
  *

@@ -165,6 +165,13 @@ export default async function Painel() {
         rodandoDesde={d.cronometro ? d.cronometro.iniciadoEm.toISOString() : null}
         oQue={d.cronometro ? d.cronometro.tarefaTitulo : null}
         semRegistroDesde={ultimoRegistro}
+        apontamentoId={d.cronometro?.apontamentoId ?? null}
+        blocoDesde={d.cronometro ? d.cronometro.blocoDesde.toISOString() : null}
+        opcoes={frentesAbertas.map((f) => ({
+          id: f.id,
+          titulo: f.titulo,
+          projeto: f.projeto?.nome ?? null,
+        }))}
       />
 
       {/* LOGO ABAIXO DO RELÓGIO, e antes de qualquer outra coisa. O relógio

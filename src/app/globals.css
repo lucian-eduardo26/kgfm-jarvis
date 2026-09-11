@@ -1104,15 +1104,120 @@ select,
   }
 }
 
+/* ===========================================================================
+   A FOLHA DE CONFERÊNCIA
+   ---------------------------------------------------------------------------
+   Sobe de baixo, presa ao rodapé, porque é ali que o dedão está. Não é uma
+   janela flutuante no meio da tela: no telefone, meio de tela é onde a mão
+   não alcança sem trocar a pegada.
+   =========================================================================== */
+.folha-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.62);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: folha-aparece 0.18s ease both;
+}
+
+.folha {
+  width: 100%;
+  max-width: 560px;
+  max-height: 86vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 1.1rem 1rem calc(1.1rem + env(safe-area-inset-bottom));
+  animation: folha-sobe 0.22s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes folha-aparece {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes folha-sobe {
+  from {
+    transform: translateY(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folha-fundo,
+  .folha {
+    animation: none;
+  }
+}
+
+/* OS ATALHOS DE HORA. São eles que fazem o lançamento caber num toque - o
+   campo de hora fica embaixo para o caso raro em que nenhum serve. */
+.atalho-hora {
+  border: 1px solid var(--linha);
+  background: var(--superficie-alta);
+  color: var(--texto-medio);
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 0.34rem 0.7rem;
+  min-height: var(--controle-curto);
+}
+
+.atalho-hora[data-escolhido='1'] {
+  border-color: var(--secao);
+  color: var(--secao);
+}
+
+/* O relógio vira botão: ele pediu "eu quero clicar lá e abrir a janela". */
+.relogio-toque {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: right;
+}
+
+.relogio-toque .seta {
+  opacity: 0.45;
+}
+
 /* ---------- o relógio da tela inicial ---------- */
 
 .relogio {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* Envolve para a cobrança caber numa linha própria embaixo, em vez de
+     espremer a hora e o contador que já disputam a largura do telefone. */
+  flex-wrap: wrap;
   gap: 1rem;
   padding: 0.8rem 1rem;
   margin-bottom: 0.75rem;
+}
+
+/* A cobrança do relógio: linha inteira, embaixo dos dois números. */
+.relogio-cobranca {
+  flex: 1 0 100%;
+  order: 3;
+  text-align: left;
+  font-size: 12.5px;
+  line-height: 1.35;
+  background: none;
+  border: none;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid var(--linha);
+}
+
+.relogio-cobranca .sublinha {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
 }
 
 .relogio-hora {
