@@ -13,6 +13,8 @@ import type { ConfigMostrador } from '@/lib/mostrador'
 import { responder, type Fala } from '@/lib/conversa'
 import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
 import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
+import { correnteDoProjeto } from '@/lib/modelos'
+import type { TipoProjeto } from '@prisma/client'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
 import { podeMandarProposta } from '@/lib/spin'
@@ -661,4 +663,96 @@ export async function salvarPesosPrioridade(form: FormData) {
   revalidatePath('/prioridades')
   revalidatePath('/projetos')
   revalidatePath('/painel')
+}
+
+/**
+ * Editar o projeto na mão.
+ *
+ * O Lucian em 10/09/2026: "o nome dos projetos eu posso mudar, entendeu?".
+ * Podia não - todo projeto nascia do script ou do ditado e ficava congelado.
+ *
+ * Valor e prazo de recebimento entram na mesma tela de propósito: são os dois
+ * números que faltam para a régua de prioridade parar de empatar todo mundo.
+ *
+ * A REGRA QUE PROTEGE O QUE JÁ ANDOU: trocar o tipo ou as condições refaz a
+ * WBS inteira, e refazer apaga pacote fechado. Então isso só acontece quando
+ * NADA foi fechado ainda. Com trabalho concluído, o resto é salvo e a troca é
+ * recusada com o motivo - melhor recusar do que apagar história em silêncio.
+ */
+export async function editarProjeto(form: FormData) {
+  const id = Number(form.get('projetoId'))
+  if (!id) return
+
+  const projeto = await prisma.projeto.findUnique({ where: { id }, include: { frentes: true } })
+  if (!projeto) return
+
+  const texto = (c: string) => {
+    const v = String(form.get(c) ?? '').trim()
+    return v === '' ? null : v
+  }
+  const numero = (c: string) => {
+    const v = String(form.get(c) ?? '').trim()
+    if (v === '') return null
+    const n = Number(v.replace(/\./g, '').replace(',', '.'))
+    return Number.isFinite(n) ? n : null
+  }
+
+  const nome = texto('nome')
+  const tipoNovo = String(form.get('tipo') ?? projeto.tipo) as TipoProjeto
+  const materiaPrimaNossa = form.get('materiaPrimaNossa') === 'on'
+  const temRevestimento = form.get('temRevestimento') === 'on'
+
+  const correnteMudou =
+    tipoNovo !== projeto.tipo ||
+    materiaPrimaNossa !== projeto.materiaPrimaNossa ||
+    temRevestimento !== projeto.temRevestimento
+
+  const temFechado = projeto.frentes.some((f) => f.status === 'fechada')
+
+  await prisma.projeto.update({
+    where: { id },
+    data: {
+      nome: nome ?? projeto.nome,
+      cliente: texto('cliente'),
+      valorEstimado: numero('valorEstimado'),
+      prazoRecebimentoDias: numero('prazoRecebimentoDias'),
+      probabilidade: numero('probabilidade'),
+      // A corrente só muda quando não há nada fechado para perder.
+      ...(correnteMudou && !temFechado
+        ? { tipo: tipoNovo, materiaPrimaNossa, temRevestimento }
+        : {}),
+    },
+  })
+
+  if (correnteMudou && !temFechado) {
+    await prisma.frente.deleteMany({ where: { projetoId: id } })
+    const areas = new Map((await prisma.area.findMany()).map((a) => [a.chave, a]))
+    for (const p of correnteDoProjeto(tipoNovo, { materiaPrimaNossa, temRevestimento })) {
+      const area = areas.get(p.area)
+      if (!area) continue
+      await prisma.frente.create({
+        data: {
+          titulo: p.pacote,
+          areaId: area.id,
+          projetoId: id,
+          status: 'planejada',
+          ordem: p.ordem,
+          pacote: p.pacote,
+          etapa: p.etapa,
+          diasEstimados: p.dias,
+          aguardandoQuem: p.quemSegura,
+          tarefas: { create: p.tarefas.map((t) => ({ titulo: t })) },
+        },
+      })
+    }
+  }
+
+  revalidatePath(`/projetos/${id}`)
+  revalidatePath('/projetos')
+  revalidatePath('/prioridades')
+  revalidatePath('/painel')
+
+  if (correnteMudou && temFechado) {
+    redirect(`/projetos/${id}?corrente=travada`)
+  }
 }

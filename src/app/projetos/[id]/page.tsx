@@ -14,7 +14,7 @@ import { prisma } from '@/lib/prisma'
 import { Moldura, Cabeca } from '@/components/Moldura'
 import { montarCronograma, dataCurta, oQueFazerComOAtraso } from '@/lib/cronograma'
 import { NOME_DO_TIPO } from '@/lib/modelos'
-import { definirInicioDoProjeto } from '../../acoes'
+import { definirInicioDoProjeto, editarProjeto } from '../../acoes'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,9 +30,17 @@ const NOME_DE_QUEM: Record<string, string> = {
   cliente: 'CLIENTE',
 }
 
-export default async function ProjetoDetalhe({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProjetoDetalhe({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ corrente?: string }>
+}) {
   await exigirSessao()
   const { id } = await params
+  const { corrente } = await searchParams
+  const travada = corrente === 'travada'
 
   const projeto = await prisma.projeto.findUnique({
     where: { id: Number(id) },
@@ -93,6 +101,89 @@ export default async function ProjetoDetalhe({ params }: { params: Promise<{ id:
           </p>
         )}
       </section>
+
+      {travada && (
+        <p className="cartao p-3 mb-3 text-sm" style={{ borderColor: 'var(--ambar)', color: 'var(--ambar)' }}>
+          O resto foi salvo, mas o tipo e as condições não mudaram: este projeto já tem pacote
+          fechado, e trocar a corrente apagaria o que já andou. Para mudar mesmo assim, reabra os
+          pacotes fechados antes.
+        </p>
+      )}
+
+      {/* Editar na mão. Ele pediu em 10/09/2026, e com razão: todo projeto
+          nascia do script ou do ditado e depois ficava congelado.
+          Valor e prazo moram aqui de propósito - são os dois números que
+          faltam para a régua de prioridade parar de empatar todo mundo. */}
+      <form action={editarProjeto} className="cartao p-4 mb-3">
+        <input type="hidden" name="projetoId" value={projeto.id} />
+        <p className="rotulo mb-3">editar o projeto</p>
+
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="sm:col-span-2">
+            <label className="text-xs fraco block mb-1">Nome</label>
+            <input name="nome" defaultValue={projeto.nome} className="campo" />
+          </div>
+          <div>
+            <label className="text-xs fraco block mb-1">Cliente</label>
+            <input name="cliente" defaultValue={projeto.cliente ?? ''} className="campo" />
+          </div>
+          <div>
+            <label className="text-xs fraco block mb-1">Tipo</label>
+            <select name="tipo" defaultValue={projeto.tipo} className="campo">
+              <option value="peca">Peça usinada</option>
+              <option value="sistema">Sistema</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs fraco block mb-1">Valor estimado (R$)</label>
+            <input
+              name="valorEstimado"
+              inputMode="decimal"
+              defaultValue={projeto.valorEstimado ?? ''}
+              placeholder="18000"
+              className="campo"
+            />
+          </div>
+          <div>
+            <label className="text-xs fraco block mb-1">Recebe em (dias)</label>
+            <input
+              name="prazoRecebimentoDias"
+              inputMode="numeric"
+              defaultValue={projeto.prazoRecebimentoDias ?? ''}
+              placeholder="60"
+              className="campo"
+            />
+          </div>
+          <div>
+            <label className="text-xs fraco block mb-1">Chance de fechar (%)</label>
+            <input
+              name="probabilidade"
+              inputMode="numeric"
+              defaultValue={projeto.probabilidade ?? ''}
+              className="campo"
+            />
+          </div>
+        </div>
+
+        {projeto.tipo === 'peca' && (
+          <div className="flex flex-wrap gap-4 mt-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="materiaPrimaNossa" defaultChecked={projeto.materiaPrimaNossa} />
+              A matéria-prima sai daqui
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="temRevestimento" defaultChecked={projeto.temRevestimento} />
+              Tem banho ou revestimento
+            </label>
+          </div>
+        )}
+
+        <button className="botao mt-3">Guardar</button>
+        <p className="fraco text-xs mt-2">
+          Valor e prazo alimentam a régua de prioridade. Mudar o tipo ou as condições refaz a WBS -
+          e por isso só funciona enquanto nenhum pacote estiver fechado.
+        </p>
+      </form>
 
       {/* A data de início é o que faz o cronograma existir. Enquanto ela for
           o dia em que o projeto foi cadastrado, a previsão está errada - e a
