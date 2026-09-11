@@ -64,8 +64,13 @@ export function PacoteLinha({
         value="1"
         aria-label={fechado ? 'Reabrir o pacote' : 'Marcar como concluído'}
         title={fechado ? 'Reabrir' : 'Concluir'}
-        className="w-9 h-9 grid place-items-center rounded-lg border shrink-0"
+        className="grid place-items-center rounded-lg border shrink-0"
         style={{
+          // Quadrado na MESMA altura do campo ao lado (34px). Era 36, e numa
+          // linha de catorze pacotes dois pixels de diferença repetidos
+          // catorze vezes é o que faz a coluna parecer torta.
+          width: 34,
+          height: 34,
           borderColor: fechado ? 'var(--verde)' : 'var(--linha)',
           color: fechado ? 'var(--verde)' : 'var(--fraco)',
           background: fechado ? 'rgba(52,211,153,.12)' : 'transparent',

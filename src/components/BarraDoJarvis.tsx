@@ -262,7 +262,11 @@ export function BarraDoJarvis({
               // e neste caso era. A frase inteira continua logo abaixo.
               placeholder={rodando ? 'Agora estou...' : 'O que está fazendo?'}
               className="campo resize-none flex-1"
-              style={{ minHeight: 46, maxHeight: 140 }}
+              // A ALTURA VEM DO SISTEMA, e não daqui. Eram 46px escritos à mão
+              // ao lado de um microfone de 40 e de um botão de 44 - três
+              // alturas na mesma linha, alinhadas por baixo, com os topos em
+              // três níveis. É o topo que o olho lê, e foi o que ele viu.
+              style={{ maxHeight: 140 }}
             />
 
             <button

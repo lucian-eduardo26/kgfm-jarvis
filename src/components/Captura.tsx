@@ -101,7 +101,7 @@ export function Captura({ flutuante = false }: { flutuante?: boolean }) {
             rows={escuta.ouvindo || noCampo.length > 70 ? 2 : 1}
             placeholder={escuta.ouvindo ? 'Ouvindo - toque no microfone para encerrar' : 'Capturar (Ctrl+K)'}
             className="campo resize-none flex-1"
-            style={{ minHeight: 46, maxHeight: 140 }}
+            style={{ maxHeight: 140 }}
           />
           {escuta.disponivel && (
             <button

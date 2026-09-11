@@ -186,8 +186,8 @@ export default async function Frentes({
 
                 <form action={criarTarefa} className="mt-2 flex gap-2">
                   <input type="hidden" name="frenteId" value={f.id} />
-                  <input name="titulo" placeholder="Nova tarefa" className="campo text-sm" style={{ minHeight: 40 }} />
-                  <button className="botao-fantasma text-sm shrink-0" style={{ minHeight: 40 }}>
+                  <input name="titulo" placeholder="Nova tarefa" className="campo text-sm" style={{ minHeight: 38 }} />
+                  <button className="botao-fantasma text-sm shrink-0" style={{ minHeight: 38 }}>
                     +
                   </button>
                 </form>
@@ -196,20 +196,20 @@ export default async function Frentes({
                   <form action={mexerNaFrente}>
                     <input type="hidden" name="frenteId" value={f.id} />
                     <input type="hidden" name="descricao" value="sinalizado na tela" />
-                    <button className="botao-fantasma text-xs" style={{ minHeight: 36 }}>
+                    <button className="botao-fantasma text-xs" style={{ minHeight: 34 }}>
                       Andei nisso
                     </button>
                   </form>
                   <form action={mudarEspera}>
                     <input type="hidden" name="frenteId" value={f.id} />
                     <input type="hidden" name="quem" value={f.aguardandoQuem === 'eu' ? 'cliente' : 'eu'} />
-                    <button className="botao-fantasma text-xs" style={{ minHeight: 36 }}>
+                    <button className="botao-fantasma text-xs" style={{ minHeight: 34 }}>
                       {f.aguardandoQuem === 'eu' ? 'Passei a bola' : 'A bola voltou'}
                     </button>
                   </form>
                   <form action={fecharFrente}>
                     <input type="hidden" name="frenteId" value={f.id} />
-                    <button className="botao-fantasma text-xs" style={{ minHeight: 36 }}>
+                    <button className="botao-fantasma text-xs" style={{ minHeight: 34 }}>
                       Fechar
                     </button>
                   </form>

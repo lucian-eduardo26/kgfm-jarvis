@@ -66,14 +66,14 @@ export default async function Capturas() {
 
               <form action={corrigirItem} className="flex flex-wrap gap-2 mt-2">
                 <input type="hidden" name="id" value={i.id} />
-                <select name="tipo" defaultValue={i.tipo} className="campo text-sm" style={{ minHeight: 40, width: 'auto' }}>
+                <select name="tipo" defaultValue={i.tipo} className="campo text-sm" style={{ minHeight: 38, width: 'auto' }}>
                   {TIPOS.map((t) => (
                     <option key={t} value={t}>
                       {t}
                     </option>
                   ))}
                 </select>
-                <select name="areaId" defaultValue={i.areaId ?? ''} className="campo text-sm" style={{ minHeight: 40, width: 'auto' }}>
+                <select name="areaId" defaultValue={i.areaId ?? ''} className="campo text-sm" style={{ minHeight: 38, width: 'auto' }}>
                   <option value="">sem area</option>
                   {areas.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -81,13 +81,13 @@ export default async function Capturas() {
                     </option>
                   ))}
                 </select>
-                <button className="botao-fantasma text-sm" style={{ minHeight: 40 }}>
+                <button className="botao-fantasma text-sm" style={{ minHeight: 38 }}>
                   Corrigir
                 </button>
                 <button
                   formAction={descartarItem}
                   className="text-sm fraco px-2"
-                  style={{ minHeight: 40 }}
+                  style={{ minHeight: 38 }}
                 >
                   Descartar
                 </button>

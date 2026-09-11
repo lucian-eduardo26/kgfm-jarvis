@@ -120,7 +120,7 @@ export function ComandoVoz({ acao }: { acao: (texto: string) => Promise<Resultad
             // que corta o texto no meio. O cabeçalho do cartão já diz o resto.
             placeholder={escuta.ouvindo ? 'Pode falar. Toque para encerrar.' : 'Diga o que está fazendo'}
             className="campo resize-none order-first w-full sm:order-none sm:w-auto sm:flex-1"
-            style={{ minHeight: 48, maxHeight: 180 }}
+            style={{ maxHeight: 180 }}
           />
 
           <button

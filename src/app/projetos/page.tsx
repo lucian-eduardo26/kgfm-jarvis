@@ -205,7 +205,7 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
                         {f.status === 'planejada' ? (
                           <form action={ativarPacote}>
                             <input type="hidden" name="frenteId" value={f.id} />
-                            <button className="botao-fantasma text-xs" style={{ minHeight: 32 }}>
+                            <button className="botao-fantasma text-xs" style={{ minHeight: 34 }}>
                               Ativar
                             </button>
                           </form>

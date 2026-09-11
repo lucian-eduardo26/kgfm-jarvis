@@ -134,7 +134,7 @@ export function Conversa({ responderAcao }: { responderAcao: (h: Fala[]) => Prom
             rows={1}
             placeholder={ouvindo ? 'Ouvindo...' : 'Falar com o Jarvis'}
             className="campo resize-none flex-1"
-            style={{ minHeight: 48, maxHeight: 140 }}
+            style={{ maxHeight: 140 }}
           />
           {temVoz && (
             <button

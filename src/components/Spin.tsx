@@ -123,17 +123,17 @@ export function Spin({
         )}
         <form action={salvarDecisor} className="grid sm:grid-cols-4 gap-2">
           <input type="hidden" name="projetoId" value={projetoId} />
-          <input name="nome" placeholder="Nome" className="campo text-sm" style={{ minHeight: 40 }} />
-          <input name="cargo" placeholder="Cargo" className="campo text-sm" style={{ minHeight: 40 }} />
+          <input name="nome" placeholder="Nome" className="campo text-sm" style={{ minHeight: 38 }} />
+          <input name="cargo" placeholder="Cargo" className="campo text-sm" style={{ minHeight: 38 }} />
           <input
             name="oQueDoiParaEle"
             placeholder="O que dói para ele (palavras dele)"
             className="campo text-sm"
-            style={{ minHeight: 40 }}
+            style={{ minHeight: 38 }}
           />
           <div className="flex gap-2">
-            <input name="interesses" placeholder="Interesses" className="campo text-sm" style={{ minHeight: 40 }} />
-            <button className="botao-fantasma text-sm shrink-0" style={{ minHeight: 40 }}>
+            <input name="interesses" placeholder="Interesses" className="campo text-sm" style={{ minHeight: 38 }} />
+            <button className="botao-fantasma text-sm shrink-0" style={{ minHeight: 38 }}>
               +
             </button>
           </div>

@@ -43,7 +43,7 @@ export function EscolherVoz() {
                 falar(FRASE)
               }}
               className="campo text-sm flex-1 min-w-[240px]"
-              style={{ minHeight: 40 }}
+              style={{ minHeight: 38 }}
             >
               {vozes.map((v) => (
                 <option key={v.nome} value={v.nome}>
@@ -52,7 +52,7 @@ export function EscolherVoz() {
                 </option>
               ))}
             </select>
-            <button type="button" onClick={() => falar(FRASE)} className="botao-fantasma text-sm" style={{ minHeight: 40 }}>
+            <button type="button" onClick={() => falar(FRASE)} className="botao-fantasma text-sm" style={{ minHeight: 38 }}>
               Ouvir
             </button>
           </div>

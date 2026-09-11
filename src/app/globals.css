@@ -157,6 +157,59 @@ body {
 
 /* ---------- controles ---------- */
 
+/* ===========================================================================
+   A ESCALA DE ALTURA DOS CONTROLES
+   ---------------------------------------------------------------------------
+   O Lucian em 11/09/2026, olhando a barra de baixo no iPhone: "está vendo que
+   o botão do microfone e a caixa de texto estão desalinhados? Ajusta isso. Já
+   dá um em toda a interface."
+
+   Ele tinha razão e a causa era boba: NA MESMA LINHA havia três alturas
+   diferentes. O microfone é `.botao-fantasma` (40px), a caixa é `.campo` com
+   46px escritos à mão, e o "começar" é `.botao` (44px). Alinhados por baixo,
+   com os topos em três níveis - e é o topo que o olho lê.
+
+   O sistema inteiro estava assim: 32, 34, 36, 38, 40, 44 e 46 espalhados em
+   estilo em linha, cada tela escolhendo o seu. Agora são TRÊS, e só três:
+
+     --controle         44px   o padrão, alvo de dedo em telefone
+     --controle-medio   38px   linha densa (agenda, lançar retroativo)
+     --controle-curto   34px   linha da WBS, catorze por tela
+
+   Altura nova que não for uma das três é sinal de que a linha está errada,
+   não de que falta um número. =========================================== */
+:root {
+  --controle: 44px;
+  --controle-medio: 38px;
+  --controle-curto: 34px;
+}
+
+/* O TAMANHO DA LETRA JÁ DIZ A DENSIDADE DA LINHA, então é ele que escolhe a
+   altura - e não um número escrito à mão em cada tela.
+
+   Isto conserta uma armadilha que estava em toda parte: `min-height` só
+   LEVANTA. Escrever `minHeight: 38` num botão cujo conteúdo mais o padding já
+   dão 47 não baixa nada - o número fica ali parecendo que resolve, e a linha
+   continua torta. Quem mandava na altura era o padding o tempo todo.
+
+   Agora as linhas densas encolhem o padding junto, e cada linha fecha numa
+   altura só. */
+.campo.text-sm,
+.botao.text-sm,
+.botao-fantasma.text-sm {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  min-height: var(--controle-medio);
+}
+
+.campo.text-xs,
+.botao.text-xs,
+.botao-fantasma.text-xs {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  min-height: var(--controle-curto);
+}
+
 .botao {
   background: var(--laranja);
   color: #fff;
@@ -165,7 +218,7 @@ body {
   font-size: 14px;
   font-weight: 500;
   padding: 0.7rem 1.1rem;
-  min-height: 44px;
+  min-height: var(--controle);
   letter-spacing: -0.006em;
   transition: filter 0.15s ease, transform 0.06s ease;
 }
@@ -189,8 +242,11 @@ body {
   border: 1px solid var(--linha);
   border-radius: 10px;
   font-size: 14px;
-  padding: 0.55rem 0.9rem;
-  min-height: 40px;
+  /* O padding subiu junto com a altura: com 0.55rem o conteúdo somava 40px e
+     sobrava folga só embaixo, então a letra ficava acima do centro mesmo com
+     a caixa na altura certa. */
+  padding: 0.68rem 0.9rem;
+  min-height: var(--controle);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -205,9 +261,13 @@ body {
   border-radius: 10px;
   color: var(--texto);
   font-size: 14px;
-  padding: 0.7rem 0.85rem;
+  /* 0.575rem e não 0.7rem: no celular o campo é forçado a 16px (senão o iPhone
+     dá zoom sozinho ao focar), e com 0.7rem a altura natural ia a 48 - quatro
+     a mais que o botão de 44 ao lado. Padding é quem mandava na altura; o
+     `min-height` só levanta, nunca baixa. */
+  padding: 0.575rem 0.85rem;
   width: 100%;
-  min-height: 44px;
+  min-height: var(--controle);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -934,6 +994,17 @@ select,
   /* A sombra separa a barra do conteúdo que passa por baixo dela ao rolar.
      Sem isso, em fundo escuro, as duas superfícies se confundem. */
   box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* A CAIXA DE TEXTO DA BARRA, na altura dos botões ao lado.
+   `min-height` só levanta, nunca baixa - e um `textarea` de uma linha já nasce
+   com 48px por conta da própria linha mais o padding, então ficava 4px mais
+   alto que o microfone e que o "começar". Quatro pixels numa linha de três
+   controles é exatamente o desalinho que ele viu. Menos padding resolve sem
+   mexer em nada que cresce: com duas linhas ela sobe normalmente. */
+.captura-flutuante textarea.campo {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 /* No celular ela se apoia no rodapé em vez de brigar com ele. */
