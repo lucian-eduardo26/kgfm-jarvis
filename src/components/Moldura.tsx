@@ -19,7 +19,7 @@ import { Deslizar } from './Deslizar'
 import { Transicao } from './Transicao'
 import { BarraDoJarvis } from './BarraDoJarvis'
 import { cronometroAtivo } from '@/lib/cronometro'
-import { falarComOJarvis, pararCronometro } from '@/app/acoes'
+import { falarComOJarvis, pararCronometro, terminarOQueEstaRodando } from '@/app/acoes'
 
 const ATALHOS = [
   { href: '/painel', nome: 'Painel', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
@@ -129,7 +129,7 @@ export async function Moldura({
       {/* A BARRA VIVE NA MOLDURA, e por isso existe em toda tela. O
           cronômetro é o estado mais importante do sistema: some de vista
           assim que ele troca de página, e volta a ser esquecido. */}
-      <BarraDoJarvis cronometro={cronometro} acao={falarComOJarvis} parar={pararCronometro} />
+      <BarraDoJarvis cronometro={cronometro} acao={falarComOJarvis} parar={pararCronometro} terminar={terminarOQueEstaRodando} />
 
       <Deslizar />
     </div>

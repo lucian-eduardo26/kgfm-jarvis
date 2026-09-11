@@ -1388,3 +1388,34 @@ h2 {
     animation: none;
   }
 }
+
+/* A ENGRENAGEM GIRANDO SEM ELE.
+   ---------------------------------------------------------------------------
+   O Lucian em 11/09/2026: "pensa que são vários pratos que eu estou erguendo -
+   ou, na linguagem melhor aplicada a nós da automação, várias engrenagens
+   girando. Quanto mais engrenagens girando ao mesmo tempo, melhor."
+
+   Ela gira DEVAGAR, e de propósito: o banho leva dois dias, não dois segundos.
+   Movimento lento diz "está acontecendo"; movimento rápido diria "corra". */
+.engrenagem {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid var(--verde);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  animation: gira 3.2s linear infinite;
+}
+
+@keyframes gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .engrenagem {
+    animation: none;
+  }
+}

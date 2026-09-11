@@ -82,17 +82,33 @@ export default async function Painel() {
     }
   }
 
-  const andando = frentesAbertas
-    // A frente que já está no relógio sai da lista de baixo: o mesmo nome em
-    // cima e embaixo confunde em vez de cobrar.
-    .filter((f) => f.id !== d.cronometro?.frenteId)
+  // A frente que já está no relógio sai das listas de baixo: o mesmo nome em
+  // cima e embaixo confunde em vez de cobrar.
+  const outras = frentesAbertas.filter((f) => f.id !== d.cronometro?.frenteId)
+
+  // AS ENGRENAGENS: pacote aberto que NÃO é dele. Não consome hora nenhuma e
+  // tem relógio próprio - o banho girando na Soriel enquanto ele toca outra
+  // coisa. É a faixa que ele quer ver crescer.
+  const girando = outras
+    .filter((f) => f.aguardandoQuem !== 'eu')
+    .map((f) => ({
+      frenteId: f.id,
+      titulo: f.titulo,
+      projeto: f.projeto?.nome ?? null,
+      projetoId: f.projetoId,
+      quem: f.aguardandoQuem as 'cliente' | 'terceiro',
+      desde: (f.aguardandoDesde ?? f.realInicioEm)?.toISOString() ?? null,
+      prazoDias: f.diasEstimados,
+    }))
+
+  const naMinhaMao = outras
+    .filter((f) => f.aguardandoQuem === 'eu')
     .slice(0, 6)
     .map((f) => ({
       frenteId: f.id,
       titulo: f.titulo,
       projeto: f.projeto?.nome ?? null,
       projetoId: f.projetoId,
-      area: f.area.nome,
       dias: diasUteisEntre(f.ultimoMovimentoEm, new Date()),
       minutosHoje: minutosPorFrente.get(f.id) ?? 0,
     }))
@@ -153,7 +169,7 @@ export default async function Painel() {
 
       {/* LOGO ABAIXO DO RELÓGIO, e antes de qualquer outra coisa. O relógio
           diz QUANTO; este bloco diz O QUÊ, e dá o caminho para cada nome. */}
-      <EmAndamento medindo={medindo} andando={andando} />
+      <EmAndamento medindo={medindo} girando={girando} naMinhaMao={naMinhaMao} />
 
       <div className="mb-3">
         <SemanaCurta dias={semana} />

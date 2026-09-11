@@ -55,10 +55,20 @@ export function BarraDoJarvis({
   cronometro,
   acao,
   parar,
+  terminar,
 }: {
   cronometro: CronometroAtivo
   acao: (texto: string) => Promise<ResultadoComando>
   parar: () => Promise<void>
+  /**
+   * TERMINEI, e não é o mesmo que PARAR.
+   *
+   * Ele em 11/09/2026: "esse botão de finalizar o que foi iniciado tem que
+   * estar em fácil acesso". Parar é sair de um trabalho que continua aberto;
+   * terminar é dizer que aquilo acabou - e acabar a última tarefa de um pacote
+   * fecha o pacote, o que faz o próximo da corrente começar sozinho.
+   */
+  terminar: () => Promise<ResultadoComando>
 }) {
   const [enviando, setEnviando] = useState(false)
   const [resposta, setResposta] = useState<ResultadoComando | null>(null)
@@ -131,6 +141,19 @@ export function BarraDoJarvis({
     }
   }
 
+  async function concluir() {
+    setEnviando(true)
+    try {
+      // A resposta FICA NA TELA: aqui o sistema não só parou o relógio, ele
+      // fechou um pacote e possivelmente ligou o seguinte com outro dono.
+      // Isso ele precisa ler - é a engrenagem começando a girar.
+      setResposta(await terminar())
+      router.refresh()
+    } finally {
+      setEnviando(false)
+    }
+  }
+
   const mostraCampo = !rodando || trocando
 
   return (
@@ -183,8 +206,19 @@ export function BarraDoJarvis({
             <button type="button" onClick={() => setTrocando(true)} className="botao-fantasma text-xs px-2.5 shrink-0">
               trocar
             </button>
-            <button type="button" onClick={() => void encerrar()} disabled={enviando} className="botao text-xs px-3 shrink-0">
+            <button type="button" onClick={() => void encerrar()} disabled={enviando} className="botao-fantasma text-xs px-2.5 shrink-0">
               parar
+            </button>
+            {/* TERMINEI ganha o botão cheio, e "parar" virou fantasma: das duas
+                saídas, a que faz a corrente andar é esta. */}
+            <button
+              type="button"
+              onClick={() => void concluir()}
+              disabled={enviando}
+              className="botao text-xs px-3 shrink-0"
+              style={{ background: 'var(--verde)', borderColor: 'var(--verde)', color: '#07120b' }}
+            >
+              terminei
             </button>
           </div>
         )}

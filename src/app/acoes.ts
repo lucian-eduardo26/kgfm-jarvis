@@ -25,6 +25,7 @@ import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
 import { podeMandarProposta } from '@/lib/spin'
 import { garantirFrenteAberta } from '@/lib/abrirFrente'
+import { iniciarProximoPacote, fraseDoProximo } from '@/lib/corrente'
 
 export async function entrar(form: FormData) {
   const senha = String(form.get('senha') ?? '')
@@ -809,6 +810,12 @@ export async function marcarPacote(form: FormData) {
     },
   })
 
+  // A CORRENTE ANDA SOZINHA. Fechou a logística, o banho COMEÇOU - não fica
+  // esperando ele lembrar de abrir. E se o próximo pacote é de terceiro, o
+  // relógio da espera parte junto: é ali que o prazo do fornecedor começa a
+  // valer, e não no dia em que alguém for conferir.
+  if (fechou) await iniciarProximoPacote(frente.projetoId, frente.ordem, agora)
+
   if (frente.projetoId) revalidatePath(`/projetos/${frente.projetoId}`)
   revalidatePath('/projetos')
   revalidatePath('/painel')
@@ -1082,6 +1089,101 @@ export async function falarComOJarvis(texto: string): Promise<ResultadoComando> 
  * O título sai do que ele falou, cortado no tamanho de um título. Guardar a
  * frase inteira faria a lista de tarefas virar um diário.
  */
+/**
+ * TERMINEI. O botão que faltava ao lado de "parar".
+ *
+ * O Lucian em 11/09/2026: "esse botão de finalizar o que foi iniciado, ele tem
+ * que estar em fácil acesso".
+ *
+ * "Parar" e "terminei" pareciam a mesma coisa e são opostos: parar é sair do
+ * trabalho que continua aberto; terminei é dizer que aquilo acabou. Só existia
+ * o primeiro, então tudo que ele fazia ficava eternamente aberto - e a corrente
+ * do projeto nunca andava, porque nada nunca fechava.
+ *
+ * E fechar a ÚLTIMA tarefa de um pacote fecha o PACOTE, que é o que faz o
+ * próximo começar. É a frase dele inteira: "se a logística do banho está
+ * finalizada, o processo do banho está iniciado".
+ */
+export async function terminarOQueEstaRodando(): Promise<ResultadoComando> {
+  const agora = new Date()
+  const aberto = await prisma.apontamento.findFirst({
+    where: { encerradoEm: null },
+    include: { tarefa: { include: { frente: { include: { area: true } } } } },
+  })
+
+  const nada = (resposta: string): ResultadoComando => ({
+    ok: false,
+    acao: 'nada',
+    tarefa: null,
+    frente: null,
+    area: null,
+    resposta,
+    alinhamento: 'sem prioridade definida',
+    recomendado: null,
+    usouIa: false,
+    criou: null,
+  })
+
+  if (!aberto) return nada('Nenhum cronômetro estava rodando para terminar.')
+
+  const tarefa = aberto.tarefa
+  const frente = tarefa.frente
+  const minutos = Math.round((agora.getTime() - aberto.iniciadoEm.getTime()) / 60000)
+
+  await prisma.apontamento.update({
+    where: { id: aberto.id },
+    data: { encerradoEm: agora, encerradoPor: 'usuario' },
+  })
+  await prisma.tarefa.update({
+    where: { id: tarefa.id },
+    data: { status: 'feita', concluidaEm: agora },
+  })
+  await prisma.movimento.create({
+    data: { frenteId: frente.id, tipo: 'tarefa-feita', descricao: tarefa.titulo },
+  })
+
+  const sobram = await prisma.tarefa.count({ where: { frenteId: frente.id, status: 'aberta' } })
+
+  let extra = ''
+  if (sobram === 0) {
+    // Última tarefa: o pacote inteiro fecha, e a corrente anda.
+    await prisma.frente.update({
+      where: { id: frente.id },
+      data: {
+        percentual: 100,
+        status: 'fechada',
+        fechadaEm: frente.fechadaEm ?? agora,
+        realFimEm: frente.realFimEm ?? agora,
+        ultimoMovimentoEm: agora,
+      },
+    })
+    await prisma.movimento.create({ data: { frenteId: frente.id, tipo: 'fechamento' } })
+    extra = ` "${frente.titulo}" fechou.`
+    extra += fraseDoProximo(await iniciarProximoPacote(frente.projetoId, frente.ordem, agora))
+  } else {
+    await prisma.frente.update({ where: { id: frente.id }, data: { ultimoMovimentoEm: agora } })
+    extra = ` Faltam ${sobram} em "${frente.titulo}".`
+  }
+
+  revalidatePath('/painel')
+  revalidatePath('/frentes')
+  revalidatePath('/projetos')
+  if (frente.projetoId) revalidatePath(`/projetos/${frente.projetoId}`)
+
+  return {
+    ok: true,
+    acao: 'concluir',
+    tarefa: tarefa.titulo,
+    frente: frente.titulo,
+    area: frente.area.nome,
+    resposta: `Feita: ${tarefa.titulo}, ${minutos} min.${extra}`,
+    alinhamento: 'sem prioridade definida',
+    recomendado: null,
+    usouIa: false,
+    criou: null,
+  }
+}
+
 /**
  * COMEÇAR A CONTAR UMA FRENTE, com um toque.
  *
