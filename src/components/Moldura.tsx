@@ -21,6 +21,10 @@ import { BarraDoJarvis } from './BarraDoJarvis'
 import { cronometroAtivo } from '@/lib/cronometro'
 import { falarComOJarvis, pararCronometro, terminarOQueEstaRodando } from '@/app/acoes'
 
+/** O endereço do CRM. Mesma variável que a integração usa, para não existirem
+    dois endereços do mesmo sistema em lugares diferentes. */
+const CRM = process.env.CRM_URL?.trim() || 'https://kgfm-crm-kgfm-solucoes.vercel.app'
+
 const ATALHOS = [
   { href: '/painel', nome: 'Painel', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
   { href: '/projetos', nome: 'Projetos', d: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
@@ -111,6 +115,31 @@ export async function Moldura({
 
               <div className="cabecalho-acoes">
                 {acao}
+
+                {/* O CRM, ancorado no cabeçalho e sempre na tela.
+                    O Lucian em 11/09/2026: "eu quero o CRM dentro do Jarvis, o
+                    Jarvis dentro do CRM, e o ícone deles separados".
+                    A metade de lá já existia - o CRM tem o Jarvis preso no
+                    rodapé desde ontem. Esta é a que faltava: aqui o único
+                    caminho para o CRM era um link enterrado na Configuração,
+                    numa tela que ele abre uma vez por semana.
+                    Vai no cabeçalho e não no rodapé porque o rodapé já está
+                    com sete destinos, e num telefone de 375px o oitavo faria
+                    todos encostarem - foi a conta que tirou a Estratégia de lá.
+                    São DOIS APLICATIVOS, cada um com seu ícone na tela inicial
+                    do iPhone. Este botão é a ponte, não a fusão. */}
+                <a
+                  href={CRM}
+                  className="ponte-crm"
+                  aria-label="Abrir o CRM de prospecção"
+                  title="CRM de prospecção"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M3 4h18l-7 8v7l-4 2v-9z" />
+                  </svg>
+                  <span>CRM</span>
+                </a>
+
                 <Menu />
               </div>
             </div>

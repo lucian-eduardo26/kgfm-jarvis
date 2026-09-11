@@ -466,6 +466,49 @@ body {
   flex-shrink: 0;
 }
 
+/* A PONTE PARA O CRM. Sempre na tela, no cabeçalho.
+   ---------------------------------------------------------------------------
+   O espelho do botão "Jarvis" que vive no rodapé do CRM. São dois aplicativos
+   separados, com ícone próprio na tela inicial - isto aqui é a passagem entre
+   eles, e não a fusão dos dois. Fica discreto de propósito: é atalho, não
+   destino, e o laranja neste sistema significa atraso. */
+.ponte-crm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 34px;
+  padding: 0 0.6rem;
+  border: 1px solid var(--linha);
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  color: var(--fraco);
+  background: var(--superficie-alta);
+  flex-shrink: 0;
+}
+
+.ponte-crm:active {
+  color: var(--texto-medio);
+}
+
+.ponte-crm:focus-visible {
+  outline: 2px solid var(--secao);
+  outline-offset: 2px;
+}
+
+/* Num telefone estreito sai o DESENHO e fica a PALAVRA, e não o contrário.
+   Três letras cabem em qualquer tela e não deixam dúvida; ícone sozinho num
+   cabeçalho que já tem funil, calendário e três pontinhos vira adivinhação. */
+@media (max-width: 420px) {
+  .ponte-crm svg {
+    display: none;
+  }
+  .ponte-crm {
+    padding: 0 0.55rem;
+  }
+}
+
 /* O logotipo oficial. Vem do arquivo de marca, nunca desenhado a mão. */
 .marca-kgfm {
   height: 17px;
