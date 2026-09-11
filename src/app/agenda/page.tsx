@@ -110,10 +110,7 @@ export default async function Agenda({
             </span>
           ) : (
             <span className="fraco text-sm min-w-0">
-              {googleConfigurado()
-                ? 'A agenda do Google ainda não está conectada.'
-                : 'O Jarvis ainda não lê o Google Calendar.'}{' '}
-              Esta lista mostra só o que foi marcado aqui.
+              {googleConfigurado() ? 'Google Calendar não conectado.' : 'Google Calendar desligado.'}
             </span>
           )}
         </span>
@@ -124,7 +121,7 @@ export default async function Agenda({
           </form>
         ) : (
           <Link href="/config" className="botao-fantasma text-xs px-3 shrink-0 text-center">
-            Conectar na Configuração
+            Conectar
           </Link>
         )}
       </div>
@@ -166,10 +163,6 @@ export default async function Agenda({
             </div>
           </div>
           <button className="botao mt-3">Marcar</button>
-          <p className="fraco text-xs mt-2">
-            Fica no Jarvis. Ainda não vai para o Google Calendar - isso depende de uma autorização
-            sua no Google, e eu não invento credencial.
-          </p>
         </form>
       </details>
 

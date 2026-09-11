@@ -39,35 +39,31 @@ export function LigarGoogle({
         <p className="rotulo mb-2" style={{ color: 'var(--ambar)' }}>
           agenda do Google - falta ligar
         </p>
-        <p className="fraco text-sm">
-          São dez minutos, uma vez só, e precisa ser você: a autorização sai da sua conta Google e
-          eu não crio credencial no seu nome.
-        </p>
+        <p className="fraco text-sm">Faltam as duas credenciais na Vercel.</p>
 
-        {/* FECHADO POR PADRÃO. Seis passos abertos numa tela de celular são um
-            palmo de rolagem que ele vai ler uma vez na vida. */}
-        <details className="mt-3">
+        {/* FECHADO, E CURTO. Ele em 11/09/2026: "não tem que ter texto
+            explicativo demais não, coisa de Google dentro do aplicativo não".
+            O passo a passo fica porque ele ainda não terminou; o que saiu foi
+            o que explicava em vez de instruir. */}
+        <details className="mt-2">
           <summary className="text-sm cursor-pointer select-none" style={{ color: 'var(--ambar)' }}>
-            ver o passo a passo
+            passo a passo
           </summary>
 
           <ol className="mt-3 space-y-2 text-sm fraco list-decimal pl-4">
             <li>
-              Abra <span className="dado">console.cloud.google.com</span> e crie um projeto chamado
-              Jarvis KGFM.
+              <span className="dado">console.cloud.google.com</span>, projeto Jarvis KGFM.
             </li>
             <li>
-              Em <strong>APIs e serviços</strong>, ative a <strong>Google Calendar API</strong>.
+              APIs e serviços: ativar a <strong>Google Calendar API</strong>.
             </li>
             <li>
-              Em <strong>Tela de permissão OAuth</strong>, escolha <strong>Externo</strong>, ponha o
-              nome Jarvis KGFM e o seu e-mail. Em usuários de teste, adicione as duas contas: a
-              pessoal e a do Workspace.
+              Tela de permissão OAuth: <strong>Externo</strong>. Em usuários de teste, as duas
+              contas - a pessoal e a do Workspace.
             </li>
             <li>
-              Em <strong>Credenciais</strong>, crie um <strong>ID do cliente OAuth</strong> do tipo
-              <strong> Aplicativo da Web</strong>. No campo de URI de redirecionamento autorizado,
-              cole exatamente isto:
+              Credenciais: <strong>ID do cliente OAuth</strong>, tipo Aplicativo da Web. URI de
+              redirecionamento:
               <span
                 className="block dado text-[11px] mt-1 p-2 rounded break-all"
                 style={{ background: 'var(--superficie-alta)' }}
@@ -76,25 +72,13 @@ export function LigarGoogle({
               </span>
             </li>
             <li>
-              Copie o <strong>ID do cliente</strong> e a <strong>chave secreta</strong> e ponha na
-              Vercel como <span className="dado">GOOGLE_CLIENT_ID</span> e{' '}
-              <span className="dado">GOOGLE_CLIENT_SECRET</span>. Ponha também{' '}
-              <span className="dado">URL_DO_APP</span> com o endereço do Jarvis.
+              Na Vercel: <span className="dado">GOOGLE_CLIENT_ID</span>,{' '}
+              <span className="dado">GOOGLE_CLIENT_SECRET</span> e{' '}
+              <span className="dado">URL_DO_APP</span>.
             </li>
-            <li>Redeploy na Vercel. Variável nova só vale para deploy feito depois dela.</li>
+            <li>Redeploy.</li>
           </ol>
-
-          <p className="fraco text-xs mt-3">
-            A Calendar API é gratuita e não exige faturamento ligado. O crédito de teste que o
-            Console oferece é propaganda, não conta a pagar - e, passados os noventa dias, o Google
-            não cobra sozinho: ele espera você fazer o upgrade.
-          </p>
         </details>
-
-        <p className="fraco text-xs mt-3">
-          Quando terminar, este bloco vira um botão de conectar. Se travar em algum passo, me diga
-          em qual - eu sei onde cada um costuma emperrar.
-        </p>
       </section>
     )
   }
@@ -103,10 +87,7 @@ export function LigarGoogle({
     return (
       <section className="cartao p-4">
         <p className="rotulo mb-2">agenda do Google - pronta para conectar</p>
-        <p className="fraco text-sm">
-          Clique e escolha a conta. A autorização acontece no site do Google - o Jarvis não vê a sua
-          senha, e você pode revogar quando quiser, na sua conta Google.
-        </p>
+        <p className="fraco text-sm">Escolha a conta na tela do Google.</p>
         {aviso && (
           <p className="text-sm mt-2" style={{ color: 'var(--ambar)' }}>
             {aviso}
@@ -131,11 +112,6 @@ export function LigarGoogle({
           {aviso}
         </p>
       )}
-
-      <p className="fraco text-sm mt-2">
-        O Jarvis lê a sua agenda e espelha na tela da Agenda. O que vem do Google aparece marcado, e
-        se edita no Google - quem manda lá é ele.
-      </p>
 
       {/* QUAL AGENDA É A DA EMPRESA.
           O Jarvis LÊ todas - hora ocupada é hora ocupada, venha de onde vier.
@@ -163,10 +139,6 @@ export function LigarGoogle({
             </select>
             <button className="botao-fantasma">Guardar</button>
           </div>
-          <p className="fraco text-[11px] mt-2">
-            Compromisso pessoal continua indo para a principal. Só aparecem aqui as agendas em que
-            você tem permissão de escrever.
-          </p>
         </form>
       )}
 
