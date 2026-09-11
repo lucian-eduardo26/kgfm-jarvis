@@ -14,6 +14,7 @@ import { responder, type Fala } from '@/lib/conversa'
 import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
 import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
 import { correnteDoProjeto } from '@/lib/modelos'
+import { extrairSpin } from '@/lib/transcricao'
 import type { TipoProjeto } from '@prisma/client'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
@@ -840,4 +841,87 @@ export async function marcarCompromisso(form: FormData) {
 
   revalidatePath('/agenda')
   revalidatePath('/painel')
+}
+
+/**
+ * Colar a transcrição de uma reunião e deixar o Jarvis extrair a qualificação.
+ *
+ * Três coisas acontecem, e a ordem importa:
+ *
+ * 1. A TRANSCRIÇÃO CRUA É GUARDADA primeiro, no banco de conhecimento. Se a
+ *    extração falhar, o material não se perde - foi ele quem decidiu que a
+ *    base de conhecimento mora aqui e não no Obsidian.
+ * 2. A IA extrai, COPIANDO trecho do cliente. Ver src/lib/transcricao.ts.
+ * 3. Campo que já tinha conteúdo NÃO é sobrescrito. O que ele escreveu à mão
+ *    vale mais do que o que a máquina achou, e perder isso silenciosamente
+ *    seria a pior forma de ajudar.
+ */
+export async function lerTranscricao(form: FormData) {
+  const projetoId = Number(form.get('projetoId'))
+  const texto = String(form.get('transcricao') ?? '').trim()
+  if (!projetoId || texto.length < 80) return
+
+  const projeto = await prisma.projeto.findUnique({ where: { id: projetoId } })
+  if (!projeto) return
+
+  const quando = new Date().toLocaleDateString('pt-BR')
+  await prisma.conhecimento.create({
+    data: {
+      titulo: `Reunião ${projeto.nome} - ${quando}`,
+      categoria: 'reuniao',
+      conteudo: texto,
+      tags: projeto.cliente ?? null,
+    },
+  })
+
+  const spin = await extrairSpin(texto)
+  if (!spin) {
+    redirect(`/projetos/${projetoId}?transcricao=sem-chave`)
+  }
+
+  await prisma.projeto.update({
+    where: { id: projetoId },
+    data: {
+      // `??` e não sobrescrita: o que ele escreveu à mão manda.
+      situacao: projeto.situacao?.trim() ? projeto.situacao : spin.situacao,
+      problema: projeto.problema?.trim() ? projeto.problema : spin.problema,
+      implicacao: projeto.implicacao?.trim() ? projeto.implicacao : spin.implicacao,
+      necessidade: projeto.necessidade?.trim() ? projeto.necessidade : spin.necessidade,
+    },
+  })
+
+  // Decisor novo entra; decisor que já existe fica como está.
+  const jaTem = new Set(
+    (await prisma.decisor.findMany({ where: { projetoId } })).map((d) => d.nome.toLowerCase()),
+  )
+  for (const d of spin.decisores) {
+    if (!d.nome?.trim() || jaTem.has(d.nome.trim().toLowerCase())) continue
+    await prisma.decisor.create({
+      data: {
+        projetoId,
+        nome: d.nome.trim(),
+        cargo: d.cargo ?? null,
+        oQueDoiParaEle: d.oQueDoiParaEle ?? null,
+      },
+    })
+  }
+
+  if (spin.resumo.trim()) {
+    await prisma.conhecimento.create({
+      data: {
+        titulo: `Resumo da reunião ${projeto.nome} - ${quando}`,
+        categoria: 'resumo',
+        conteudo:
+          spin.resumo +
+          (spin.perguntasQueFaltam.length
+            ? `\n\nO que ficou sem resposta:\n- ${spin.perguntasQueFaltam.join('\n- ')}`
+            : ''),
+        tags: projeto.cliente ?? null,
+      },
+    })
+  }
+
+  revalidatePath(`/projetos/${projetoId}`)
+  revalidatePath('/playbook')
+  redirect(`/projetos/${projetoId}?transcricao=ok`)
 }

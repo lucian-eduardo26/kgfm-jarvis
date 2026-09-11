@@ -70,7 +70,11 @@ export function Moldura({
   atalhoAtivo?: string
 }) {
   return (
-    <>
+    // A cor da seção envolve TUDO, inclusive o rodapé fixo. Ele é irmão do
+    // conteúdo, e enquanto a variável morava dentro de `.com-trilho` o rodapé
+    // caía no laranja padrão em toda tela - o sinal mais visível de "onde eu
+    // estou" era justamente o que não mudava.
+    <div style={{ ['--secao' as string]: COR_DA_SECAO[atalhoAtivo ?? '/painel'] ?? 'var(--laranja)' }}>
       <nav className="trilho" aria-label="Atalhos">
         {ATALHOS.map((a) => (
           <Link key={a.href} href={a.href} title={a.nome} aria-label={a.nome} data-ativo={atalhoAtivo === a.href ? '1' : '0'}>
@@ -79,7 +83,7 @@ export function Moldura({
         ))}
       </nav>
 
-      <div className="com-trilho" style={{ ['--secao' as string]: COR_DA_SECAO[atalhoAtivo ?? '/painel'] ?? 'var(--laranja)' }}>
+      <div className="com-trilho">
         <header className="cabecalho">
           <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5">
             <div className="cabecalho-linha">
@@ -116,7 +120,7 @@ export function Moldura({
           dele o ponto de referência de qualquer filho `fixed` - os pontinhos
           ficariam presos dentro da faixa do topo em vez de colar no rodapé. */}
       <Deslizar />
-    </>
+    </div>
   )
 }
 

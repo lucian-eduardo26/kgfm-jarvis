@@ -5,6 +5,22 @@ import type { Engrenagens as Dados } from '@/lib/engrenagens'
 import { Cabeca } from './Moldura'
 import { mudarEspera } from '@/app/acoes'
 
+
+/**
+ * O nome do projeto, clicavel quando existe projeto.
+ *
+ * Regra do Lucian em 10/09/2026: onde o projeto aparece, o projeto abre.
+ * Frente sem projeto mostra a area, e area nao e lugar para onde ir daqui.
+ */
+function NomeDoProjeto({ nome, id, area }: { nome: string | null; id: number | null; area: string }) {
+  if (!nome || !id) return <>{area}</>
+  return (
+    <Link href={`/projetos/${id}`} className="hover:underline">
+      {nome}
+    </Link>
+  )
+}
+
 export function Engrenagens({ e }: { e: Dados }) {
   return (
     <section className="cartao">
@@ -39,7 +55,7 @@ export function Engrenagens({ e }: { e: Dados }) {
                     {g.titulo}
                     <span className="fraco">
                       {' '}
-                      · {g.projeto ?? g.area} · com o {g.quem}
+                      · <NomeDoProjeto nome={g.projeto} id={g.projetoId} area={g.area} /> · com o {g.quem}
                     </span>
                   </span>
                   <span className="text-[11px] dado shrink-0">
@@ -65,7 +81,7 @@ export function Engrenagens({ e }: { e: Dados }) {
                     {m.titulo}
                     <span className="fraco">
                       {' '}
-                      · {m.projeto ?? m.area}
+                      · <NomeDoProjeto nome={m.projeto} id={m.projetoId} area={m.area} />
                     </span>
                   </span>
                   <span

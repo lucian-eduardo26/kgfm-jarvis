@@ -72,7 +72,7 @@ export function Captura({ flutuante = false }: { flutuante?: boolean }) {
       ref={barra}
       className={
         flutuante
-          ? 'fixed bottom-0 left-0 right-0 z-40 bg-[var(--fundo)]/95 backdrop-blur px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 border-t border-[var(--linha)]'
+          ? 'captura-flutuante fixed bottom-0 left-0 right-0 z-40 bg-[var(--fundo)]/95 backdrop-blur px-3 pb-3 pt-3 border-t border-[var(--linha)]'
           : ''
       }
     >

@@ -159,7 +159,9 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
               <section key={p.id} className="cartao p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-semibold">{p.nome}</p>
+                    <Link href={`/projetos/${p.id}`} className="font-semibold hover:underline">
+                      {p.nome}
+                    </Link>
                     <p className="text-xs fraco mt-0.5">
                       {p.cliente ?? 'sem cliente'} ·{' '}
                       {p.valorEstimado ? `R$ ${p.valorEstimado.toLocaleString('pt-BR')}` : 'sem valor'} ·{' '}

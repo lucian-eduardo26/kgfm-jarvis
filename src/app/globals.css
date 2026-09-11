@@ -550,7 +550,7 @@ body {
 
 /* Sobra para a barra de captura E para a fileira de pontinhos acima dela. */
 .com-captura {
-  padding-bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 2.6rem);
+  padding-bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 52px + 1rem);
 }
 
 @media (min-width: 1024px) {
@@ -766,60 +766,104 @@ select,
   pointer-events: none;
 }
 
-/* ---------- os pontinhos de tela ----------
-   Ficam FIXOS no rodapé, logo acima da barra de captura: quem navega com o
-   polegar não olha para o topo da tela. Cada ponto também é botão. */
+/* ===========================================================================
+   O RODAPÉ FIXO
+   ---------------------------------------------------------------------------
+   Substituiu os pontinhos em 10/09/2026. O Lucian: "ficam sobrepostos, passa
+   o botão embaixo deles, e estão muito pequenos - eu não sei onde estou".
 
-.pontos-telas {
+   A tela atual recebe TRÊS sinais ao mesmo tempo: cor, nome escrito e um
+   traço em cima. Redundância de propósito - um sinal só falha em tela
+   pequena, com sol, com pressa.
+
+   Ele fica ABAIXO da barra de captura na pilha visual, e a barra de captura
+   se apoia nele. Dois flutuantes disputando a mesma faixa foi o que gerou a
+   queixa; agora um empilha sobre o outro.
+   =========================================================================== */
+
+.rodape {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(var(--altura-captura) + env(safe-area-inset-bottom) + 0.35rem);
-  z-index: 35;
+  bottom: 0;
+  z-index: 45;
   display: flex;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 2px;
+  padding: 0 0.25rem env(safe-area-inset-bottom);
+  background: rgba(10, 10, 11, 0.94);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-top: 1px solid var(--linha);
+}
+
+.rodape-item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  pointer-events: none;
+  justify-content: center;
+  gap: 2px;
+  /* 52px de altura: alvo confortável para o dedão sem comer a tela. */
+  height: 52px;
+  color: var(--fraco);
+  transition: color 0.15s ease;
 }
 
-.ponto-tela {
-  pointer-events: auto;
-  /* A área de toque é 28x28 e o desenho é 6px: alvo grande, marca discreta. */
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: none;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+.rodape-item:active {
+  color: var(--texto-medio);
 }
 
-.ponto-tela::before {
+/* SINAL 1: a cor da seção. SINAL 2: o nome, logo abaixo. */
+.rodape-aqui {
+  color: var(--secao);
+}
+
+/* SINAL 3: o traço em cima, que é o que se enxerga de relance. */
+.rodape-aqui::before {
   content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--linha-forte);
-  transition: background 0.18s ease, width 0.18s ease;
+  position: absolute;
+  top: 0;
+  left: 22%;
+  right: 22%;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--secao);
 }
 
-.ponto-tela-aqui::before {
-  width: 18px;
-  background: var(--laranja);
+.rodape-nome {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.ponto-tela:focus-visible {
-  outline: 2px solid var(--laranja-luz);
-  outline-offset: -4px;
-  border-radius: 999px;
+.rodape-item:focus-visible {
+  outline: 2px solid var(--secao);
+  outline-offset: -3px;
+  border-radius: 8px;
 }
 
 @media (min-width: 1024px) {
-  /* No computador existe o trilho de ícones, e não existe deslize. */
-  .pontos-telas {
+  /* No computador existe o trilho de ícones à esquerda, e ele já diz onde
+     você está. Dois lugares dizendo a mesma coisa é um a mais. */
+  .rodape {
     display: none;
+  }
+}
+
+/* A barra de captura se apoia no rodapé em vez de brigar com ele. */
+@media (max-width: 1023px) {
+  .captura-flutuante {
+    bottom: calc(52px + env(safe-area-inset-bottom));
   }
 }
 
@@ -875,19 +919,27 @@ select,
 }
 
 /* A transição de entrada. Curta: o suficiente para o olho registrar, não o
-   bastante para atrasar quem já sabe para onde vai. */
+   bastante para atrasar quem já sabe para onde vai.
+
+   SEM "transform" DE PROPÓSITO, e esta é uma armadilha cara de achar:
+   elemento com transform vira a referência de qualquer filho "position:
+   fixed". A barra de captura mora dentro desta div, e com translateY aqui ela
+   parava de colar no rodapé e ia parar a 2300px do topo - fixa, sim, mas presa
+   à caixa errada. "top" sobre "position: relative" dá o mesmo movimento e não
+   cria referência nenhuma. */
 .tela-entrando {
+  position: relative;
   animation: entrar 0.24s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 @keyframes entrar {
   from {
     opacity: 0;
-    transform: translateY(7px);
+    top: 7px;
   }
   to {
     opacity: 1;
-    transform: none;
+    top: 0;
   }
 }
 

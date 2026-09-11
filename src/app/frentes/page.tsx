@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { lerConfig } from '@/lib/configuracao'
@@ -117,7 +118,17 @@ export default async function Frentes({
                     <p className="text-xs fraco mt-0.5">
                       {f.area.nome}
                       {f.etapa ? ` · ${nomeDaEtapa(f.area.chave, f.etapa)}` : ''}
-                      {f.projeto ? ` · ${f.projeto.nome}` : ''} ·{' '}
+                      {f.projeto ? (
+                        <>
+                          {' · '}
+                          <Link href={`/projetos/${f.projeto.id}`} className="hover:underline" style={{ color: 'var(--texto-medio)' }}>
+                            {f.projeto.nome}
+                          </Link>
+                        </>
+                      ) : (
+                        ''
+                      )}{' '}
+                      ·{' '}
                       {parada === 0 ? 'movida hoje' : `parada há ${parada} dias úteis`}
                     </p>
                   </div>

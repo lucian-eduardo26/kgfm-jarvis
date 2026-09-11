@@ -201,6 +201,7 @@ export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPai
         titulo: f.titulo,
         area: f.area.nome,
         projeto: f.projeto?.nome ?? null,
+        projetoId: f.projetoId ?? null,
         aguardandoQuem: f.aguardandoQuem,
         aguardandoDesde: f.aguardandoDesde,
         ultimoMovimentoEm: f.ultimoMovimentoEm,

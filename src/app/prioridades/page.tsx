@@ -9,6 +9,7 @@
 // propósito. Quando elas divergem muito, ou o peso está errado ou falta dado,
 // e ver a diferença é o que ensina qual dos dois.
 
+import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { Moldura, Cabeca } from '@/components/Moldura'
 import { carteiraDeProjetos } from '@/lib/projetos'
@@ -53,7 +54,12 @@ export default async function Prioridades() {
                 <span className="numero text-sm shrink-0 w-5 text-right fraco">{i + 1}</span>
 
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">{p.nome}</p>
+                  {/* Onde o projeto aparece, o projeto abre. Regra do Lucian em
+                      10/09/2026, e ela vale para o sistema inteiro: nome de
+                      projeto que não leva ao projeto é um beco. */}
+                  <Link href={`/projetos/${p.id}`} className="font-medium truncate block hover:underline">
+                    {p.nome}
+                  </Link>
                   <p className="text-xs fraco">
                     {p.cliente ?? 'sem cliente'} · {p.tipoNome}
                   </p>

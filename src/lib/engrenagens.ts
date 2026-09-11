@@ -32,6 +32,7 @@ export type FrenteParaEngrenagem = {
   titulo: string
   area: string
   projeto: string | null
+  projetoId: number | null
   aguardandoQuem: 'eu' | 'cliente' | 'terceiro'
   aguardandoDesde: Date | null
   ultimoMovimentoEm: Date
@@ -43,6 +44,7 @@ export type Engrenagem = {
   titulo: string
   area: string
   projeto: string | null
+  projetoId: number | null
   /** há quantos dias úteis está girando fora */
   dias: number
   quem: 'cliente' | 'terceiro'
@@ -53,6 +55,7 @@ export type NaMinhaMao = {
   titulo: string
   area: string
   projeto: string | null
+  projetoId: number | null
   diasParada: number
   critica: boolean
 }
@@ -81,6 +84,7 @@ export function montarEngrenagens(
         titulo: f.titulo,
         area: f.area,
         projeto: f.projeto,
+        projetoId: f.projetoId,
         dias: f.aguardandoDesde ? diasUteisEntre(f.aguardandoDesde, agora) : 0,
         quem: f.aguardandoQuem,
       })
@@ -91,6 +95,7 @@ export function montarEngrenagens(
         titulo: f.titulo,
         area: f.area,
         projeto: f.projeto,
+        projetoId: f.projetoId,
         diasParada: parada,
         critica: parada >= f.diasParaCritico,
       })

@@ -14,7 +14,7 @@ import { prisma } from '@/lib/prisma'
 import { Moldura, Cabeca } from '@/components/Moldura'
 import { montarCronograma, dataCurta, oQueFazerComOAtraso } from '@/lib/cronograma'
 import { NOME_DO_TIPO } from '@/lib/modelos'
-import { definirInicioDoProjeto, editarProjeto, marcarPacote } from '../../acoes'
+import { definirInicioDoProjeto, editarProjeto, marcarPacote, lerTranscricao } from '../../acoes'
 import { Cronograma } from '@/components/Cronograma'
 import { Spin } from '@/components/Spin'
 
@@ -31,11 +31,11 @@ export default async function ProjetoDetalhe({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ corrente?: string }>
+  searchParams: Promise<{ corrente?: string; transcricao?: string }>
 }) {
   await exigirSessao()
   const { id } = await params
-  const { corrente } = await searchParams
+  const { corrente, transcricao } = await searchParams
   const travada = corrente === 'travada'
 
   const projeto = await prisma.projeto.findUnique({
@@ -104,6 +104,20 @@ export default async function ProjetoDetalhe({
           </p>
         )}
       </section>
+
+      {transcricao === 'ok' && (
+        <p className="cartao p-3 mb-3 text-sm" style={{ borderColor: 'var(--verde)', color: 'var(--verde)' }}>
+          Transcrição lida. A qualificação abaixo foi preenchida com trechos do que o cliente
+          disse - campo vazio quer dizer que ele não disse, e é a pergunta que falta fazer.
+        </p>
+      )}
+
+      {transcricao === 'sem-chave' && (
+        <p className="cartao p-3 mb-3 text-sm" style={{ borderColor: 'var(--ambar)', color: 'var(--ambar)' }}>
+          A transcrição foi guardada, mas sem a chave da API o Jarvis não consegue extrair a
+          qualificação. Confira ANTHROPIC_API_KEY na Vercel.
+        </p>
+      )}
 
       {travada && (
         <p className="cartao p-3 mb-3 text-sm" style={{ borderColor: 'var(--ambar)', color: 'var(--ambar)' }}>
@@ -230,6 +244,28 @@ export default async function ProjetoDetalhe({
             </span>
           )}
         </summary>
+        {/* A transcrição vira qualificação. Ele pediu em 10/09/2026: "um campo
+            onde colar a transcrição, aí o Claude roda pra gerar o S, o P, o I
+            e o N". A IA COPIA trecho do cliente - não interpreta -, e nunca
+            sobrescreve o que ele escreveu à mão. */}
+        <form action={lerTranscricao} className="mt-3 pb-3 border-b border-[var(--linha)]">
+          <input type="hidden" name="projetoId" value={projeto.id} />
+          <label className="text-xs fraco block mb-1">
+            Cole aqui a transcrição da reunião
+          </label>
+          <textarea
+            name="transcricao"
+            rows={4}
+            placeholder="Cole a gravação transcrita, a ata, ou as suas anotações da visita."
+            className="campo resize-y"
+          />
+          <button className="botao mt-2">Extrair a qualificação</button>
+          <p className="fraco text-[11px] mt-2">
+            O texto cru fica guardado no banco de conhecimento, e o Jarvis copia do que o CLIENTE
+            disse. O que você já escreveu à mão não é sobrescrito. Custa menos de um centavo.
+          </p>
+        </form>
+
         <div className="mt-3">
           <Spin
             projetoId={projeto.id}
