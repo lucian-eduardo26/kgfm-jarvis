@@ -24,7 +24,7 @@ import { montarSemanaCurta } from '@/lib/semanaCurta'
 import { FUSO } from '@/lib/datas'
 import { marcarCompromisso, apagarCompromisso, gerarPlanoDoDia } from '../acoes'
 import { LigarGoogle } from '@/components/LigarGoogle'
-import { googleConfigurado, enderecoDeRetorno, contaLigada } from '@/lib/google'
+import { googleConfigurado, enderecoDeRetorno, contaLigada, listarCalendarios } from '@/lib/google'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +39,8 @@ export default async function Agenda({
   const { dia, google, motivo, conta: contaDoRetorno, sincronia } = await searchParams
 
   const conta = await contaLigada()
+  // So pergunta as agendas se houver conta: sem conta a lista seria sempre nula.
+  const calendarios = conta ? await listarCalendarios() : null
 
   // O retorno do Google vira frase em portugues. "invalid_grant" na tela e
   // um beco: quem le nao sabe se a culpa e dele, minha, ou do Google.
@@ -197,6 +199,7 @@ export default async function Agenda({
         <LigarGoogle
           configurado={googleConfigurado()}
           conta={conta}
+          calendarios={calendarios}
           enderecoDeRetorno={enderecoDeRetorno()}
           aviso={avisoDoGoogle}
         />

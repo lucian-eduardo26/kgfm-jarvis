@@ -140,6 +140,45 @@ export async function desligarConta() {
   await prisma.contaGoogle.deleteMany({})
 }
 
+
+export type CalendarioGoogle = {
+  id: string
+  nome: string
+  principal: boolean
+  /** Ele pode escrever nesta agenda? Agenda só de leitura não recebe bloco. */
+  escreve: boolean
+}
+
+/**
+ * AS AGENDAS QUE ELE ENXERGA, e não só a principal.
+ *
+ * Feriados e aniversários ficam de fora: são feeds, não compromissos que
+ * consomem a hora dele, e entupiriam a semana com ruído.
+ */
+export async function listarCalendarios(): Promise<CalendarioGoogle[] | null> {
+  const token = await tokenDeAcesso()
+  if (!token) return null
+
+  const r = await fetch(`${CALENDARIO}/users/me/calendarList?maxResults=250`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  })
+  if (!r.ok) return null
+
+  const j = (await r.json()) as {
+    items?: { id: string; summary?: string; primary?: boolean; accessRole?: string }[]
+  }
+
+  return (j.items ?? [])
+    .filter((c) => !/holiday|#contacts|birthday/i.test(c.id))
+    .map((c) => ({
+      id: c.id,
+      nome: c.summary ?? c.id,
+      principal: Boolean(c.primary),
+      escreve: c.accessRole === 'owner' || c.accessRole === 'writer',
+    }))
+}
+
 export type EventoGoogle = {
   id: string
   titulo: string
@@ -148,6 +187,9 @@ export type EventoGoogle = {
   local: string | null
   /** Evento que o próprio Jarvis criou. */
   doJarvis: boolean
+  /** De qual agenda veio. Empresa e pessoal não se misturam na leitura. */
+  calendarioId: string
+  calendarioNome: string
 }
 
 /** A marca que o Jarvis põe no que ele mesmo cria, para se reconhecer depois. */
@@ -157,6 +199,13 @@ export async function lerEventos(de: Date, ate: Date): Promise<EventoGoogle[] | 
   const token = await tokenDeAcesso()
   if (!token) return null
 
+  // TODAS AS AGENDAS, e este era um bug de verdade: o código lia só
+  // `primary`, então ENTRADAS KGFM, SAÍDAS KGFM e qualquer agenda de empresa
+  // compartilhada eram ignoradas em silêncio. Ele viu primeiro - marcou uma
+  // reunião na agenda da empresa e ela não apareceu no Jarvis.
+  const calendarios = await listarCalendarios()
+  if (!calendarios) return null
+
   const p = new URLSearchParams({
     timeMin: de.toISOString(),
     timeMax: ate.toISOString(),
@@ -165,34 +214,45 @@ export async function lerEventos(de: Date, ate: Date): Promise<EventoGoogle[] | 
     maxResults: '250',
   })
 
-  const r = await fetch(`${CALENDARIO}/calendars/primary/events?${p}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  })
-  if (!r.ok) return null
+  const tudo: EventoGoogle[] = []
 
-  const j = (await r.json()) as {
-    items?: {
-      id: string
-      summary?: string
-      location?: string
-      start?: { dateTime?: string; date?: string }
-      end?: { dateTime?: string; date?: string }
-      extendedProperties?: { private?: Record<string, string> }
-    }[]
+  for (const c of calendarios) {
+    const r = await fetch(`${CALENDARIO}/calendars/${encodeURIComponent(c.id)}/events?${p}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    })
+    // Uma agenda que falha não derruba as outras: melhor semana incompleta
+    // do que semana nenhuma.
+    if (!r.ok) continue
+
+    const j = (await r.json()) as {
+      items?: {
+        id: string
+        summary?: string
+        location?: string
+        start?: { dateTime?: string; date?: string }
+        end?: { dateTime?: string; date?: string }
+        extendedProperties?: { private?: Record<string, string> }
+      }[]
+    }
+
+    for (const e of j.items ?? []) {
+      // Evento de dia inteiro não tem hora e não disputa bloco de trabalho.
+      if (!e.start?.dateTime || !e.end?.dateTime) continue
+      tudo.push({
+        id: e.id,
+        titulo: e.summary ?? '(sem título)',
+        inicio: new Date(e.start.dateTime),
+        fim: new Date(e.end.dateTime),
+        local: e.location ?? null,
+        doJarvis: e.extendedProperties?.private?.origem === MARCA_DO_JARVIS,
+        calendarioId: c.id,
+        calendarioNome: c.nome,
+      })
+    }
   }
 
-  return (j.items ?? [])
-    // Evento de dia inteiro não tem hora e não disputa bloco de trabalho.
-    .filter((e) => e.start?.dateTime && e.end?.dateTime)
-    .map((e) => ({
-      id: e.id,
-      titulo: e.summary ?? '(sem título)',
-      inicio: new Date(e.start!.dateTime!),
-      fim: new Date(e.end!.dateTime!),
-      local: e.location ?? null,
-      doJarvis: e.extendedProperties?.private?.origem === MARCA_DO_JARVIS,
-    }))
+  return tudo.sort((a, b) => a.inicio.getTime() - b.inicio.getTime())
 }
 
 export async function criarEvento(e: {
@@ -201,11 +261,21 @@ export async function criarEvento(e: {
   fim: Date
   descricao?: string
   local?: string
+  /**
+   * EM QUAL AGENDA. Vazio cai na principal.
+   *
+   * Compromisso de cliente vai para a agenda da empresa; compromisso pessoal
+   * vai para a pessoal. Misturar os dois foi exatamente a queixa dele - a
+   * vida pessoal e a da empresa convivem no Jarvis, mas não no mesmo lugar.
+   */
+  calendarioId?: string | null
 }): Promise<{ id: string } | { erro: string }> {
   const token = await tokenDeAcesso()
   if (!token) return { erro: 'O Jarvis não está ligado a nenhuma conta do Google.' }
 
-  const r = await fetch(`${CALENDARIO}/calendars/primary/events`, {
+  const alvo = encodeURIComponent(e.calendarioId?.trim() || 'primary')
+
+  const r = await fetch(`${CALENDARIO}/calendars/${alvo}/events`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -9,16 +9,19 @@
 // no navegador dele. O Jarvis recebe de volta só uma permissão revogável, que
 // ele pode cancelar na conta Google a qualquer hora.
 
-import { desligarGoogle, sincronizarAgenda } from '@/app/acoes'
+import { desligarGoogle, sincronizarAgenda, definirCalendarioDaEmpresa } from '@/app/acoes'
+import type { CalendarioGoogle } from '@/lib/google'
 
 export function LigarGoogle({
   configurado,
   conta,
+  calendarios,
   enderecoDeRetorno,
   aviso,
 }: {
   configurado: boolean
-  conta: { email: string; usadoEm: Date } | null
+  conta: { email: string; usadoEm: Date; calendarioId: string | null } | null
+  calendarios: CalendarioGoogle[] | null
   enderecoDeRetorno: string
   aviso?: string | null
 }) {
@@ -102,6 +105,52 @@ export function LigarGoogle({
         O Jarvis lê a sua agenda e espelha aqui. O que vem do Google aparece marcado, e se edita no
         Google - quem manda lá é ele.
       </p>
+
+      {/* QUAL AGENDA É A DA EMPRESA.
+          O Jarvis LÊ todas - hora ocupada é hora ocupada, venha de onde vier.
+          Mas ESCREVER é outra conversa: reunião de cliente lançada na agenda
+          pessoal é erro que aparece na frente do cliente. */}
+      {calendarios && calendarios.length > 1 && (
+        <form action={definirCalendarioDaEmpresa} className="mt-3 pt-3 border-t border-[var(--linha)]">
+          <label className="text-xs fraco block mb-1">
+            Onde o Jarvis lança compromisso de cliente
+          </label>
+          <div className="flex flex-wrap gap-2 items-end">
+            <select name="calendarioId" defaultValue={conta.calendarioId ?? ''} className="campo flex-1 min-w-[200px]">
+              <option value="">A principal (pessoal)</option>
+              {calendarios
+                .filter((c) => c.escreve && !c.principal)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                  </option>
+                ))}
+            </select>
+            <button className="botao-fantasma">Guardar</button>
+          </div>
+          <p className="fraco text-[11px] mt-2">
+            Compromisso pessoal continua indo para a principal. Só aparecem aqui as agendas em que
+            você tem permissão de escrever.
+          </p>
+        </form>
+      )}
+
+      {calendarios && (
+        <details className="mt-3">
+          <summary className="text-[11px] fraco cursor-pointer select-none">
+            {calendarios.length} agendas sendo lidas
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {calendarios.map((c) => (
+              <li key={c.id} className="text-[11px] fraco flex items-baseline gap-2">
+                <span className="truncate">{c.nome}</span>
+                {!c.escreve && <span className="dado shrink-0">só leitura</span>}
+                {c.principal && <span className="dado shrink-0">principal</span>}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
 
       <div className="flex flex-wrap gap-2 mt-3">
         <form action={sincronizarAgenda}>

@@ -1156,3 +1156,26 @@ async function talvezSejaProspeccao(texto: string): Promise<ResultadoComando | n
 
   return null
 }
+
+/**
+ * Qual agenda é a DA EMPRESA.
+ *
+ * O Lucian em 11/09/2026: "quando eu mandar criar uma reunião com um cliente,
+ * o Jarvis vai criar na da empresa. Quando for compromisso pessoal, ele vai
+ * criar na pessoal."
+ *
+ * O Jarvis lê TODAS as agendas para planejar - a hora ocupada é a mesma,
+ * venha de onde vier. Mas escrever é diferente: reunião de cliente na agenda
+ * pessoal é o tipo de erro que aparece na frente do cliente.
+ */
+export async function definirCalendarioDaEmpresa(form: FormData) {
+  const id = String(form.get('calendarioId') ?? '').trim()
+  const conta = await prisma.contaGoogle.findFirst({ orderBy: { usadoEm: 'desc' } })
+  if (!conta) return
+  await prisma.contaGoogle.update({
+    where: { id: conta.id },
+    // Vazio volta ao padrão: escrever na principal.
+    data: { calendarioId: id || null },
+  })
+  revalidatePath('/agenda')
+}
