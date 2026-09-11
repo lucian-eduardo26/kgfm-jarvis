@@ -23,14 +23,41 @@ import { SemanaCurta } from '@/components/SemanaCurta'
 import { montarSemanaCurta } from '@/lib/semanaCurta'
 import { FUSO } from '@/lib/datas'
 import { marcarCompromisso, apagarCompromisso, gerarPlanoDoDia } from '../acoes'
+import { LigarGoogle } from '@/components/LigarGoogle'
+import { googleConfigurado, enderecoDeRetorno, contaLigada } from '@/lib/google'
 
 export const dynamic = 'force-dynamic'
 
 const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
 
-export default async function Agenda({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
+export default async function Agenda({
+  searchParams,
+}: {
+  searchParams: Promise<{ dia?: string; google?: string; motivo?: string; conta?: string; sincronia?: string }>
+}) {
   await exigirSessao()
-  const { dia } = await searchParams
+  const { dia, google, motivo, conta: contaDoRetorno, sincronia } = await searchParams
+
+  const conta = await contaLigada()
+
+  // O retorno do Google vira frase em portugues. "invalid_grant" na tela e
+  // um beco: quem le nao sabe se a culpa e dele, minha, ou do Google.
+  const avisoDoGoogle =
+    google === 'erro'
+      ? (motivo ?? 'O Google recusou a autorização.')
+      : google === 'recusado'
+        ? 'Você cancelou na tela do Google. Nada foi ligado.'
+        : google === 'sem-chave'
+          ? 'Falta a credencial do Google nas variáveis do app.'
+          : google === 'ligado'
+            ? `Conta ${contaDoRetorno ?? ''} ligada.`
+            : google === 'desligado'
+              ? 'Conta desligada. O espelho para de atualizar.'
+              : google === 'falhou'
+                ? 'Não consegui ler a agenda. A autorização pode ter sido revogada.'
+                : sincronia
+                  ? `${sincronia} compromissos espelhados do Google.`
+                  : null
 
   const semana = await montarSemanaCurta()
   const inicio = new Date(`${semana[0].dia}T00:00:00`)
@@ -162,25 +189,18 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
         </div>
       </section>
 
-      {/* O BOTAO QUE FUNCIONA HOJE. A ligacao direta com o Google depende de
-          uma autorizacao que so ele pode dar; o arquivo de calendario nao
-          depende de ninguem e o Google importa. Pior em uma coisa so: nao
-          sincroniza de volta. Para marcar aqui e ver la, resolve. */}
-      <section className="cartao p-4 mt-3">
-        <p className="rotulo mb-2">levar para o Google Calendar</p>
-        <p className="fraco text-sm">
-          Baixa as duas próximas semanas num arquivo de calendário. No celular, toque e escolha
-          abrir no Google Agenda; no computador, use Configurações, Importar e exportar.
-        </p>
-        <a href="/api/agenda.ics" download className="botao inline-block mt-3">
-          Gerar a semana
-        </a>
-        <p className="fraco text-xs mt-3">
-          Isto leva os compromissos daqui para lá. O contrário ainda não acontece - mudou no
-          Google, o Jarvis não fica sabendo. Para a ligação de mão dupla, preciso de dez minutos
-          seus no Google Cloud Console.
-        </p>
-      </section>
+      {/* A LIGACAO COM O GOOGLE. O arquivo .ics saiu daqui: ele testou e
+          travou - "abriu um negocio de calendario que nao gera coisa nenhuma,
+          nao da pra editar o nome". Arquivo no meio do caminho e sempre pior
+          do que ligacao direta, e ele estava certo em recusar. */}
+      <div className="mt-3">
+        <LigarGoogle
+          configurado={googleConfigurado()}
+          conta={conta}
+          enderecoDeRetorno={enderecoDeRetorno()}
+          aviso={avisoDoGoogle}
+        />
+      </div>
 
       {/* O PLANO DE AMANHA. E o consultor, e nao a lista: ele diz a hora de
           cada bloco, o que fica de fora, e o custo de ter ficado. */}

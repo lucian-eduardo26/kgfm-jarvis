@@ -525,3 +525,31 @@ model Descanso {
   @@index([inicio])
   @@map("descansos")
 }
+
+// A CONTA DO GOOGLE ligada ao Jarvis.
+//
+// O Lucian em 11/09/2026: "eu quero uma solucao em que o Jarvis acessa o
+// Google Calendar sozinho, e nao o Claude. Nao tem saida, tem que fazer. Na
+// agenda, o tempo, e o foco desse Jarvis."
+//
+// O QUE FICA GUARDADO AQUI E O REFRESH TOKEN, e so ele. O token de acesso vale
+// uma hora e se pede de novo quando precisa - guardar o de curta duracao seria
+// guardar lixo que vence. O refresh token nao vence, e por isso ele e tratado
+// como senha: nunca aparece em tela, nunca sai em log, e apagar a linha
+// desconecta a conta.
+//
+// `email` existe para a tela poder dizer QUAL conta esta ligada. Ligar a conta
+// errada e o tipo de erro que so se descobre depois de uma semana marcando
+// compromisso no lugar errado.
+model ContaGoogle {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  refreshToken String   @map("refresh_token")
+  escopos      String
+  // A agenda em que o Jarvis escreve. Vazio quer dizer a principal.
+  calendarioId String?  @map("calendario_id")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  usadoEm      DateTime @updatedAt @map("usado_em")
+
+  @@map("contas_google")
+}

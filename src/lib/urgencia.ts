@@ -18,8 +18,8 @@
 // Um pacote atrasado que não atravessa nenhuma data de corte é aborrecimento.
 // Um dia perdido em cima do corte são dez dias de caixa.
 
-import { carteiraDeProjetos, type ProjetoNaCarteira } from './projetos'
-import { regraDoCliente, proximaJanela, dataLonga, type TipoNota } from './recebimento'
+import { carteiraDeProjetos } from './projetos'
+import { regraDoCliente, melhorJanela, dataLonga } from './recebimento'
 import { diaSP, diasUteisEntre } from './datas'
 
 export type NivelDeUrgencia = 'estourou' | 'hoje' | 'aperta' | 'folgado'
@@ -44,21 +44,15 @@ export type Alerta = {
 
 const ORDEM: Record<NivelDeUrgencia, number> = { estourou: 0, hoje: 1, aperta: 2, folgado: 3 }
 
-/**
- * Peça usinada fatura como MATERIAL; sistema com montagem tem mão de obra e
- * fatura como serviço.
- *
- * MAS TODOS USAM O CORTE DE SERVIÇO por enquanto, e isso é deliberado: ele
- * hesitou sobre o corte de material ("se eu não me engano tem sim, que é dia
- * 20"), e é nele que os dois projetos que faturam estão apoiados.
- *
- * Errar para o lado apertado manda a nota cedo demais, e isso não custa nada.
- * Errar para o lado folgado custa dez dias de caixa. Enquanto a dúvida existir,
- * o sistema erra para o lado que não dói.
- */
-function tipoDaNota(_p: ProjetoNaCarteira): TipoNota {
-  return 'servico'
-}
+// O TIPO DA NOTA NÃO DECIDE MAIS NADA AQUI.
+//
+// A escolha da janela passou para `melhorJanela`, em recebimento.ts, e a razão
+// é do Lucian: "o corte de material é dia 20, mas se eu enviar dia 19 vou
+// receber dia 25. Estou jogando pra frente à toa."
+//
+// A data de corte não é uma regra a cumprir - é uma porta, e há mais de uma
+// porta aberta. A pergunta certa é qual delas põe o dinheiro na conta mais
+// cedo, e não qual delas casa com o tipo da nota.
 
 export async function alertasDeCaixa(agora: Date = new Date()): Promise<Alerta[]> {
   const carteira = await carteiraDeProjetos()
@@ -73,7 +67,7 @@ export async function alertasDeCaixa(agora: Date = new Date()): Promise<Alerta[]
     // Projeto que ainda não foi vendido não tem nota para emitir.
     if (p.fase === 'desenvolvimento') continue
 
-    const janela = proximaJanela(regra, tipoDaNota(p), hoje)
+    const janela = melhorJanela(regra, hoje)
     const entrega = p.cronograma.entregaPrevista
 
     // Quantos dias o plano passa do corte. Sem cronograma, assume que cabe -

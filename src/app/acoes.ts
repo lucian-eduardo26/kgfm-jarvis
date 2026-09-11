@@ -16,6 +16,8 @@ import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
 import { correnteDoProjeto } from '@/lib/modelos'
 import { extrairSpin } from '@/lib/transcricao'
 import { fazerPlanoDoDia } from '@/lib/ritual'
+import { sincronizarDoGoogle } from '@/lib/sincronizarAgenda'
+import { desligarConta } from '@/lib/google'
 import type { TipoProjeto } from '@prisma/client'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
@@ -938,4 +940,25 @@ export async function gerarPlanoDoDia(form: FormData) {
   const foco = String(form.get('foco') ?? '').trim()
   await fazerPlanoDoDia(foco || undefined)
   revalidatePath('/agenda')
+}
+
+/** Puxar a agenda do Google para dentro do Jarvis. Duas semanas por vez. */
+export async function sincronizarAgenda() {
+  const de = new Date()
+  de.setDate(de.getDate() - 1)
+  de.setHours(0, 0, 0, 0)
+  const ate = new Date(de)
+  ate.setDate(ate.getDate() + 15)
+
+  const r = await sincronizarDoGoogle(de, ate)
+  revalidatePath('/agenda')
+  revalidatePath('/painel')
+  redirect(r.ok ? `/agenda?sincronia=${r.espelhados}` : '/agenda?google=falhou')
+}
+
+/** Desligar a conta do Google. Apaga o token, e o espelho deixa de atualizar. */
+export async function desligarGoogle() {
+  await desligarConta()
+  revalidatePath('/agenda')
+  redirect('/agenda?google=desligado')
 }

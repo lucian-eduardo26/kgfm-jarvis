@@ -35,11 +35,10 @@ export const REGRAS: RegraDeRecebimento[] = [
     diasDePagamento: [5, 15, 25],
     corteServico: 15,
     corteMaterial: 20,
-    // Ele mesmo hesitou: "a data de corte pra notas de material não tem. Se eu
-    // não me engano tem sim, que é dia 20". Na dúvida o sistema usa o corte
-    // de SERVIÇO, que é o mais apertado - errar para o lado seguro aqui
-    // significa mandar a nota cedo demais, e isso não custa nada.
-    duvida: 'o corte de material (dia 20) ainda não está confirmado; o sistema usa o de serviço, que é mais apertado',
+    // CONFIRMADO por ele em 11/09/2026: o corte de material é mesmo dia 20.
+    // E foi ele quem tirou a conclusão que importa - pelo dia 20 o pagamento
+    // cai no dia 25, dez dias depois. Por isso o sistema não escolhe o corte
+    // pelo tipo da nota: escolhe o que paga mais cedo. Ver `melhorJanela`.
   },
 ]
 
@@ -120,6 +119,50 @@ export function proximaJanela(
     diasAteOCorte: diasEntre(hoje, corte),
     custoEmDiasDeAtraso: diasEntre(pagamento, pagamentoSePerder),
   }
+}
+
+/**
+ * A MELHOR JANELA, e não a janela do tipo da nota.
+ *
+ * O Lucian corrigiu isto em 11/09/2026, e a correção é mais fina do que
+ * parece:
+ *
+ *   "O corte do envio de material é dia 20. Mas se eu enviar dia 19, vou
+ *    receber dia 25 de outubro. Estou jogando pra frente à toa."
+ *
+ * O erro que eu ia cometer era tratar a data de corte como uma REGRA A
+ * CUMPRIR. Ela não é: é uma porta, e há mais de uma porta aberta. Pelo corte
+ * de serviço (dia 15) a nota sai até 14 e o dinheiro entra 15 de outubro.
+ * Pelo corte de material (dia 20) a nota sai até 19 e o dinheiro entra 25.
+ * A segunda porta é mais folgada e paga DEZ DIAS DEPOIS.
+ *
+ * Então a pergunta certa nunca foi "qual corte se aplica a esta nota". É
+ * "qual corte põe o dinheiro na conta mais cedo" - e é sempre esse que o
+ * sistema mira, independentemente do tipo da nota.
+ *
+ * Folga que custa dez dias de caixa não é folga, é prejuízo com data marcada.
+ */
+export function melhorJanela(
+  regra: RegraDeRecebimento,
+  hoje: Date = new Date(),
+): JanelaDeFaturamento & { tipoQueGanhou: TipoNota } {
+  const servico = proximaJanela(regra, 'servico', hoje)
+  const material = proximaJanela(regra, 'material', hoje)
+
+  // Só entra na disputa a janela que ainda dá para alcançar.
+  const possiveis: { tipo: TipoNota; j: JanelaDeFaturamento }[] = []
+  if (servico.diasAteOCorte >= 0) possiveis.push({ tipo: 'servico', j: servico })
+  if (material.diasAteOCorte >= 0) possiveis.push({ tipo: 'material', j: material })
+
+  // Nenhuma alcançável: devolve a de serviço, que já traz o corte do mês que
+  // vem calculado, e o alerta cuida de dizer que passou.
+  if (possiveis.length === 0) return { ...servico, tipoQueGanhou: 'servico' }
+
+  const melhor = possiveis.sort(
+    (a, b) => a.j.pagamento.getTime() - b.j.pagamento.getTime() || a.j.corte.getTime() - b.j.corte.getTime(),
+  )[0]
+
+  return { ...melhor.j, tipoQueGanhou: melhor.tipo }
 }
 
 export function dataLonga(d: Date): string {
