@@ -26,6 +26,11 @@ export async function GET() {
     // Sem isto o ditado e a conversa respondem "sem chave da API" e o resto
     // do sistema continua funcionando normalmente.
     chave_ia_configurada: Boolean(process.env.ANTHROPIC_API_KEY?.trim()),
+    // Booleano tambem aqui: nunca o valor, nunca um pedaco dele.
+    crm_ligado: Boolean(process.env.CRM_TOKEN?.trim()),
+    google_configurado: Boolean(
+      process.env.GOOGLE_CLIENT_ID?.trim() && process.env.GOOGLE_CLIENT_SECRET?.trim(),
+    ),
     quando: new Date().toISOString(),
   })
 }
