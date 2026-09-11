@@ -6,6 +6,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from './prisma'
 import { montarSemana, textoDaSemana } from './semana'
 import { montarEstado } from './conversa'
+import { materialDoPlano, montarDiaSeguinte } from './planoDoDia'
 
 const MODELO = 'claude-sonnet-5'
 const PRECO = { entrada: 3, saida: 15 }
@@ -37,7 +38,12 @@ async function chamar(finalidade: string, sistema: string, pedido: string): Prom
   const cliente = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const r = await cliente.messages.create({
     model: MODELO,
-    max_tokens: 1600,
+    // 1600 NAO BASTA, e a falha era silenciosa: o modelo raciocina antes de
+    // responder, e com 1600 ele gastava o orcamento inteiro pensando e parava
+    // em max_tokens SEM NENHUM bloco de texto. A funcao devolvia "nao consegui
+    // formular" como se fosse recusa, quando era teto curto. O check-in
+    // semanal tinha o mesmo defeito esperando a vez dele.
+    max_tokens: 12000,
     system: sistema,
     messages: [{ role: 'user', content: pedido }],
   })
@@ -117,6 +123,65 @@ export async function fazerCheckout(): Promise<string> {
 
   const gravada = await prisma.sintese.create({
     data: { tipo: 'checkout', periodoInicio: s.inicio, periodoFim: s.fim, texto },
+  })
+  return gravada.texto
+}
+
+/**
+ * O PLANO DE AMANHÃ, com hora marcada.
+ *
+ * Pedido do Lucian em 10/09/2026: "gerar o planejamento do dia de amanhã com
+ * tudo que ele sabe, começando às 8h, como consultor de administração de tempo
+ * e agenda, ponderado pelas nossas prioridades".
+ *
+ * A diferença para o check-in semanal é essa: a semana escolhe TEMAS, o dia
+ * escolhe HORÁRIOS. Plano de dia sem hora não é plano, é lista de desejos.
+ *
+ * `foco` existe porque ele pode mandar o dia inteiro numa área - e quando
+ * manda, o consultor obedece E diz o que está sendo empurrado para depois.
+ * Obedecer sem avisar o custo não é consultoria, é secretariado.
+ */
+export async function fazerPlanoDoDia(foco?: string): Promise<string> {
+  const material = await materialDoPlano()
+  const estado = await montarEstado()
+  const dia = await montarDiaSeguinte()
+
+  const texto = await chamar(
+    'plano-do-dia',
+    [
+      'Você é o Jarvis da KGFM montando o PLANO DE AMANHÃ do Lucian, hora a hora.',
+      VOZ,
+      '',
+      REGUA,
+      '',
+      'VOCÊ É CONSULTOR DE ADMINISTRAÇÃO DE TEMPO, e isso muda o que você faz:',
+      '- Não distribua trabalho até encher o dia. Dia cheio de 100% é dia que estoura no primeiro imprevisto.',
+      '- Deixe folga declarada. Diga onde ela está e para que serve.',
+      '- Bloco tem hora de início e de fim, e a soma tem que fechar com o relógio.',
+      '- Respeite almoço. Se ele não marcou, marque uma hora e diga que marcou.',
+      '- Trabalho profundo de manhã, trabalho raso depois do almoço: é quando a atenção já caiu e telefonema não exige a mesma cabeça.',
+      '- Pacote que está com TERCEIRO ou CLIENTE não vira bloco de trabalho. Vira, no máximo, cinco minutos de cobrança - a engrenagem gira sem ele.',
+      '',
+      foco
+        ? `FOCO PEDIDO POR ELE: ${foco}. Obedeça, E diga na seção 4 o que está sendo empurrado por causa disso, com o custo.`
+        : 'Sem foco pedido: escolha pela régua de prioridade.',
+      '',
+      'Formato da resposta, exatamente nesta ordem e sem inventar seção:',
+      '1. A APOSTA DO DIA - duas frases: o que este dia precisa entregar para a semana não ser perdida, e por quê.',
+      '2. A AGENDA - a lista de blocos com HORA de início e fim, começando 08:00. Para cada bloco: a hora, o que é, a que projeto pertence, e em uma frase por que ele está nessa posição do dia e não em outra.',
+      '3. O QUE GIRA SEM VOCÊ - o que avança amanhã sem consumir hora dele, e o que ele precisa fazer (se algo) para não travar.',
+      '4. O QUE FICA DE FORA - obrigatório. O que você deliberadamente NÃO colocou, e o custo de não colocar.',
+      '5. O RISCO DESTE PLANO - a frase que ele vai lembrar às 17h se o dia der errado.',
+      '',
+      material,
+      '',
+      estado,
+    ].join('\n'),
+    `Monte o plano de amanhã, ${dia.rotulo}. Ele começa às 08:00.`,
+  )
+
+  const gravada = await prisma.sintese.create({
+    data: { tipo: 'plano-do-dia', periodoInicio: dia.data, periodoFim: dia.data, texto },
   })
   return gravada.texto
 }

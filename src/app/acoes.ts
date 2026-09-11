@@ -15,6 +15,7 @@ import { pacotesDaFase, type FaseWbs } from '@/lib/wbs'
 import { CAMPOS_PRIORIDADE } from '@/lib/prioridade'
 import { correnteDoProjeto } from '@/lib/modelos'
 import { extrairSpin } from '@/lib/transcricao'
+import { fazerPlanoDoDia } from '@/lib/ritual'
 import type { TipoProjeto } from '@prisma/client'
 import { executarComando, type ResultadoComando } from '@/lib/comando'
 import { fazerCheckin, fazerCheckout } from '@/lib/ritual'
@@ -924,4 +925,17 @@ export async function lerTranscricao(form: FormData) {
   revalidatePath(`/projetos/${projetoId}`)
   revalidatePath('/playbook')
   redirect(`/projetos/${projetoId}?transcricao=ok`)
+}
+
+/**
+ * Montar o plano de amanhã.
+ *
+ * Custa em torno de US$ 0,13 por vez, e por isso fica gravado: `sintese`
+ * guarda o texto, e a tela lê de lá quantas vezes quiser. Gerar de novo é uma
+ * decisão dele, e não um efeito colateral de abrir a página.
+ */
+export async function gerarPlanoDoDia(form: FormData) {
+  const foco = String(form.get('foco') ?? '').trim()
+  await fazerPlanoDoDia(foco || undefined)
+  revalidatePath('/agenda')
 }

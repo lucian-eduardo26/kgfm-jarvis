@@ -16,14 +16,13 @@
 // Quando a ligação existir, o formato não muda: a mesma tira, a mesma lista,
 // e a origem de cada compromisso marcada ao lado.
 
-import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { SemanaCurta } from '@/components/SemanaCurta'
 import { montarSemanaCurta } from '@/lib/semanaCurta'
 import { FUSO } from '@/lib/datas'
-import { marcarCompromisso, apagarCompromisso } from '../acoes'
+import { marcarCompromisso, apagarCompromisso, gerarPlanoDoDia } from '../acoes'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +39,16 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
   const compromissos = await prisma.compromisso.findMany({
     where: { inicio: { gte: inicio, lte: fim } },
     orderBy: { inicio: 'asc' },
+  })
+
+  // O ultimo plano gerado para amanha. Texto de IA custa dinheiro: gera uma
+  // vez e le quantas vezes quiser.
+  const amanhaInicio = new Date(semana.find((d) => d.hoje)?.dia ?? semana[0].dia)
+  amanhaInicio.setDate(amanhaInicio.getDate() + 1)
+  amanhaInicio.setHours(0, 0, 0, 0)
+  const plano = await prisma.sintese.findFirst({
+    where: { tipo: 'plano-do-dia', periodoInicio: { gte: amanhaInicio } },
+    orderBy: { id: 'desc' },
   })
 
   const projetos = await prisma.projeto.findMany({
@@ -153,16 +162,49 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
         </div>
       </section>
 
+      {/* O BOTAO QUE FUNCIONA HOJE. A ligacao direta com o Google depende de
+          uma autorizacao que so ele pode dar; o arquivo de calendario nao
+          depende de ninguem e o Google importa. Pior em uma coisa so: nao
+          sincroniza de volta. Para marcar aqui e ver la, resolve. */}
       <section className="cartao p-4 mt-3">
-        <p className="rotulo mb-2">o que falta para virar Google Calendar</p>
+        <p className="rotulo mb-2">levar para o Google Calendar</p>
         <p className="fraco text-sm">
-          Um passo seu, no computador: autorizar o Jarvis a ler e escrever na sua agenda, no Google
-          Cloud Console. Quando você tiver dez minutos na frente do PC, me avise que eu te passo o
-          caminho na tela. Depois disso, marcar aqui marca lá.
+          Baixa as duas próximas semanas num arquivo de calendário. No celular, toque e escolha
+          abrir no Google Agenda; no computador, use Configurações, Importar e exportar.
         </p>
-        <Link href="/conversa" className="botao-fantasma inline-block mt-3 text-sm">
-          Pedir o passo a passo ao Jarvis
-        </Link>
+        <a href="/api/agenda.ics" download className="botao inline-block mt-3">
+          Gerar a semana
+        </a>
+        <p className="fraco text-xs mt-3">
+          Isto leva os compromissos daqui para lá. O contrário ainda não acontece - mudou no
+          Google, o Jarvis não fica sabendo. Para a ligação de mão dupla, preciso de dez minutos
+          seus no Google Cloud Console.
+        </p>
+      </section>
+
+      {/* O PLANO DE AMANHA. E o consultor, e nao a lista: ele diz a hora de
+          cada bloco, o que fica de fora, e o custo de ter ficado. */}
+      <section className="cartao p-4 mt-3">
+        <p className="rotulo mb-2">o plano de amanhã</p>
+        <p className="fraco text-sm">
+          O Jarvis monta a agenda de amanhã hora a hora, a partir da régua de prioridade, do que
+          depende de você e do que já está marcado. Custa cerca de setenta centavos por vez.
+        </p>
+        <form action={gerarPlanoDoDia} className="mt-3 flex flex-wrap gap-2 items-end">
+          <div className="flex-1 min-w-[180px]">
+            <label className="text-xs fraco block mb-1">Foco do dia (opcional)</label>
+            <input name="foco" placeholder="o dia inteiro em comercial" className="campo" />
+          </div>
+          <button className="botao">Montar o dia</button>
+        </form>
+        {plano && (
+          <div className="mt-4 pt-4 border-t border-[var(--linha)]">
+            <p className="text-sm whitespace-pre-wrap">{plano.texto}</p>
+            <p className="text-[11px] fraco mt-3">
+              Gerado em {plano.geradaEm.toLocaleString('pt-BR', { timeZone: FUSO })}
+            </p>
+          </div>
+        )}
       </section>
     </Moldura>
   )
