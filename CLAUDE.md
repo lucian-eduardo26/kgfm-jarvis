@@ -388,3 +388,24 @@ varredura já trocou o travessão que estava DENTRO do verificador.
 Serve para saber se um redeploy da Vercel pegou a variavel de ambiente nova
 sem ter que entrar no sistema e tentar ditar alguma coisa. So booleano: nunca
 o valor da chave, nem um pedaco dele.
+
+## Obsidian: decidido que NAO, em 10/09/2026
+
+Ficou em aberto desde o inicio e agora esta fechado. O Lucian: "nao vale a
+pena ainda, porque e so texto, texto nao consome nada desse projeto, entao
+nao tem problema fazer no nosso banco de dados proprio do Jarvis".
+
+O raciocinio esta certo e vale registrar: conhecimento aqui e texto, e texto
+e barato. O que o Obsidian traria - arquivo local, links entre notas, busca -
+nao paga o custo de manter duas fontes de verdade e uma sincronizacao que
+quebra sozinha. A base de conhecimento mora na tabela `conhecimento`, junto
+com o resto.
+
+A qualificacao SPIN segue a mesma regra. Ela saiu da lista de projetos na
+mesma conversa: e memoria para montar apresentacao e sustentar venda
+complexa, nao e o que ele precisa ver ao abrir o sistema. Vive dentro da tela
+do projeto, num bloco fechado que so diz o que falta.
+
+O que o Jarvis faz com isso: le na hora de recomendar, e vai alimentar
+apresentacao para cliente. O que ele NAO faz: mostrar isso na frente de quem
+so quer saber o que fazer agora.

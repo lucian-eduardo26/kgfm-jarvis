@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { prisma } from '@/lib/prisma'
 import { formatarHoras } from '@/lib/datas'
@@ -5,7 +6,6 @@ import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { carteiraDeProjetos } from '@/lib/projetos'
 import { BarraProjeto } from '@/components/BarraProjeto'
 import { criarProjetoComWbs, ativarPacote, mudarFaseProjeto } from '../acoes'
-import { Spin } from '@/components/Spin'
 import { LinhaDoTempo } from '@/components/LinhaDoTempo'
 import { montarLinhaDoTempo } from '@/lib/linhaDoTempo'
 
@@ -225,13 +225,15 @@ export default async function Projetos({ searchParams }: { searchParams: Promise
 
                 <LinhaDoTempo r={montarLinhaDoTempo({ frentes: p.frentes })} />
 
-                <Spin
-                  projetoId={p.id}
-                  estado={{ situacao: p.situacao, problema: p.problema, implicacao: p.implicacao, necessidade: p.necessidade }}
-                  propostaEnviadaEm={p.propostaEnviadaEm}
-                  decisores={p.decisores}
-                  travado={sp.spin === String(p.id)}
-                />
+                {/* O SPIN SAIU DESTA TELA em 10/09/2026, a pedido dele: "isso é só
+                    um banco de dados que vai estar guardado ali em algum lugar".
+                    E ele tem razão - qualificação é memória para montar
+                    apresentação e sustentar venda complexa, não é o que ele
+                    precisa ver ao abrir a lista de projetos. Mora agora na tela
+                    do projeto, junto com o cronograma. */}
+                <Link href={`/projetos/${p.id}`} className="botao-fantasma inline-block mt-3 text-sm">
+                  Abrir o projeto
+                </Link>
 
                 <form action={mudarFaseProjeto} className="flex gap-2 mt-3 items-center">
                   <input type="hidden" name="projetoId" value={p.id} />

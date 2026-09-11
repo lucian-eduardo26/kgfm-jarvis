@@ -446,8 +446,8 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  min-height: 56px;
-  padding: 0.5rem 0;
+  min-height: 58px;
+  padding: 0.65rem 0 0.55rem;
   /* Quebra para uma segunda linha no celular: o titulo desce, a marca e o
      menu ficam. Um elemento so no HTML, o CSS decide onde ele cabe. */
   flex-wrap: wrap;

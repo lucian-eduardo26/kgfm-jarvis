@@ -15,6 +15,7 @@ import { Moldura, Cabeca } from '@/components/Moldura'
 import { montarCronograma, dataCurta, oQueFazerComOAtraso } from '@/lib/cronograma'
 import { NOME_DO_TIPO } from '@/lib/modelos'
 import { definirInicioDoProjeto, editarProjeto } from '../../acoes'
+import { Spin } from '@/components/Spin'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,6 +51,7 @@ export default async function ProjetoDetalhe({
         include: { area: { select: { nome: true } } },
         orderBy: { ordem: 'asc' },
       },
+      decisores: { orderBy: { criadoEm: 'asc' } },
     },
   })
 
@@ -57,6 +59,12 @@ export default async function ProjetoDetalhe({
 
   const c = montarCronograma(projeto.inicioEm, projeto.frentes)
   const atrasado = c.atrasoMaximo > 0
+
+  // O que falta na qualificacao, para o resumo fechado ja dizer sem abrir.
+  const faltaSpin = [
+    !projeto.implicacao?.trim() ? 'a implicação' : null,
+    !projeto.necessidade?.trim() ? 'a necessidade' : null,
+  ].filter(Boolean) as string[]
 
   return (
     <Moldura titulo={projeto.nome} atalhoAtivo="/projetos">
@@ -206,6 +214,38 @@ export default async function ProjetoDetalhe({
           Todas as previsões saem daqui. Sem a data certa, o cronograma é bonito e errado.
         </p>
       </form>
+
+      {/* A QUALIFICAÇÃO MORA AQUI, e não na lista de projetos.
+          O Lucian em 10/09/2026: "isso é só um banco de dados que vai estar
+          guardado ali em algum lugar". É memória para montar apresentação e
+          sustentar venda complexa - o que ele precisa ver ao abrir o sistema
+          é projeto andando, não entrevista de qualificação.
+          Fica depois do cronograma pelo mesmo motivo: é consulta, não é o
+          que decide o dia. */}
+      <details className="cartao p-4 mb-3">
+        <summary className="rotulo cursor-pointer select-none">
+          a qualificação deste projeto
+          {faltaSpin.length > 0 && (
+            <span className="ml-2 text-[10px]" style={{ color: 'var(--ambar)' }}>
+              falta {faltaSpin.join(' e ')}
+            </span>
+          )}
+        </summary>
+        <div className="mt-3">
+          <Spin
+            projetoId={projeto.id}
+            estado={{
+              situacao: projeto.situacao,
+              problema: projeto.problema,
+              implicacao: projeto.implicacao,
+              necessidade: projeto.necessidade,
+            }}
+            propostaEnviadaEm={projeto.propostaEnviadaEm}
+            decisores={projeto.decisores}
+            travado={false}
+          />
+        </div>
+      </details>
 
       <section className="cartao">
         <Cabeca

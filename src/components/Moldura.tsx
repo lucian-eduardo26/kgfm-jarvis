@@ -84,7 +84,10 @@ export function Moldura({
           </div>
         </header>
 
-        <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pt-3 com-captura">{children}</div>
+        {/* O respiro entre o cabeçalho e o primeiro cartão. Estava em 12px e ele
+            reclamou com razão: o cartão encostava na faixa da marca e a tela
+            parecia desalinhada. */}
+        <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-5 pt-5 sm:pt-6 com-captura">{children}</div>
       </div>
 
       {/* FORA do cabeçalho de propósito: ele usa `backdrop-filter`, e isso faz
