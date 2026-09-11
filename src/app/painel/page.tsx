@@ -143,11 +143,12 @@ export default async function Painel() {
           </p>
           <p className="text-xl sm:text-2xl font-bold mt-1 leading-tight">{agora.titulo}</p>
           <p className="fraco text-sm mt-2 max-w-3xl">{agora.porque}</p>
-          {agora.frenteId && (
-            <Link href={`/frentes#f${agora.frenteId}`} className="botao-fantasma inline-block mt-3">
-              Abrir a frente
-            </Link>
-          )}
+          {/* O botão é SEMPRE, e não só quando existe frente. Era essa a
+              condição que deixava "Abrir frente em Engenharia" sem saída: a
+              frente ainda não existe, é justamente o que ele vai criar. */}
+          <Link href={agora.destino} className="botao-fantasma inline-block mt-3">
+            {agora.rotulo}
+          </Link>
         </section>
       )}
 

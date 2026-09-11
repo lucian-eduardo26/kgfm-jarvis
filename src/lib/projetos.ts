@@ -18,6 +18,7 @@ export type ProjetoNaCarteira = {
   tipoNome: string
   fase: string
   valorEstimado: number | null
+  probabilidade: number | null
   temWbs: boolean
   cronograma: Cronograma
   /** Quanto do PRAZO já passou, de 0 a 100. Comparado com o progresso, é o
@@ -79,6 +80,7 @@ export async function carteiraDeProjetos(): Promise<ProjetoNaCarteira[]> {
       tipoNome: NOME_DO_TIPO[p.tipo],
       fase: p.fase,
       valorEstimado: p.valorEstimado,
+      probabilidade: p.probabilidade,
       temWbs: p.frentes.length > 0,
       cronograma,
       tempoDecorrido,

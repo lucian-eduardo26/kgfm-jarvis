@@ -15,6 +15,19 @@ export type FacaAgora = {
   porque: string
   area: string | null
   frenteId: number | null
+  /**
+   * PARA ONDE O BOTÃO LEVA. Obrigatório, e por isso não é opcional aqui.
+   *
+   * O Lucian em 11/09/2026: "abrir frente de engenharia não faz nada, está lá
+   * porque?". Estava lá porque a recomendação era boa e o botão não existia -
+   * ele só aparecia quando havia `frenteId`, e esta recomendação não tem
+   * frente nenhuma, justamente porque a frente ainda vai ser criada.
+   *
+   * Recomendação que não leva a lugar nenhum é pior do que recomendação
+   * nenhuma: ela ensina a ignorar a faixa mais importante da tela.
+   */
+  destino: string
+  rotulo: string
 } | null
 
 export function decidirAgora(d: DadosDoPainel): FacaAgora {
@@ -22,9 +35,11 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
     return {
       titulo: 'Carregar a estratégia',
       porque:
-        'Sem diagnostico, política norteadora e objetivos, o painel mede atividade em vez de progresso - e o filtro de oportunidade não filtra nada.',
+        'Sem diagnóstico, política norteadora e objetivos, o painel mede atividade em vez de progresso - e o filtro de oportunidade não filtra nada.',
       area: null,
       frenteId: null,
+      destino: '/estrategia',
+      rotulo: 'Carregar agora',
     }
   }
 
@@ -34,6 +49,8 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
       porque: `Cronômetro rodando em ${d.cronometro.areaNome}. Um de cada vez: terminar isto antes de abrir outra coisa.`,
       area: d.cronometro.areaNome,
       frenteId: d.cronometro.frenteId,
+      destino: `/frentes#f${d.cronometro.frenteId}`,
+      rotulo: 'Ver a frente',
     }
   }
 
@@ -45,6 +62,8 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
       porque: `Trava ${bloqueador.bloqueia} ${bloqueador.bloqueia === 1 ? 'outra frente' : 'outras frentes'} e está ${bloqueador.texto}. Destravar isto libera mais fluxo do que qualquer outra coisa hoje.`,
       area: null,
       frenteId: bloqueador.frenteId,
+      destino: `/frentes#f${bloqueador.frenteId}`,
+      rotulo: 'Destravar',
     }
   }
 
@@ -57,10 +76,12 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
       titulo: c.titulo,
       porque:
         c.motivo === 'cobrar'
-          ? `${pior.nome} está em ${pior.indice}. A bola voltou para você há ${c.dias} dias úteis: e cobrar, não esperar.`
-          : `${pior.nome} e a área mais doente do painel (${pior.indice} de 100) e está e a frente ${c.texto}.`,
+          ? `${pior.nome} está em ${pior.indice}. A bola voltou para você há ${c.dias} dias úteis: é cobrar, não esperar.`
+          : `${pior.nome} é a área mais doente do painel (${pior.indice} de 100), e a frente ${c.texto}.`,
       area: pior.nome,
       frenteId: c.frenteId,
+      destino: `/frentes#f${c.frenteId}`,
+      rotulo: c.motivo === 'cobrar' ? 'Cobrar agora' : 'Abrir a frente',
     }
   }
 
@@ -71,15 +92,21 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
       porque: `${pior.nome} tem objetivo do mês e nenhuma frente aberta. Objetivo sem frente é desejo.`,
       area: pior.nome,
       frenteId: null,
+      // Leva para a tela de frentes JÁ FILTRADA na área, com o formulário de
+      // abrir logo acima. Mandar para a lista inteira seria mandar procurar.
+      destino: `/frentes?area=${pior.chave}`,
+      rotulo: 'Abrir a frente',
     }
   }
 
   if (d.itensSemClassificar > 0) {
     return {
       titulo: `Revisar ${d.itensSemClassificar} ${d.itensSemClassificar === 1 ? 'captura' : 'capturas'}`,
-      porque: 'Nenhum crítico aberto. E a hora de reconciliar a caixa de entrada, antes que ela vire cemiterio.',
+      porque: 'Nenhum crítico aberto. É a hora de reconciliar a caixa de entrada, antes que ela vire cemitério.',
       area: null,
       frenteId: null,
+      destino: '/capturas',
+      rotulo: 'Revisar',
     }
   }
 
@@ -88,5 +115,7 @@ export function decidirAgora(d: DadosDoPainel): FacaAgora {
     porque: 'Nenhuma frente estourou prazo e a caixa está limpa. Escolha o bloco profundo do dia pela estratégia, não pela pressão.',
     area: null,
     frenteId: null,
+    destino: '/semana',
+    rotulo: 'Ver a semana',
   }
 }

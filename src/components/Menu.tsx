@@ -13,6 +13,7 @@ const PAGINAS = [
   { href: '/agenda', nome: 'Agenda' },
   { href: '/semana', nome: 'A semana' },
   { href: '/projetos', nome: 'Projetos' },
+  { href: '/funil', nome: 'Funil e indicadores' },
   { href: '/prioridades', nome: 'Prioridade dos projetos' },
   { href: '/frentes', nome: 'Frentes' },
   { href: '/playbook', nome: 'Playbook' },

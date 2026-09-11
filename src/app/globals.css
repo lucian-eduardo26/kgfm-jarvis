@@ -1299,3 +1299,33 @@ h2 {
     opacity: 0.7;
   }
 }
+
+/* ---------- o funil desenhado ----------
+   A largura de cada fatia É o número. Funil em que todas as etapas têm o
+   mesmo tamanho é um gráfico de barras com nome bonito. */
+
+.funil-trilho {
+  display: flex;
+  justify-content: center;
+  padding: 3px 0;
+}
+
+.funil-fatia {
+  position: relative;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--superficie-alta);
+  border: 1px solid var(--linha-forte);
+  overflow: hidden;
+  transition: width 0.25s ease;
+}
+
+/* A parte ponderada pela chance de fechar, por dentro. A diferença entre a
+   faixa cheia e esta é o que o otimismo custa. */
+.funil-ponderado {
+  position: absolute;
+  inset: 0;
+  right: auto;
+  background: linear-gradient(90deg, var(--secao), color-mix(in srgb, var(--secao) 55%, transparent));
+  opacity: 0.85;
+}
