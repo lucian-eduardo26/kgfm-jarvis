@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { exigirSessao } from '@/lib/guarda'
 import { montarPainel } from '@/lib/painel'
 import { decidirAgora } from '@/lib/agora'
-import { formatarHoras, diasUteisEntre } from '@/lib/datas'
+import { formatarHoras, diasUteisEntre, limitesDoDia } from '@/lib/datas'
 import { temChave } from '@/lib/classificador'
 import { Moldura, Cabeca, Vazio } from '@/components/Moldura'
 import { Mostrador } from '@/components/Mostrador'
@@ -39,16 +39,33 @@ export default async function Painel() {
   const semana = await montarSemanaCurta()
   const alertas = await alertasDeCaixa()
 
-  // Desde quando nada é medido: o fim do último apontamento, ou o começo do
-  // expediente se ainda não houve nenhum. É a conta do buraco do dia.
+  // Desde quando nada é medido: o fim do último apontamento DE HOJE, ou o
+  // começo do expediente. É a conta do buraco do dia.
+  //
+  // DOIS ERROS CORRIGIDOS EM 14/09/2026, e os dois faziam o número mentir para
+  // cima - o número que ele viu a semana inteira dizendo "2:50 sem nada
+  // medido" enquanto trabalhava:
+  //
+  // 1. O FUSO. `new Date()` mais `setHours(9)` usa o relógio do SERVIDOR, e a
+  //    Vercel roda em UTC. Nove da manhã em UTC são seis da manhã em Brasília,
+  //    então o contador abria o dia já com três horas de buraco inventado.
+  //
+  // 2. A DATA. O último apontamento era buscado sem filtro de dia. Numa
+  //    segunda-feira o "buraco" começava a contar da sexta à tarde, e a tela
+  //    anunciava sessenta e três horas sem registro como se fossem hoje.
+  const { inicio: comecoDeHoje } = limitesDoDia()
   const ultimo = await prisma.apontamento.findFirst({
-    where: { encerradoEm: { not: null } },
+    where: { encerradoEm: { not: null, gte: comecoDeHoje } },
     orderBy: { encerradoEm: 'desc' },
     select: { encerradoEm: true },
   })
-  const inicioDoExpediente = new Date()
-  inicioDoExpediente.setHours(9, 0, 0, 0)
-  const ultimoRegistro = (ultimo?.encerradoEm ?? inicioDoExpediente).toISOString()
+  // 09:00 em Brasília, escrito em UTC: a meia-noite de São Paulo mais nove
+  // horas. São Paulo é UTC-3 o ano todo desde 2019.
+  const inicioDoExpediente = new Date(comecoDeHoje.getTime() + 9 * 3600_000)
+  const agoraMs = Date.now()
+  // Antes das 9h o expediente ainda não começou: buraco nenhum a cobrar.
+  const referencia = ultimo?.encerradoEm ?? (agoraMs > inicioDoExpediente.getTime() ? inicioDoExpediente : new Date(agoraMs))
+  const ultimoRegistro = referencia.toISOString()
 
   // ---------- O QUE ESTÁ EM ANDAMENTO ----------
   //
@@ -56,8 +73,10 @@ export default async function Painel() {
   // estou fazendo e o que não estou fazendo". De um lado o que o relógio está
   // medindo; do outro, o trabalho aberto que não está sendo medido - cada um
   // com um botão de começar, para a distância entre ver e medir ser um toque.
-  const inicioDeHoje = new Date()
-  inicioDeHoje.setHours(0, 0, 0, 0)
+  // O MESMO FUSO, pelo mesmo motivo: `setHours(0)` no servidor da Vercel é
+  // meia-noite em UTC, que são nove da noite do dia ANTERIOR em Brasília. As
+  // três últimas horas de ontem entravam na conta de hoje.
+  const inicioDeHoje = comecoDeHoje
 
   const frentesAbertas = await prisma.frente.findMany({
     where: { status: 'aberta' },

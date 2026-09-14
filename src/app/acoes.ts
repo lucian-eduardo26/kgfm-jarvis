@@ -386,13 +386,10 @@ export async function mudarFaseProjeto(form: FormData) {
   revalidatePath('/projetos')
 }
 
-/** "Jarvis, estou fazendo X" - fala vira cronômetro rodando. */
-export async function comandoDeVoz(texto: string): Promise<ResultadoComando> {
-  const r = await executarComando(texto)
-  revalidatePath('/painel')
-  revalidatePath('/frentes')
-  return r
-}
+/* `comandoDeVoz` foi apagada em 14/09/2026, junto com ComandoVoz.tsx e
+   Cronometro.tsx: 229 linhas que nenhuma tela importava desde que a barra do
+   Jarvis virou a entrada única. Quem faz esse trabalho hoje é
+   `falarComOJarvis`, mais abaixo. */
 
 export async function rodarCheckin() {
   await fazerCheckin()

@@ -43,13 +43,40 @@ export type DadosDoPainel = {
 /**
  * Cronômetro esquecido vira mentira: uma noite dormida vira 14 horas de
  * engenharia. Passou do limite, encerra sozinho e marca para revisão.
+ *
+ * O BUG QUE ISTO CORRIGE, achado em 14/09/2026 numa auditoria do banco:
+ * a versão anterior encerrava com `new Date()` - a hora em que ELE ABRIU O
+ * PAINEL, e não a hora em que o limite estourou. Um cronômetro esquecido às
+ * 03h27 e descoberto às 21h27 gravava DEZOITO HORAS de trabalho.
+ *
+ * Não é hipótese: dos 1.250 minutos que o sistema tinha medido na vida
+ * inteira, 1.080 eram um único registro desses. Oitenta e seis por cento da
+ * medição do Jarvis era uma noite de sono carimbada como "Retirar do banho e
+ * conferir". E como isto roda dentro de `montarPainel`, o estrago acontecia
+ * de novo a cada abertura de tela.
+ *
+ * Agora o bloco fecha na hora em que o limite bateu - `iniciadoEm + horas` -
+ * que é a última hora em que ele PODIA plausivelmente estar ali. Continua
+ * sendo estimativa, e por isso continua marcado `revisar`. Mas é uma
+ * estimativa com teto, e não o relógio da descoberta.
  */
 export async function encerrarCronometrosEsquecidos(horas: number) {
   const limite = new Date(Date.now() - horas * 3600_000)
-  await prisma.apontamento.updateMany({
+  const esquecidos = await prisma.apontamento.findMany({
     where: { encerradoEm: null, iniciadoEm: { lt: limite } },
-    data: { encerradoEm: new Date(), encerradoPor: 'automatico', revisar: true },
+    select: { id: true, iniciadoEm: true },
   })
+
+  for (const a of esquecidos) {
+    await prisma.apontamento.update({
+      where: { id: a.id },
+      data: {
+        encerradoEm: new Date(a.iniciadoEm.getTime() + horas * 3600_000),
+        encerradoPor: 'automatico',
+        revisar: true,
+      },
+    })
+  }
 }
 
 export async function montarPainel(agora: Date = new Date()): Promise<DadosDoPainel> {
