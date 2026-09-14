@@ -18,7 +18,8 @@ import { Menu } from './Menu'
 import { Deslizar } from './Deslizar'
 import { Transicao } from './Transicao'
 import { BarraDoJarvis } from './BarraDoJarvis'
-import { cronometroAtivo } from '@/lib/cronometro'
+import { cronometroAtivo, frentesParaApontar } from '@/lib/cronometro'
+import { FitaDoTempo } from './FitaDoTempo'
 import { falarComOJarvis, pararCronometro, terminarOQueEstaRodando } from '@/app/acoes'
 
 /** O endereço do CRM. Mesma variável que a integração usa, para não existirem
@@ -79,6 +80,9 @@ export async function Moldura({
   atalhoAtivo?: string
 }) {
   const cronometro = await cronometroAtivo()
+  // A lista só é buscada quando há algo rodando: sem cronômetro a fita não
+  // aparece, e a folha de conferência dela nunca abre.
+  const opcoes = cronometro ? await frentesParaApontar() : []
 
   return (
     // A cor da seção envolve TUDO, inclusive o rodapé fixo. Ele é irmão do
@@ -144,6 +148,15 @@ export async function Moldura({
               </div>
             </div>
           </div>
+
+          {/* A FITA DO TEMPO, segunda linha do cabeçalho.
+              Pedido dele em 14/09/2026: "o que estiver fazendo fique contando
+              em cima enquanto rolar a tela". Ela mora AQUI DENTRO porque o
+              cabeçalho já é preso no topo - segunda linha dentro dele fica
+              presa de graça, sem medir altura, sem `z-index` disputando com a
+              folha de conferência. Aparece depois de 150px de rolagem e some
+              quando ele volta ao topo, onde o cartão inteiro já diz o mesmo. */}
+          <FitaDoTempo cronometro={cronometro} opcoes={opcoes} />
         </header>
 
         {/* O respiro entre o cabeçalho e o primeiro cartão. Estava em 12px e ele

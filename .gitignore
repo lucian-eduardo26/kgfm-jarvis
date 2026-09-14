@@ -44,3 +44,6 @@ next-env.d.ts
 # chave secreta moram nas variaveis da Vercel, e uma copia solta no Git vai
 # junto em todo clone e em todo push.
 /CHAVE GOOGLE CLOUD/
+
+# O log do servidor sem janela. Local, e so serve para ver erro de arranque.
+jarvis.log

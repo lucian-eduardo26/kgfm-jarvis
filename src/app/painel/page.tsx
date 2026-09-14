@@ -18,7 +18,6 @@ import { LancarRetroativo } from '@/components/LancarRetroativo'
 import { hojeSP } from '@/lib/datas'
 import { carteiraDeProjetos } from '@/lib/projetos'
 import { BarraProjeto } from '@/components/BarraProjeto'
-import { Relogio } from '@/components/Relogio'
 import { AlertaDeCaixa } from '@/components/AlertaDeCaixa'
 import { EmAndamento } from '@/components/EmAndamento'
 import { alertasDeCaixa } from '@/lib/urgencia'
@@ -158,13 +157,19 @@ export default async function Painel() {
           hoje", e essa pergunta vence. Some quando não há nada vencendo. */}
       <AlertaDeCaixa alertas={alertas} />
 
-      {/* O TEMPO PASSANDO. Primeira coisa da tela, de propósito: ele pediu
-          "o tempo está passando, a vida está passando". A hora anda sempre; o
-          número da direita diz se ela está virando registro ou não. */}
-      <Relogio
-        rodandoDesde={d.cronometro ? d.cronometro.iniciadoEm.toISOString() : null}
-        oQue={d.cronometro ? d.cronometro.tarefaTitulo : null}
-        semRegistroDesde={ultimoRegistro}
+      {/* O RELÓGIO DE BRASÍLIA SAIU DAQUI EM 14/09/2026, a pedido dele - e ele
+          tinha razão. A hora do dia já está no alto do telefone, em cima deste
+          aplicativo; repetir era ocupar a primeira dobra com a única informação
+          da tela que ele não precisava do Jarvis para saber.
+          O que ERA do relógio e valia ficar veio para cá: o contador do que
+          está rodando, a cobrança de quem está parado, e a folha que abre com
+          um toque. Isto aqui responde "o que está acontecendo agora", que é a
+          pergunta que ele fez desde o começo. */}
+      <EmAndamento
+        medindo={medindo}
+        girando={girando}
+        naMinhaMao={naMinhaMao}
+        vazioDesde={ultimoRegistro}
         apontamentoId={d.cronometro?.apontamentoId ?? null}
         blocoDesde={d.cronometro ? d.cronometro.blocoDesde.toISOString() : null}
         opcoes={frentesAbertas.map((f) => ({
@@ -173,10 +178,6 @@ export default async function Painel() {
           projeto: f.projeto?.nome ?? null,
         }))}
       />
-
-      {/* LOGO ABAIXO DO RELÓGIO, e antes de qualquer outra coisa. O relógio
-          diz QUANTO; este bloco diz O QUÊ, e dá o caminho para cada nome. */}
-      <EmAndamento medindo={medindo} girando={girando} naMinhaMao={naMinhaMao} />
 
       <div className="mb-3">
         <SemanaCurta dias={semana} />

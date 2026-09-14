@@ -31,6 +31,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { comecarNaFrente, marcarPacote } from '@/app/acoes'
+import { Conferir, type OpcaoDeFrente } from './Conferir'
 
 export type NaMinhaMao = {
   frenteId: number
@@ -109,14 +110,25 @@ export function EmAndamento({
   medindo,
   girando,
   naMinhaMao,
+  vazioDesde,
+  apontamentoId,
+  blocoDesde,
+  opcoes,
 }: {
   medindo: Medindo | null
   girando: Girando[]
   naMinhaMao: NaMinhaMao[]
+  /** ISO do fim do último apontamento. É daqui que sai o tamanho do buraco. */
+  vazioDesde: string | null
+  apontamentoId: number | null
+  /** ISO do último "estou aqui". */
+  blocoDesde: string | null
+  opcoes: OpcaoDeFrente[]
 }) {
   // `null` no primeiro render: a hora do servidor e a do navegador não batem,
   // e renderizar as duas diferentes quebra a hidratação.
   const [agora, setAgora] = useState<number | null>(null)
+  const [conferindo, setConferindo] = useState(false)
 
   useEffect(() => {
     setAgora(Date.now())
@@ -124,15 +136,61 @@ export function EmAndamento({
     return () => clearInterval(t)
   }, [])
 
+  // A COBRANÇA, que ele pediu com estas palavras: "olha, não tem nada
+  // acontecendo, você não está trabalhando?" e "já faz muito tempo que você
+  // está nessa tarefa, ainda está aí?".
+  //
+  // Morava no cartão do relógio de Brasília. O relógio saiu em 14/09/2026 - ele
+  // pediu, e estava certo: a hora do dia ele já tem no topo do telefone. A
+  // cobrança não saiu junto porque ela não é hora, é confronto, e o confronto
+  // era o pedido original.
+  //
+  // Meia hora parado, ou uma hora e meia sem confirmar, e só entre 7h e 20h.
+  // Ele foi explícito: "não pode ser uma hora chata".
+  const cobranca = (() => {
+    if (agora === null) return null
+    const hora = Number(
+      new Date(agora).toLocaleString('pt-BR', {
+        hour: '2-digit',
+        hour12: false,
+        timeZone: 'America/Sao_Paulo',
+      }),
+    )
+    if (hora < 7 || hora >= 20) return null
+
+    if (!medindo && vazioDesde) {
+      const min = (agora - new Date(vazioDesde).getTime()) / 60000
+      if (min >= 30) return 'Você não está trabalhando? Diga onde, que eu conto desde a hora certa.'
+      return null
+    }
+    if (medindo && blocoDesde) {
+      const min = (agora - new Date(blocoDesde).getTime()) / 60000
+      if (min >= 90) return 'Já faz um tempo aqui. Você ainda está nisso?'
+    }
+    return null
+  })()
+
   return (
     <section
       className="cartao p-4 mb-3"
       style={{ borderColor: medindo ? 'var(--verde)' : 'var(--ambar)' }}
     >
-      {/* ---------- 1. A HORA DELE ---------- */}
-      <p className="rotulo mb-2.5" style={{ color: medindo ? 'var(--verde)' : 'var(--ambar)' }}>
-        {medindo ? 'medindo agora' : 'nada sendo medido'}
-      </p>
+      {/* ---------- 1. A HORA DELE ----------
+          O rótulo virou botão: ele pediu "quando eu clico nas duas e cinquenta
+          sem nada medido, eu quero abrir a janela e ter fácil para colocar:
+          não, está sendo medido, olha". */}
+      <button
+        type="button"
+        onClick={() => setConferindo(true)}
+        className="em-andamento-topo"
+        style={{ color: medindo ? 'var(--verde)' : 'var(--ambar)' }}
+        aria-label={medindo ? 'Conferir o que está sendo medido' : 'Lançar o tempo sem registro'}
+      >
+        <span className="rotulo">{medindo ? 'medindo agora' : 'nada sendo medido'}</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
 
       {medindo ? (
         <div className="flex items-center gap-3">
@@ -256,6 +314,35 @@ export function EmAndamento({
           </ul>
         </>
       )}
+
+      {/* ---------- 4. O CONFRONTO ---------- */}
+      {cobranca && (
+        <button
+          type="button"
+          onClick={() => setConferindo(true)}
+          className="em-andamento-cobranca"
+          style={{ color: 'var(--ambar)' }}
+        >
+          {cobranca} <span className="sublinha">responder</span>
+        </button>
+      )}
+
+      <Conferir
+        aberto={conferindo}
+        fechar={() => setConferindo(false)}
+        opcoes={opcoes}
+        apontamentoId={apontamentoId}
+        medindo={
+          medindo
+            ? {
+                tarefa: medindo.tarefa,
+                desde: medindo.desde,
+                blocoDesde: blocoDesde ?? medindo.desde,
+              }
+            : null
+        }
+        vazioDesde={vazioDesde}
+      />
     </section>
   )
 }
