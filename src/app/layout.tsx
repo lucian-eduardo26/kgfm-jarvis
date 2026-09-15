@@ -11,10 +11,10 @@ export const metadata: Metadata = {
   // sozinho. Por isso os dois caminhos aparecem aqui.
   icons: {
     icon: [
-      { url: '/icone-32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icone-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icone-32-v2.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icone-192-v2.png', sizes: '192x192', type: 'image/png' },
     ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    apple: [{ url: '/apple-touch-icon-v2.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: { capable: true, title: 'Jarvis', statusBarStyle: 'black-translucent' },
 }
