@@ -210,11 +210,27 @@ export function EmAndamento({
             </span>
           </span>
         </div>
+      ) : opcoes.length > 0 ? (
+        /* A PORTA DE ENTRADA QUE FALTAVA.
+           A folha do Conferir sempre fez exatamente o que ele pediu - escolher
+           a frente e a hora de início, e o tempo decorrido entra sozinho. Só
+           que ela só abria pelo rótulo pequeno lá em cima, e ele nunca achou.
+           Em 15/09/2026, na voz dele: "a dinâmica da vida e essa - você começa
+           a fazer a tarefa e aí depois você se dá conta. O que você está
+           fazendo? A que hora começou? Acabou, ele adianta o tempo que passou."
+           O recurso existia; o que faltava era uma porta do tamanho do
+           problema. */
+        <button
+          type="button"
+          onClick={() => setConferindo(true)}
+          className="botao w-full"
+          style={{ background: 'var(--ambar)', color: '#140c00' }}
+        >
+          Já comecei - contar desde que horas
+        </button>
       ) : (
         <p className="text-sm fraco">
-          {naMinhaMao.length > 0
-            ? 'Tem trabalho na sua mão aqui embaixo e nenhum relógio rodando. Um toque resolve.'
-            : 'Nenhuma frente aberta. Diga na barra o que você está fazendo.'}
+          Nenhuma frente aberta. Diga na barra o que você está fazendo.
         </p>
       )}
 

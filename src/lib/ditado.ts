@@ -23,7 +23,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from './prisma'
-import { hojeSP } from './datas'
+import { hojeSP, limitesDoDia } from './datas'
 import { textoParaIa } from './etapas'
 
 // MODELO PEQUENO, decidido por medição em 10/09/2026.
@@ -199,6 +199,9 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
   let tarefaParaComecar: number | null = null
   let primeiraAberta: number | null = null
 
+  /** Os blocos de tempo do que ele disse que já fez, na ordem em que ditou. */
+  const paraApontar: { tarefaId: number; minutos: number }[] = []
+
   const areas = await prisma.area.findMany()
   const porChave = new Map(areas.map((a) => [a.chave, a]))
   const padrao = areas[0]
@@ -256,17 +259,12 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
         // marcada como revisar: e registro aproximado, lembrado depois - não
         // cronometrado na hora. Sem isso o projeto nasce sem histórico e as
         // horas totais nunca fecham com a realidade.
+        //
+        // O BLOCO NÃO NASCE AQUI. Ele entra na fila e é posicionado depois,
+        // quando a duração total do que foi ditado já e conhecida - veja
+        // `enfileirarBlocos` no fim desta função.
         const minutos = t.minutos && t.minutos > 0 ? t.minutos : 30
-        const fim = new Date()
-        await prisma.apontamento.create({
-          data: {
-            tarefaId: nova.id,
-            iniciadoEm: new Date(fim.getTime() - minutos * 60000),
-            encerradoEm: fim,
-            encerradoPor: 'usuario',
-            revisar: true,
-          },
-        })
+        paraApontar.push({ tarefaId: nova.id, minutos })
         await prisma.movimento.create({
           data: { frenteId: frente.id, tipo: 'tarefa-feita', descricao: t.titulo },
         })
@@ -281,6 +279,57 @@ export async function gravarDitado(plano: PlanoDitado): Promise<Criado> {
     }
 
     await prisma.frente.update({ where: { id: frente.id }, data: { ultimoMovimentoEm: new Date() } })
+  }
+
+  // O TEMPO DITADO ENTRA EM FILA, E NÃO EMPILHADO.
+  //
+  // O BUG, medido no banco em 15/09/2026: cada tarefa "já feita" fechava em
+  // `new Date()` - a hora em que ele FALOU, e não a hora em que ela aconteceu.
+  // As onze tarefas do Batoque do Logimat e da Trava Clinker terminaram TODAS
+  // às 20h09, duas delas reivindicando duas horas cada uma no mesmo instante.
+  // Quatrocentos e trinta e cinco minutos espremidos numa janela de duas horas,
+  // sete deles nos últimos quinze minutos.
+  //
+  // Ele não fez tudo ao mesmo tempo: fez em sequência e contou depois. Então os
+  // blocos entram encostados um no outro, o último terminando agora e a fila
+  // andando para trás na ordem em que ele ditou.
+  if (paraApontar.length > 0) {
+    const agora = Date.now()
+    const { inicio: comecoDoDia } = limitesDoDia(new Date(agora))
+    const totalMs = paraApontar.reduce((s, a) => s + a.minutos, 0) * 60000
+    const janela = agora - comecoDoDia.getTime()
+
+    // Cabe no dia: a fila termina agora. Não cabe: começa na virada do dia e o
+    // que sobrar fica sem bloco - carimbar trabalho na madrugada de ontem seria
+    // o mesmo erro de novo, só que ao contrário.
+    let cursor = totalMs <= janela ? agora - totalMs : comecoDoDia.getTime()
+    let semTempo = 0
+
+    for (const a of paraApontar) {
+      const fimBloco = Math.min(cursor + a.minutos * 60000, agora)
+      if (fimBloco <= cursor) {
+        semTempo++
+        continue
+      }
+      await prisma.apontamento.create({
+        data: {
+          tarefaId: a.tarefaId,
+          iniciadoEm: new Date(cursor),
+          encerradoEm: new Date(fimBloco),
+          encerradoPor: 'usuario',
+          revisar: true,
+        },
+      })
+      await prisma.tarefa.update({
+        where: { id: a.tarefaId },
+        data: { concluidaEm: new Date(fimBloco) },
+      })
+      cursor = fimBloco
+    }
+
+    if (semTempo > 0) {
+      linhas.push(`${semTempo} tarefa(s) ficaram sem tempo: não cabiam no dia de hoje`)
+    }
   }
 
   for (const c of plano.compromissos ?? []) {

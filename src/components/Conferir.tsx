@@ -270,6 +270,29 @@ export function Conferir({
                   {enviando ? '...' : `Contar desde ${hora || '--:--'}`}
                 </button>
 
+                {/* O SEGUNDO CASO DA MESMA PERGUNTA.
+                    Acima: "comecei às 14h e ainda estou nisso" - o relógio
+                    fica rodando. Aqui: "fiz das 14h até agora e já acabou" -
+                    o bloco entra fechado e nada fica correndo.
+                    São as duas metades de "contar a realidade da vida", e
+                    antes disso só a primeira existia. */}
+                <button
+                  type="button"
+                  disabled={enviando || !frenteId || !hora}
+                  onClick={() =>
+                    void comChamada(async () => {
+                      const f = new FormData()
+                      f.set('frenteId', frenteId)
+                      f.set('hora', hora)
+                      await comecarDesde(f)
+                      await terminarOQueEstaRodando()
+                    })
+                  }
+                  className="botao-fantasma w-full mt-2"
+                >
+                  {enviando ? '...' : `Fiz desde ${hora || '--:--'} e já terminei`}
+                </button>
+
                 {trocando && (
                   <button
                     type="button"
